@@ -1,0 +1,1160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Excel">
+
+<!-- 엑셀마스터 -->
+<!-- 엑셀마스터 조회 -->
+<select id="selectExcelMstList" parameterType="kr.co.fw.common.excel.ExcelVO" resultType="Hmap">
+/* excel-mapper.xml selectExcelMstList 엑셀마스터(입수엑셀설정) 목록 조회 */
+/* 수수료와 계약, 신계약 사용중인 원수사만 가져오기 위해서 UNION 사용 */
+SELECT AA.MB_ID					/*    회원사ID    VARCHAR2(20)     */
+     , AA.EXCEL_CD				/*    엑셀코드    VARCHAR2(5)     */
+     , AA.EXCEL_NM				/*    엑셀명    VARCHAR2(30)     */
+     , AA.INSCO_CD				/*    원수사코드    VARCHAR2(3)     */
+     , AA.INSCO_NM				/*    원수사명     VARCHAR2(20)    */
+     , AA.TABLE_NAME			/*    업로드 테이블 명 VARCHAR2(30)    */
+     , AA.COM_CD_GBN			/*    수수료코드구분    VARCHAR2(10) */
+     , CM1.CD_VL_NM AS COM_CD_GBN_NM    /* 수수료코드구분명  */
+     , AA.DATA_CTG				/*    업무영역코드    VARCHAR2(10)    */
+     , CM2.CD_VL_NM AS DATA_CTG_NM		/* 업무영역명  */
+     , AA.DESCRIPTION			/*    설명    VARCHAR2(1000)         */
+     , AA.USE_YN				/*    사용유무    VARCHAR2(1)     */
+     , AA.SORT_NO				/*    정렬순서    NUMBER(22)         */
+     , AA.IN_EMP_CD				/*    입력자사번    VARCHAR2(20)     */
+     , AA.IN_DTM				/*    입력일시    TIMESTAMP         */
+     , AA.UP_EMP_CD				/*    수정사번    VARCHAR2(20)     */
+     , AA.UP_DTM				/*    수정일시    TIMESTAMP         */
+     , TB.TABLE_NAME			/*    업로드 테이블 명                */
+  FROM (SELECT A.MB_ID			/*    회원사ID    VARCHAR2(20)     */
+             , A.EXCEL_CD		/*    엑셀코드    VARCHAR2(5)     */
+             , A.EXCEL_NM		/*    엑셀명    VARCHAR2(30)     */
+             , A.INSCO_CD		/*    원수사코드    VARCHAR2(3)     */
+             , B.INSCO_NM		/*    원수사명     VARCHAR2(20)    */
+             , A.TABLE_NAME		/*    업로드 테이블 명 VARCHAR2(30)    */
+             , A.COM_CD_GBN		/*    수수료코드구분    VARCHAR2(10) */
+             , A.DATA_CTG		/*  업무구분    VARCHAR2(10)    */
+             , A.DESCRIPTION	/*    설명    VARCHAR2(1000)         */
+             , A.USE_YN			/*    사용유무    VARCHAR2(1)     */
+             , A.SORT_NO		/*    정렬순서    NUMBER(22)         */
+             , A.IN_EMP_CD		/*    입력자사번    VARCHAR2(20)     */
+             , A.IN_DTM			/*    입력일시    TIMESTAMP         */
+             , A.UP_EMP_CD		/*    수정사번    VARCHAR2(20)     */
+             , A.UP_DTM			/*    수정일시    TIMESTAMP         */
+          FROM TBSY_EXCEL_MST A
+         INNER JOIN (SELECT 'ALL' AS INSCO_CD
+                          , '공통' AS INSCO_NM
+                       FROM DUAL
+                     UNION ALL
+                     SELECT INSCO_CD
+                          , INSCO_NM
+                       FROM TBCM_INSCO
+                      WHERE USE_YN = 'Y'
+                        AND MB_ID = #{MB_ID} ) B
+            ON A.INSCO_CD = B.INSCO_CD ) AA
+  LEFT OUTER JOIN (SELECT *
+                     FROM TBCM_COMMON_CODE
+                    WHERE GRP_CMM_CD = 'COM_CD_GBN') CM1
+    ON AA.MB_ID = CM1.MB_ID
+   AND AA.COM_CD_GBN = CM1.CD_VL
+  LEFT OUTER JOIN (SELECT *
+                     FROM TBCM_COMMON_CODE
+                    WHERE GRP_CMM_CD = 'DATA_CTG') CM2
+    ON AA.MB_ID = CM2.MB_ID
+   AND AA.DATA_CTG = CM2.CD_VL
+  LEFT OUTER JOIN TBSY_EXCEL_UPLOAD_TABLE_MST TB
+    ON AA.MB_ID = TB.MB_ID
+   AND AA.DATA_CTG = TB.DATA_CTG
+   AND AA.TABLE_NAME = TB.TABLE_NAME
+<where>
+	   AA.MB_ID = #{MB_ID}
+   <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(INSCO_CD)">
+   AND AA.INSCO_CD = #{INSCO_CD}
+   </if>
+   <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(DATA_CTG)">
+   AND AA.DATA_CTG = #{DATA_CTG}
+   </if>
+</where>
+ ORDER BY AA.INSCO_CD, AA.EXCEL_CD, AA.SORT_NO
+</select>
+
+<!-- 엑셀마스터 입력 -->
+<insert id="insertExcelMst" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml insertExcelMst 엑셀마스터 입력 */
+<selectKey resultType="String" keyProperty="EXCEL_CD" order="BEFORE">
+/* EXCEL_CD 생성 */
+SELECT CASE
+		   WHEN #{INSCO_CD} != 'ALL' AND #{INSCO_CD} IS NOT NULL THEN #{INSCO_CD} || LPAD(NVL(TO_NUMBER(REGEXP_REPLACE(MAX(EXCEL_CD), #{INSCO_CD}||'|_'||#{DATA_CTG})), 0) + 1, 2, '0')||'_'||#{DATA_CTG}
+		   ELSE #{DATA_CTG} || LPAD(NVL(TO_NUMBER(REPLACE(MAX(EXCEL_CD), #{DATA_CTG})), 0) + 1, 4, '0')
+	   END AS EXCEL_CD
+  FROM TBSY_EXCEL_MST
+ WHERE MB_ID = #{MB_ID}
+   AND DATA_CTG = #{DATA_CTG}
+   AND INSCO_CD = NVL(#{INSCO_CD}, 'ALL')
+</selectKey>
+
+/* 엑셀마스터 입력 */
+INSERT
+  INTO TBSY_EXCEL_MST 
+  	 ( MB_ID		/*	회원사ID	VARCHAR2(20) */
+	 , EXCEL_CD		/*	엑셀코드	VARCHAR2(5) */
+	 , EXCEL_NM		/*	엑셀명	VARCHAR2(30) */
+	 , INSCO_CD		/*	원수사코드	VARCHAR2(3) */
+	 , COM_CD_GBN	/*	수수료코드구분	VARCHAR2(1) */
+	 , DATA_CTG		/*	업무영역	VARCHAR2(10)	*/
+	 , TABLE_NAME	/*  업로드 테이블	VARCHAR2(30)*/
+	 , DESCRIPTION	/*	설명	VARCHAR2(1000) */
+	 , USE_YN		/*	사용유무	VARCHAR2(1) */
+	 , SORT_NO		/*	정렬순서	NUMBER(22) */
+	 , IN_EMP_CD	/*	입력자사번	VARCHAR2(20) */
+	 , IN_DTM		/*	입력일시	TIMESTAMP */
+	 , UP_EMP_CD	/*	수정사번	VARCHAR2(20) */
+	 , UP_DTM		/*	수정일시	TIMESTAMP */
+	 )
+VALUES 
+	 ( #{MB_ID}			/*	회원사ID	VARCHAR2(20) */
+	 , #{EXCEL_CD}		/*	엑셀코드	VARCHAR2(5) */
+	 , #{EXCEL_NM}		/*	엑셀명	VARCHAR2(30) */
+	 , NVL(#{INSCO_CD}, 'ALL')	/*	원수사코드	VARCHAR2(3) */
+	 , #{COM_CD_GBN}	/*	수수료코드구분	VARCHAR2(1) */
+	 , #{DATA_CTG}		/*	업무영역	VARCHAR2(10)	*/
+	 , #{TABLE_NAME}	/*  업로드 테이블	VARCHAR2(30)	*/
+	 , #{DESCRIPTION}	/*	설명	VARCHAR2(1000) */
+	 , #{USE_YN}		/*	사용유무	VARCHAR2(1) */
+	 , #{SORT_NO}		/*	정렬순서	NUMBER(22) */
+	 , #{IN_EMP_CD}		/*	입력자사번	VARCHAR2(20) */
+	 , SYSDATE			/*	입력일시	TIMESTAMP */
+	 , #{UP_EMP_CD}		/*	수정사번	VARCHAR2(20) */
+	 , SYSDATE			/*	수정일시	TIMESTAMP */
+)
+</insert>
+
+<!-- 엑셀마스터 수정 -->
+<update id="updateExcelMst" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml updateExcelMst 엑셀마스터 수정 */
+UPDATE TBSY_EXCEL_MST
+   SET UP_EMP_CD	= #{UP_EMP_CD} 		/*	수정사번	VARCHAR2(20) */
+	 , UP_DTM		= SYSDATE 			/*	수정일시	TIMESTAMP */
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(EXCEL_NM)'>	 
+	 , EXCEL_NM		= #{EXCEL_NM} 		/*	엑셀명	VARCHAR2(30) */
+</if>	 
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(INSCO_CD)'>	 
+	 , INSCO_CD		= #{INSCO_CD} 		/*	원수사코드	VARCHAR2(3) */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(COM_CD_GBN)'>	 
+	 , COM_CD_GBN	= #{COM_CD_GBN} 	/*	수수료코드구분	VARCHAR2(1) */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(DATA_CTG)'>	 
+	 , DATA_CTG		= #{DATA_CTG}		/*	업무영역	VARCHAR2(10) */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(TABLE_NAME)'>	 
+	 , TABLE_NAME	= #{TABLE_NAME}		/*	업로드테이블	VARCHAR2(30) */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(DESCRIPTION)'>	 
+	 , DESCRIPTION	= #{DESCRIPTION} 	/*	설명	VARCHAR2(1000) */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(USE_YN)'>	 
+	 , USE_YN		= #{USE_YN} 		/*	사용유무	VARCHAR2(1) */
+</if>	 
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SORT_NO)'>	 
+	 , SORT_NO		= #{SORT_NO} 		/*	정렬순서	NUMBER(22) */
+</if>
+<where>
+   AND MB_ID    	= #{MB_ID}
+   AND EXCEL_CD 	= #{EXCEL_CD}
+</where>
+</update>
+
+<!-- 엑셀마스터 삭제 -->
+<delete id="deleteExcelMst" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml deleteExcelMst 엑셀마스터 삭제 */
+DELETE TBSY_EXCEL_MST
+<where>
+   AND MB_ID    	= #{MB_ID}
+   AND EXCEL_CD 	= #{EXCEL_CD}
+</where>
+</delete>
+
+<!-- 맵핑마스터 관리 리스트 조회 -->
+<select id="selectMapMstMngList" parameterType="kr.co.fw.common.excel.ExcelVO" resultType="Hmap">
+/* excel-mapper.xml id="selectMapMstMngList" 맵핑마스터 관리 리스트 조회 */
+SELECT A.MB_ID       /* 회원사ID VARCHAR2(20) */
+     , A.EXCEL_CD    /* 엑셀코드 VARCHAR2(5) */
+     , A.DATA_CD     /* 데이터코드(수수료마스터코드) VARCHAR2(20) */
+     , A.GUIDE       /* 가이드데이터 VARCHAR2(256) */
+     , A.REQ_YN      /* 필수여부 VARCHAR2(1) */
+     , A.FIX_VAL     /* 고정값 VARCHAR2(256) */
+     , A.DEFAULT_VAL /* NULL일때 기본값 VARCHAR2(256) */
+     , A.SORT_NO     /* 정렬순서 NUMBER(22) */
+     , A.IN_EMP_CD   /* 입력자사번 VARCHAR2(20) */
+     , A.IN_DTM      /* 입력일시 DATE(7) */
+     , A.UP_EMP_CD   /* 수정자사번 VARCHAR2(20) */
+     , A.UP_DTM      /* 수정일시 DATE(7) */
+  FROM TBSY_EXCEL_DATA_MAP_MST A
+ WHERE A.EXCEL_CD = #{EXCEL_CD}
+</select>
+
+<!-- 월별엑셀RAW데이터  -->
+<!-- 월별엑셀RAW데이터 목록 조회 -->
+<sql id="selectExcelDataMonthList_SQL">
+SELECT A.COM_YM		/*	업적월	VARCHAR2(6) */
+	 , A.MB_ID		/*	회원사ID	VARCHAR2(20) */
+	 , A.EXCEL_CD	/*	엑셀코드	VARCHAR2(5) */
+	 , A.INSCO_CD	/*	원수사코드	VARCHAR2(3) */
+	 , A.SEQ		/*	일련번호	NUMBER(22) */
+	 , A.C001		/*	컬럼1	VARCHAR2(256) */
+	 , A.C002		/*	컬럼2	VARCHAR2(256) */
+	 , A.C003		/*	컬럼3	VARCHAR2(256) */
+	 , A.C004		/*	컬럼4	VARCHAR2(256) */
+	 , A.C005		/*	컬럼5	VARCHAR2(256) */
+	 , A.C006		/*	컬럼6	VARCHAR2(256) */
+	 , A.C007		/*	컬럼7	VARCHAR2(256) */
+	 , A.C008		/*	컬럼8	VARCHAR2(256) */
+	 , A.C009		/*	컬럼9	VARCHAR2(256) */
+	 , A.C010		/*	컬럼10	VARCHAR2(256) */
+	 , A.C011		/*	컬럼11	VARCHAR2(256) */
+	 , A.C012		/*	컬럼12	VARCHAR2(256) */
+	 , A.C013		/*	컬럼13	VARCHAR2(256) */
+	 , A.C014		/*	컬럼14	VARCHAR2(256) */
+	 , A.C015		/*	컬럼15	VARCHAR2(256) */
+	 , A.C016		/*	컬럼16	VARCHAR2(256) */
+	 , A.C017		/*	컬럼17	VARCHAR2(256) */
+	 , A.C018		/*	컬럼18	VARCHAR2(256) */
+	 , A.C019		/*	컬럼19	VARCHAR2(256) */
+	 , A.C020		/*	컬럼20	VARCHAR2(256) */
+	 , A.C021		/*	컬럼21	VARCHAR2(256) */
+	 , A.C022		/*	컬럼22	VARCHAR2(256) */
+	 , A.C023		/*	컬럼23	VARCHAR2(256) */
+	 , A.C024		/*	컬럼24	VARCHAR2(256) */
+	 , A.C025		/*	컬럼25	VARCHAR2(256) */
+	 , A.C026		/*	컬럼26	VARCHAR2(256) */
+	 , A.C027		/*	컬럼27	VARCHAR2(256) */
+	 , A.C028		/*	컬럼28	VARCHAR2(256) */
+	 , A.C029		/*	컬럼29	VARCHAR2(256) */
+	 , A.C030		/*	컬럼30	VARCHAR2(256) */
+	 , A.C031		/*	컬럼31	VARCHAR2(256) */
+	 , A.C032		/*	컬럼32	VARCHAR2(256) */
+	 , A.C033		/*	컬럼33	VARCHAR2(256) */
+	 , A.C034		/*	컬럼34	VARCHAR2(256) */
+	 , A.C035		/*	컬럼35	VARCHAR2(256) */
+	 , A.C036		/*	컬럼36	VARCHAR2(256) */
+	 , A.C037		/*	컬럼37	VARCHAR2(256) */
+	 , A.C038		/*	컬럼38	VARCHAR2(256) */
+	 , A.C039		/*	컬럼39	VARCHAR2(256) */
+	 , A.C040		/*	컬럼40	VARCHAR2(256) */
+	 , A.C041		/*	컬럼41	VARCHAR2(256) */
+	 , A.C042		/*	컬럼42	VARCHAR2(256) */
+	 , A.C043		/*	컬럼43	VARCHAR2(256) */
+	 , A.C044		/*	컬럼44	VARCHAR2(256) */
+	 , A.C045		/*	컬럼45	VARCHAR2(256) */
+	 , A.C046		/*	컬럼46	VARCHAR2(256) */
+	 , A.C047		/*	컬럼47	VARCHAR2(256) */
+	 , A.C048		/*	컬럼48	VARCHAR2(256) */
+	 , A.C049		/*	컬럼49	VARCHAR2(256) */
+	 , A.C050		/*	컬럼50	VARCHAR2(256) */
+	 , A.C051		/*	컬럼51	VARCHAR2(256) */
+	 , A.C052		/*	컬럼52	VARCHAR2(256) */
+	 , A.C053		/*	컬럼53	VARCHAR2(256) */
+	 , A.C054		/*	컬럼54	VARCHAR2(256) */
+	 , A.C055		/*	컬럼55	VARCHAR2(256) */
+	 , A.C056		/*	컬럼56	VARCHAR2(256) */
+	 , A.C057		/*	컬럼57	VARCHAR2(256) */
+	 , A.C058		/*	컬럼58	VARCHAR2(256) */
+	 , A.C059		/*	컬럼59	VARCHAR2(256) */
+	 , A.C060		/*	컬럼60	VARCHAR2(256) */
+	 , A.C061		/*	컬럼61	VARCHAR2(256) */
+	 , A.C062		/*	컬럼62	VARCHAR2(256) */
+	 , A.C063		/*	컬럼63	VARCHAR2(256) */
+	 , A.C064		/*	컬럼64	VARCHAR2(256) */
+	 , A.C065		/*	컬럼65	VARCHAR2(256) */
+	 , A.C066		/*	컬럼66	VARCHAR2(256) */
+	 , A.C067		/*	컬럼67	VARCHAR2(256) */
+	 , A.C068		/*	컬럼68	VARCHAR2(256) */
+	 , A.C069		/*	컬럼69	VARCHAR2(256) */
+	 , A.C070		/*	컬럼70	VARCHAR2(256) */
+	 , A.C071		/*	컬럼71	VARCHAR2(256) */
+	 , A.C072		/*	컬럼72	VARCHAR2(256) */
+	 , A.C073		/*	컬럼73	VARCHAR2(256) */
+	 , A.C074		/*	컬럼74	VARCHAR2(256) */
+	 , A.C075		/*	컬럼75	VARCHAR2(256) */
+	 , A.C076		/*	컬럼76	VARCHAR2(256) */
+	 , A.C077		/*	컬럼77	VARCHAR2(256) */
+ 	 , A.C078		/*	컬럼78	VARCHAR2(256) */
+	 , A.C079		/*	컬럼79	VARCHAR2(256) */
+	 , A.C080		/*	컬럼80	VARCHAR2(256) */
+	 , A.C081		/*	컬럼81	VARCHAR2(256) */
+	 , A.C082		/*	컬럼82	VARCHAR2(256) */
+	 , A.C083		/*	컬럼83	VARCHAR2(256) */
+	 , A.C084		/*	컬럼84	VARCHAR2(256) */
+	 , A.C085		/*	컬럼85	VARCHAR2(256) */
+	 , A.C086		/*	컬럼86	VARCHAR2(256) */
+	 , A.C087		/*	컬럼87	VARCHAR2(256) */
+	 , A.C088		/*	컬럼88	VARCHAR2(256) */
+	 , A.C089		/*	컬럼89	VARCHAR2(256) */
+	 , A.C090		/*	컬럼90	VARCHAR2(256) */
+	 , A.C091		/*	컬럼91	VARCHAR2(256) */
+	 , A.C092		/*	컬럼92	VARCHAR2(256) */
+	 , A.C093		/*	컬럼93	VARCHAR2(256) */
+	 , A.C094		/*	컬럼94	VARCHAR2(256) */
+	 , A.C095		/*	컬럼95	VARCHAR2(256) */
+	 , A.C096		/*	컬럼96	VARCHAR2(256) */
+	 , A.C097		/*	컬럼97	VARCHAR2(256) */
+	 , A.C098		/*	컬럼98	VARCHAR2(256) */
+	 , A.C099		/*	컬럼99	VARCHAR2(256) */
+	 , A.C100		/*	컬럼100	VARCHAR2(256) */
+	 , A.IN_EMP_CD	/*	입력자사번	VARCHAR2(20) */
+	 , A.IN_DTM		/*	입력일시	DATE */
+  FROM TBSY_EXCEL_DATA_MONTH A
+<where>
+   AND A.COM_YM   = #{COM_YM}
+   AND A.MB_ID    = #{MB_ID}
+   AND A.EXCEL_CD = #{EXCEL_CD}
+  <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(ROWSTART_SEQ)">
+   AND A.SEQ >= ${ROWSTART_SEQ}
+  </if>
+</where> 
+ ORDER BY A.MB_ID, A.COM_YM, A.EXCEL_CD, A.SEQ
+</sql>
+
+<select id="selectExcelDataMonthList" parameterType="kr.co.fw.common.excel.ExcelVO" resultType="Hmap">
+/* excel-mapper.xml selectExcelDataMonthList 월별엑셀RAW데이터 목록 조회 */
+<include refid="Common.PagingStart"/>
+<include refid="selectExcelDataMonthList_SQL"/>
+<include refid="Common.PagingEnd"/>
+</select>
+
+<!-- 월별엑셀RAW데이터 입력 -->
+<insert id="insertExcelDataMonth" parameterType="Hmap">
+/* excel-mapper.xml insertExcelDataMonth 월별엑셀RAW데이터 입력 */
+INSERT 
+  INTO TBSY_EXCEL_DATA_MONTH 
+  	 ( COM_YM		/*	업적월	VARCHAR2(6) */
+	 , MB_ID		/*	회원사ID	VARCHAR2(20) */
+	 , EXCEL_CD		/*	엑셀코드	VARCHAR2(5) */
+	 , INSCO_CD		/*	원수사코드	VARCHAR2(3) */
+	 , SEQ			/*	일련번호	NUMBER(22) */
+	 , C001, C002, C003, C004, C005, C006, C007, C008, C009, C010
+	 , C011, C012, C013, C014, C015, C016, C017, C018, C019, C020
+	 , C021, C022, C023, C024, C025, C026, C027, C028, C029, C030
+	 , C031, C032, C033, C034, C035, C036, C037, C038, C039, C040
+	 , C041, C042, C043, C044, C045, C046, C047, C048, C049, C050
+	 , C051, C052, C053, C054, C055, C056, C057, C058, C059, C060
+	 , C061, C062, C063, C064, C065, C066, C067, C068, C069, C070
+	 , C071, C072, C073, C074, C075, C076, C077, C078, C079, C080
+	 , C081, C082, C083, C084, C085, C086, C087, C088, C089, C090
+	 , C091, C092, C093, C094, C095, C096, C097, C098, C099, C100
+	 , IN_EMP_CD	/*	입력자사번	VARCHAR2(20) */
+	 , IN_DTM		/*	입력일시	DATE */
+	 ) 
+VALUES 
+	 ( #{COM_YM}	/*	업적월	VARCHAR2(6) */
+	 , #{MB_ID}		/*	회원사ID	VARCHAR2(20) */
+	 , #{EXCEL_CD}	/*	엑셀코드	VARCHAR2(5) */
+	 , #{INSCO_CD}	/*	원수사코드	VARCHAR2(3) */
+	 , ${SEQ}		/*	일련번호	NUMBER(22) */
+	 , #{C001}, #{C002}, #{C003}, #{C004}, #{C005}, #{C006}, #{C007}, #{C008}, #{C009}, #{C010}
+	 , #{C011}, #{C012}, #{C013}, #{C014}, #{C015}, #{C016}, #{C017}, #{C018}, #{C019}, #{C020}
+	 , #{C021}, #{C022}, #{C023}, #{C024}, #{C025}, #{C026}, #{C027}, #{C028}, #{C029}, #{C030}
+	 , #{C031}, #{C032}, #{C033}, #{C034}, #{C035}, #{C036}, #{C037}, #{C038}, #{C039}, #{C040}
+	 , #{C041}, #{C042}, #{C043}, #{C044}, #{C045}, #{C046}, #{C047}, #{C048}, #{C049}, #{C050}
+	 , #{C051}, #{C052}, #{C053}, #{C054}, #{C055}, #{C056}, #{C057}, #{C058}, #{C059}, #{C060}
+	 , #{C061}, #{C062}, #{C063}, #{C064}, #{C065}, #{C066}, #{C067}, #{C068}, #{C069}, #{C070}
+	 , #{C071}, #{C072}, #{C073}, #{C074}, #{C075}, #{C076}, #{C077}, #{C078}, #{C079}, #{C080}
+	 , #{C081}, #{C082}, #{C083}, #{C084}, #{C085}, #{C086}, #{C087}, #{C088}, #{C089}, #{C090}
+	 , #{C091}, #{C092}, #{C093}, #{C094}, #{C095}, #{C096}, #{C097}, #{C098}, #{C099}, #{C100}
+	 , #{IN_EMP_CD}	/*	입력자사번	VARCHAR2(20) */
+	 , SYSDATE		/*	입력일시	DATE */
+	 )
+</insert>
+
+<!-- 월별엑셀RAW데이터 삭제 -->
+<delete id="deleteExcelDataMonth" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml deleteExcelDataMonth 월별엑셀RAW데이터 삭제 */
+DELETE TBSY_EXCEL_DATA_MONTH
+<where>
+   AND COM_YM   = #{COM_YM}
+   AND MB_ID    = #{MB_ID}
+   AND EXCEL_CD = #{EXCEL_CD}
+</where>
+</delete>
+
+
+<!-- 매핑마스터  -->
+<!-- 매핑마스터 목록 조회 -->
+<select id="selectExcelDataMapMstList" parameterType="kr.co.fw.common.excel.ExcelVO" resultType="Hmap">
+/* excel-mapper.xml selectExcelDataMapMstList 매핑마스터 목록 조회 */
+SELECT A.MB_ID			/*	회원사ID	VARCHAR2(20) */
+	 , A.EXCEL_CD		/*	엑셀코드	VARCHAR2(5) */
+	 , A.DATA_CD		/*	데이터코드(수수료마스터코드)	VARCHAR2(20) */
+	 , B.COLUMN_COMMENT AS DATA_NM		/*  데이터코드 명	*/
+	 , A.GUIDE			/*	가이드데이터	VARCHAR2(256) */
+	 , A.REQ_YN			/*	필수여부	VARCHAR2(1) */
+	 , A.REQ_YN AS REQ_YN_OUT	/*	필수여부	VARCHAR2(1) */
+	 , A.FIX_VAL		/*	고정값	VARCHAR2(256) */
+	 , A.DEFAULT_VAL	/*	NULL일때 기본값	VARCHAR2(256) */
+	 , A.SORT_NO		/*	정렬순서	NUMBER(22) */
+  FROM TBSY_EXCEL_DATA_MAP_MST A
+  LEFT OUTER JOIN TBSY_EXCEL_UPLOAD_COLUMN_MST B
+    ON A.MB_ID = B.MB_ID
+   AND A.DATA_CD = B.COLUMN_NAME
+<where>
+   AND A.MB_ID    = #{MB_ID}
+   AND A.EXCEL_CD = #{EXCEL_CD}
+   AND B.TABLE_NAME = #{TABLE_NAME}
+</where> 
+ ORDER BY A.SORT_NO
+</select>
+
+<!-- 매핑마스터 입력 -->
+<insert id="insertExcelDataMapMst" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml insertExcelDataMapMst 매핑마스터 입력 */
+INSERT INTO TBSY_EXCEL_DATA_MAP_MST (
+	   MB_ID			/*	회원사ID	VARCHAR2(20) */
+	 , EXCEL_CD			/*	엑셀코드	VARCHAR2(5) */
+	 , DATA_CD			/*	데이터코드(수수료마스터코드)	VARCHAR2(20) */
+	 , GUIDE			/*	가이드데이터	VARCHAR2(256) */
+	 , REQ_YN			/*	필수여부	VARCHAR2(1) */
+	 , FIX_VAL			/*	고정값	VARCHAR2(256) */
+	 , DEFAULT_VAL		/*	NULL일때 기본값	VARCHAR2(256) */
+	 , SORT_NO			/*	정렬순서	NUMBER(22) */
+	 , IN_EMP_CD		/*	입력자사번	VARCHAR2(20) */
+	 , IN_DTM			/*	입력일시	DATE */
+	 , UP_EMP_CD		/*	수정자사번	VARCHAR2(20) */
+	 , UP_DTM			/*	수정일시	DATE */
+) VALUES (
+	   #{MB_ID}			/*	회원사ID	VARCHAR2(20) */
+	 , #{EXCEL_CD}		/*	엑셀코드	VARCHAR2(5) */
+	 , #{DATA_CD}		/*	데이터코드(수수료마스터코드)	VARCHAR2(20) */
+	 , #{GUIDE}			/*	가이드데이터	VARCHAR2(256) */
+	 , #{REQ_YN}		/*	필수여부	VARCHAR2(1) */
+	 , #{FIX_VAL}		/*	고정값	VARCHAR2(256) */
+	 , #{DEFAULT_VAL}	/*	NULL일때 기본값	VARCHAR2(256) */
+	 , #{SORT_NO}		/*	정렬순서	NUMBER(22) */
+	 , #{IN_EMP_CD}		/*	입력자사번	VARCHAR2(20) */
+	 , SYSDATE			/*	입력일시	DATE */
+	 , #{UP_EMP_CD}		/*	수정자사번	VARCHAR2(20) */
+	 , SYSDATE			/*	수정일시	DATE */
+)
+</insert>
+
+<!-- 매핑마스터 수정 -->
+<update id="updateExcelDataMapMst" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml updateExcelDataMapMst 매핑마스터 수정 */
+UPDATE TBSY_EXCEL_DATA_MAP_MST
+   SET UP_EMP_CD		= #{UP_EMP_CD} 	/*	수정자사번	VARCHAR2(20) */
+	 , UP_DTM			= SYSDATE 		/*	수정일시	DATE */
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(GUIDE)'>	 
+	 , GUIDE			= #{GUIDE} /*	가이드데이터	VARCHAR2(256) */
+</if>	 
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(REQ_YN)'>	 
+	 , REQ_YN			= #{REQ_YN} /*	필수여부	VARCHAR2(1) */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(FIX_VAL)'>	 
+	 , FIX_VAL			= #{FIX_VAL} /*	고정값	VARCHAR2(256) */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(DEFAULT_VAL)'>	 
+	 , DEFAULT_VAL		= #{DEFAULT_VAL} /*	NULL일때 기본값	VARCHAR2(256) */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SORT_NO)'>	 
+	 , SORT_NO			= #{SORT_NO} /*	정렬순서	NUMBER(22) */
+</if>
+<where>
+   AND MB_ID    = #{MB_ID}
+   AND EXCEL_CD = #{EXCEL_CD}
+   AND DATA_CD = #{DATA_CD}
+</where>
+</update>
+
+<!-- 매핑마스터 삭제 -->
+<delete id="deleteExcelDataMapMst" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml deleteExcelDataMapMst 매핑마스터 삭제 */
+DELETE TBSY_EXCEL_DATA_MAP_MST
+<where>
+   AND MB_ID    = #{MB_ID}
+   AND EXCEL_CD = #{EXCEL_CD}
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(DATA_CD)'>	 
+   AND DATA_CD = #{DATA_CD}
+</if>
+</where>
+</delete>
+
+
+<!-- 월별매핑  -->
+<!-- 월별매핑 목록 조회 -->
+<select id="selectExcelDataMapMonthList" parameterType="kr.co.fw.common.excel.ExcelVO" resultType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml selectExcelDataMapMonthList 월별매핑 목록 조회 */
+SELECT A.COM_YM			/*	마감월	VARCHAR2(6) */
+	 , A.MB_ID			/*	회원사ID	VARCHAR2(20) */
+	 , A.EXCEL_CD		/*	엑셀코드	VARCHAR2(5) */
+	 , A.ROW_RANGE		/*	적용행범위(ALL:ROWSTART_SEQ부터 전체, ROW : ROWSTART_SEQ 1개행만)	VARCHAR2(10) */
+	 , A.DATA_CD		/*	데이터코드(수수료마스터코드)	VARCHAR2(20) */
+	 , A.COL_CD			/*	컬럼코드	VARCHAR2(4) */
+	 , A.ROWSTART_SEQ	/*	시작행일련번호	NUMBER(22) */
+	 , A.IN_EMP_CD		/*	입력자사번	VARCHAR2(20) */
+	 , A.IN_DTM			/*	입력일시	DATE(7) */
+	 , A.UP_EMP_CD		/*	수정자사번	VARCHAR2(20) */
+	 , A.UP_DTM			/*	수정일시	DATE(7) */
+	 , A.SORT_NO		/*	정렬순서	NUMBER(22) */
+  FROM TBSY_EXCEL_DATA_MAP_MONTH A
+<where>
+   AND A.COM_YM   = #{COM_YM}
+   AND A.MB_ID    = #{MB_ID}
+   AND A.EXCEL_CD = #{EXCEL_CD}
+</where> 
+ ORDER BY A.COM_YM, A.MB_ID, A.EXCEL_CD, A.SORT_NO
+</select>
+
+<select id="getCheckDataMapMonth" parameterType="kr.co.fw.common.excel.ExcelVO" resultType="Integer">
+/* excel-mapper.xml id="getCheckDataMapMonth" 월별 맵핑 존재 유무 확인 */
+SELECT COUNT(DATA_CD) AS CNT
+  FROM TBSY_EXCEL_DATA_MAP_MONTH
+ WHERE MB_ID = #{MB_ID}
+   AND COM_YM = #{COM_YM}
+   AND EXCEL_CD = #{EXCEL_CD}
+   AND DATA_CD = #{DATA_CD}
+</select>
+
+<!-- 월별매핑 입력 -->
+<insert id="insertExcelDataMapMonth" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml insertExcelDataMapMonth 월별매핑 입력 */
+INSERT INTO TBSY_EXCEL_DATA_MAP_MONTH (
+	   COM_YM		/*	마감월	VARCHAR2(6) */
+	 , MB_ID		/*	회원사ID	VARCHAR2(20) */
+	 , EXCEL_CD		/*	엑셀코드	VARCHAR2(5) */
+	 , DATA_CD		/*	데이터코드(수수료마스터코드)	VARCHAR2(20) */
+	 , COL_CD		/*	컬럼코드	VARCHAR2(4) */
+	 , ROWSTART_SEQ	/*	시작행일련번호	NUMBER(22) */
+	 , IN_EMP_CD	/*	입력자사번	VARCHAR2(20) */
+	 , IN_DTM		/*	입력일시	DATE(7) */
+	 , SORT_NO		/*	정렬순서	NUMBER(22) */
+) VALUES (
+	   #{COM_YM}		/*	마감월	VARCHAR2(6) */
+	 , #{MB_ID}			/*	회원사ID	VARCHAR2(20) */
+	 , #{EXCEL_CD}		/*	엑셀코드	VARCHAR2(5) */
+	 , #{DATA_CD}		/*	데이터코드(수수료마스터코드)	VARCHAR2(20) */
+	 , #{COL_CD}		/*	컬럼코드	VARCHAR2(4) */
+	 , #{ROWSTART_SEQ}	/*	시작행일련번호	NUMBER(22) */
+	 , #{IN_EMP_CD}		/*	입력자사번	VARCHAR2(20) */
+	 , SYSDATE			/*	입력일시	DATE(7) */
+	 , #{SORT_NO}		/*	정렬순서	NUMBER(22) */
+)
+</insert>
+
+<!-- 월별매핑 수정 -->
+<update id="updateExcelDataMapMonth" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml updateExcelDataMapMonth 월별매핑 수정 */
+UPDATE TBSY_EXCEL_DATA_MAP_MONTH
+   SET UP_EMP_CD	= #{UP_EMP_CD} 		/*	수정자사번	VARCHAR2(20) */
+	 , UP_DTM		= SYSDATE 			/*	수정일시	DATE */
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(COL_CD)'>	 
+	 , COL_CD		= #{COL_CD} 		/*	컬럼코드	VARCHAR2(4) */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(ROWSTART_SEQ)'>	 
+	 , ROWSTART_SEQ	= #{ROWSTART_SEQ} 	/*	시작행일련번호	NUMBER(22) */ 
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SORT_NO)'>	 
+	 , SORT_NO		= #{SORT_NO} 		/*	정렬순서	NUMBER(22) */
+</if>
+<where>
+   AND COM_YM 	= #{COM_YM}
+   AND MB_ID  	= #{MB_ID}
+   AND EXCEL_CD = #{EXCEL_CD}
+   AND DATA_CD	= #{DATA_CD} 		/*	데이터코드(수수료마스터코드)	VARCHAR2(20) */
+</where>   
+</update>
+
+<!-- 월별매핑 삭제 -->
+<delete id="deleteExcelDataMapMonth" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml deleteExcelDataMapMonth 월별매핑 삭제 */
+DELETE TBSY_EXCEL_DATA_MAP_MONTH
+<where>
+   AND COM_YM 	= #{COM_YM}
+   AND MB_ID  	= #{MB_ID}
+   AND EXCEL_CD = #{EXCEL_CD}
+</where>
+</delete>
+
+
+<!-- 월별업로드상태  -->
+<!-- 월별업로드상태 목록 조회 -->
+<select id="selectExcelStatusMonthList" parameterType="kr.co.fw.common.excel.ExcelVO" resultType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml selectExcelStatusMonthList 월별매핑 목록 조회 */
+SELECT A.COM_YM			/*	마감월	VARCHAR2(6) */
+	 , A.EXCEL_CD		/*	엑셀코드	VARCHAR2(5) */
+	 , A.STATUS			/*	업로드상태(ER:에러,SV:저장완료,NA:없음)	VARCHAR2(2) */
+	 , A.IN_CNT			/*	입력개수	NUMBER(22) */
+	 , A.SAVE_CNT		/*	저장개수	NUMBER(22) */
+	 , A.ERR_CNT		/*	에러개수	NUMBER(22) */
+	 , A.EXCEL_FILE_NO	/*	엑셀파일번호	VARCHAR2(40) */
+	 , A.NO_FILE_YN		/*	미입수여부	VARCHAR2(1) */
+	 , A.IN_EMP_CD		/*	입력자사번	VARCHAR2(20) */
+	 , A.IN_DTM			/*	입력일시	TIMESTAMP(6)(11) */
+	 , A.UP_EMP_CD		/*	수정자사번	VARCHAR2(20) */
+	 , A.UP_DTM			/*	수정일시	TIMESTAMP(6)(11) */
+	 , A.MB_ID			/*	회원사ID	VARCHAR2(20) */
+  FROM TBSY_EXCEL_STATUS_MONTH A
+<where>
+   AND A.COM_YM   = #{COM_YM}
+   AND A.MB_ID    = #{MB_ID}
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(EXCEL_CD)'>   
+   AND A.EXCEL_CD = #{EXCEL_CD}
+</if>
+</where> 
+</select>
+
+<!-- 월별업로드상태 입력 -->
+<insert id="insertExcelStatusMonth" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml insertExcelStatusMonth 월별매핑 입력 */
+INSERT INTO TBSY_EXCEL_STATUS_MONTH (
+	   COM_YM			/*	마감월	VARCHAR2(6) */
+	 , EXCEL_CD			/*	엑셀코드	VARCHAR2(5) */
+	 , STATUS			/*	업로드상태(ER:에러,SV:저장완료,NA:없음)	VARCHAR2(2) */
+	 , IN_CNT			/*	입력개수	NUMBER(22) */
+	 , SAVE_CNT			/*	저장개수	NUMBER(22) */
+	 , ERR_CNT			/*	에러개수	NUMBER(22) */
+	 , EXCEL_FILE_NO	/*	엑셀파일번호	VARCHAR2(40) */
+	 , NO_FILE_YN		/*	미입수여부	VARCHAR2(1) */
+	 , IN_EMP_CD		/*	입력자사번	VARCHAR2(20) */
+	 , IN_DTM			/*	입력일시	TIMESTAMP(6)(11) */
+	 , UP_EMP_CD		/*	수정자사번	VARCHAR2(20) */
+	 , UP_DTM			/*	수정일시	TIMESTAMP(6)(11) */
+	 , MB_ID			/*	회원사ID	VARCHAR2(20) */
+) VALUES (
+	   #{COM_YM}			/*	마감월	VARCHAR2(6) */
+	 , #{EXCEL_CD}			/*	엑셀코드	VARCHAR2(5) */
+	 , #{STATUS}			/*	업로드상태(ER:에러,SV:저장완료,NA:없음)	VARCHAR2(2) */
+	 , #{IN_CNT}			/*	입력개수	NUMBER(22) */
+	 , #{SAVE_CNT}			/*	저장개수	NUMBER(22) */
+	 , #{ERR_CNT}			/*	에러개수	NUMBER(22) */
+	 , #{EXCEL_FILE_NO}		/*	엑셀파일번호	VARCHAR2(40) */
+	 , #{NO_FILE_YN}		/*	미입수여부	VARCHAR2(1) */
+	 , #{IN_EMP_CD}			/*	입력자사번	VARCHAR2(20) */
+	 , SYSDATE				/*	입력일시	TIMESTAMP */
+	 , #{UP_EMP_CD}			/*	수정자사번	VARCHAR2(20) */
+	 , SYSDATE				/*	수정일시	TIMESTAMP */
+	 , #{MB_ID}				/*	회원사ID	VARCHAR2(20) */
+)
+</insert>
+
+<!-- 월별업로드상태 수정 -->
+<insert id="updateExcelStatusMonth" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml updateExcelStatusMonth 월별매핑 수정 */
+UPDATE TBSY_EXCEL_STATUS_MONTH
+   SET UP_EMP_CD		= #{UP_EMP_CD} 		/*	수정자사번	VARCHAR2(20) */
+	 , UP_DTM			= SYSDATE 			/*	수정일시	TIMESTAMP(6)(11) */
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(EXCEL_CD)'>	 	 
+	 , EXCEL_CD			= #{EXCEL_CD} 		/*	엑셀코드	VARCHAR2(5) */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(STATUS)'>	 	 
+	 , STATUS			= #{STATUS} 		/*	업로드상태(ER:에러,SV:저장완료,NA:없음)	VARCHAR2(2) */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(IN_CNT)'>	 	 
+	 , IN_CNT			= #{IN_CNT} 		/*	입력개수	NUMBER(22) */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SAVE_CNT)'>	 	 
+	 , SAVE_CNT			= #{SAVE_CNT} 		/*	저장개수	NUMBER(22) */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(ERR_CNT)'>	 	 
+	 , ERR_CNT			= #{ERR_CNT} 		/*	에러개수	NUMBER(22) */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(EXCEL_FILE_NO)'>	 	 
+	 , EXCEL_FILE_NO	= #{EXCEL_FILE_NO} 	/*	엑셀파일번호	VARCHAR2(40) */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(NO_FILE_YN)'>	 	 
+	 , NO_FILE_YN		= #{NO_FILE_YN} 	/*	미입수여부	VARCHAR2(1) */
+</if>
+<where>
+   AND COM_YM   = #{COM_YM}
+   AND MB_ID    = #{MB_ID}
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(EXCEL_CD)'>   
+   AND EXCEL_CD = #{EXCEL_CD}
+</if>
+</where>
+</insert>
+
+<update id="mergeDataStatusMonth" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml id="mergeDataStatusMonth" 월별업로드상태 입력 or 수정 */
+MERGE INTO TBSY_EXCEL_STATUS_MONTH A
+USING DUAL
+ON (
+	A.MB_ID = #{MB_ID}
+AND A.COM_YM = #{COM_YM}
+AND A.EXCEL_CD = #{EXCEL_CD}
+)
+WHEN MATCHED THEN
+	UPDATE
+	   SET UP_EMP_CD = #{UP_EMP_CD}
+	     , UP_DTM = SYSDATE
+		 , STATUS = #{STATUS}			/*  업로드상태(ER:에러,SV:저장완료,NA:없음)  VARCHAR2(2) */
+		 , IN_CNT = #{IN_CNT}			/*  입력개수  NUMBER(22) */
+		 , SAVE_CNT = #{SAVE_CNT}		/*  저장개수  NUMBER(22) */
+		 , ERR_CNT = #{ERR_CNT}			/*  에러개수  NUMBER(22) */
+		 , EXCEL_FILE_NO = #{EXCEL_FILE_NO}  /*  엑셀파일번호  VARCHAR2(40) */
+		 , NO_FILE_YN = #{NO_FILE_YN}	/*  미입수여부 VARCHAR2(1) */
+WHEN NOT MATCHED THEN
+	INSERT
+		 ( COM_YM			/*	마감월	VARCHAR2(6) */
+		 , EXCEL_CD			/*	엑셀코드	VARCHAR2(5) */
+		 , STATUS			/*	업로드상태(ER:에러,SV:저장완료,NA:없음)	VARCHAR2(2) */
+		 , IN_CNT			/*	입력개수	NUMBER(22) */
+		 , SAVE_CNT			/*	저장개수	NUMBER(22) */
+		 , ERR_CNT			/*	에러개수	NUMBER(22) */
+		 , EXCEL_FILE_NO	/*	엑셀파일번호	VARCHAR2(40) */
+		 , NO_FILE_YN		/*	미입수여부	VARCHAR2(1) */
+		 , IN_EMP_CD		/*	입력자사번	VARCHAR2(20) */
+		 , IN_DTM			/*	입력일시	TIMESTAMP(6)(11) */
+		 , MB_ID			/*	회원사ID	VARCHAR2(20) */
+		 )
+	VALUES
+		 ( #{COM_YM}			/*	마감월	VARCHAR2(6) */
+		 , #{EXCEL_CD}			/*	엑셀코드	VARCHAR2(5) */
+		 , #{STATUS}			/*	업로드상태(ER:에러,SV:저장완료,NA:없음)	VARCHAR2(2) */
+		 , #{IN_CNT}			/*	입력개수	NUMBER(22) */
+		 , #{SAVE_CNT}			/*	저장개수	NUMBER(22) */
+		 , #{ERR_CNT}			/*	에러개수	NUMBER(22) */
+		 , #{EXCEL_FILE_NO}		/*	엑셀파일번호	VARCHAR2(40) */
+		 , #{NO_FILE_YN}		/*	미입수여부	VARCHAR2(1) */
+		 , #{IN_EMP_CD}			/*	입력자사번	VARCHAR2(20) */
+		 , SYSDATE				/*	입력일시	TIMESTAMP */
+		 , #{MB_ID}				/*	회원사ID	VARCHAR2(20) */
+		 )
+</update>
+
+<!-- 월별업로드상태 삭제 -->
+<delete id="deleteExcelStatusMonth" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml deleteExcelStatusMonth 월별매핑 삭제 */
+DELETE TBSY_EXCEL_STATUS_MONTH
+<where>
+   AND A.COM_YM   = #{COM_YM}
+   AND A.MB_ID    = #{MB_ID}
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(EXCEL_CD)'>   
+   AND A.EXCEL_CD = #{EXCEL_CD}
+</if>
+</where>
+</delete>
+
+<!-- 월별엑셀업로드 리스트 조회 -->
+<select id="excelUploadMonthList" parameterType="kr.co.fw.common.excel.ExcelVO" resultType="Hmap">
+/* excel-mapper.xml id="excelUploadMonthList" 월별엑셀업로드 리스트 조회 */
+SELECT AA.COM_YM                        /* 업적년월 VARCHAR2(6)  */
+     , AA.MB_ID                         /* 제휴사코드 VARCHAR2(3) */
+     , AA.INSCO_CD                      /* 원수사코드 VARCHAR2(3) */
+     , AA.INSCO_NM						/* 원수사명     VARCHAR2(20)    */
+     , AA.EXCEL_CD                      /* 입력데이타(EXCEL) 코드 VARCHAR2(5) */
+     , AA.EXCEL_NM                      /* 입력데이타(EXCEL) 명 VARCHAR2(30)  */
+     , AA.COM_CD_GBN                    /* 수수료코드구분 VARCHAR2(1) */
+     , CM1.CD_VL_NM AS COM_CD_GBN		/* 수수료코드구분명 */
+     , AA.DATA_CTG						/* 업무영역코드    VARCHAR2(10)    */
+     , CM2.CD_VL_NM AS DATA_CTG_NM		/* 업무영역명  */
+     , AA.TABLE_NAME					/* 업로드 테이블	VARCHAR2(30)	*/
+     , NVL(AA.STATUS, 'NA') AS STATUS   /* 저장상태(NA:없음,SV:저장완료,ER:에러건있음) VARCHAR2(2) */
+     , NVL(AA.IN_CNT, 0) AS IN_CNT      /* 입수데이타(EXCEL)건수 NUMBER(8,0)      */
+     , NVL(AA.SAVE_CNT, 0) AS SAVE_CNT  /* 저장건수 NUMBER(8,0) */
+     , NVL(AA.ERR_CNT, 0) AS ERR_CNT    /* 에러건수 NUMBER(8,0) */
+     , AA.NO_FILE_YN                    /* 미입수여부 VARCHAR2(1) */
+     , AA.EXCEL_FILE_NO                 /* 업로드 엑셀 파일번호 VARCHAR2(40) */
+     , BB.FILE_PATH                     /* 파일경로(절대경로) VARCHAR2(300) */
+     , BB.FILE_URL                      /* 파일URL VARCHAR2(300) */
+     , BB.FILE_SIZE                     /* 파일사이즈  NUMBER(12,0)     */
+     , BB.FILE_NM                       /* 원본파일명  VARCHAR2(300)    */
+     , AA.SORT_NO                       /* 정렬순서  NUMBER(3)        */
+     , AA.DESCRIPTION                   /* 설명 VARCHAR2(1000)   */
+  FROM (SELECT NVL(B.COM_YM, #{COM_YM}) AS COM_YM	/* 업적년월 VARCHAR2(6)  */
+             , A.MB_ID                          /* 제휴사코드 VARCHAR2(3) */
+             , A.INSCO_CD                       /* 원수사코드 VARCHAR2(3) */
+             , C.INSCO_NM						/* 원수사명     VARCHAR2(20)    */
+             , A.EXCEL_CD                       /* 입력데이타(EXCEL) 코드 VARCHAR2(5) */
+             , A.EXCEL_NM                       /* 입력데이타(EXCEL) 명 VARCHAR2(30)  */
+             , A.COM_CD_GBN                     /* 수수료코드구분 VARCHAR2(1) */
+             , A.DATA_CTG						/* 업무영역코드    VARCHAR2(10)    */
+             , A.TABLE_NAME						/* 업로드 테이블	VARCHAR2(30)	*/
+             , NVL(B.STATUS, 'NA') AS STATUS    /* 저장상태(NA:없음,SV:저장완료,ER:에러건있음) VARCHAR2(2) */
+             , NVL(B.IN_CNT, 0) AS IN_CNT       /* 입수데이타(EXCEL)건수 NUMBER(8,0)      */
+             , NVL(B.SAVE_CNT, 0) AS SAVE_CNT   /* 저장건수 NUMBER(8,0) */
+             , NVL(B.ERR_CNT, 0) AS ERR_CNT     /* 에러건수 NUMBER(8,0) */
+             , B.NO_FILE_YN                     /* 미입수여부 VARCHAR2(1) */
+             , B.EXCEL_FILE_NO                  /* 업로드 엑셀 파일번호 VARCHAR2(40) */
+             , A.SORT_NO                        /* 정렬순서  NUMBER(3)  */
+             , A.DESCRIPTION                    /* 설명 VARCHAR2(1000)  */
+          FROM TBSY_EXCEL_MST A
+          LEFT OUTER JOIN TBSY_EXCEL_STATUS_MONTH B
+            ON A.MB_ID = B.MB_ID
+           AND A.EXCEL_CD = B.EXCEL_CD
+         INNER JOIN (SELECT 'ALL' AS INSCO_CD
+                          , '공통' AS INSCO_NM
+                       FROM DUAL
+                     UNION ALL
+                     SELECT INSCO_CD
+                          , INSCO_NM
+                       FROM TBCM_INSCO
+                      WHERE USE_YN = 'Y'	/* 사용중인 원수사만 나오도록 */
+                        AND MB_ID = #{MB_ID}) C
+            ON A.INSCO_CD = C.INSCO_CD ) AA
+  LEFT OUTER JOIN TBSY_EXCEL_UPLOAD_TABLE_MST TAB
+    ON AA.MB_ID = TAB.MB_ID
+   AND AA.DATA_CTG = TAB.DATA_CTG
+   AND AA.TABLE_NAME = TAB.TABLE_NAME
+  LEFT OUTER JOIN TBSY_FILE_INFO BB
+    ON AA.MB_ID = BB.MB_ID
+   AND AA.EXCEL_FILE_NO = BB.FILE_NO
+  LEFT OUTER JOIN (SELECT * 
+  					 FROM TBCM_COMMON_CODE
+  					WHERE GRP_CMM_CD = 'COM_CD_GBN') CM1
+    ON AA.MB_ID = CM1.MB_ID
+   AND AA.COM_CD_GBN = CM1.CD_VL
+  LEFT OUTER JOIN (SELECT * 
+  					 FROM TBCM_COMMON_CODE
+  					WHERE GRP_CMM_CD = 'DATA_CTG') CM2
+    ON AA.MB_ID = CM2.MB_ID
+   AND AA.DATA_CTG = CM2.CD_VL
+ WHERE AA.MB_ID = #{MB_ID}
+  <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(COM_YM)">
+   AND AA.COM_YM = #{COM_YM}
+  </if>
+  <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(INSCO_CD)">
+   AND AA.INSCO_CD = #{INSCO_CD}
+  </if>
+  <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(DATA_CTG)">
+   AND AA.DATA_CTG = #{DATA_CTG}
+  </if>
+  <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(TABLE_NAME)">
+   AND AA.TABLE_NAME = #{TABLE_NAME}
+  </if>
+ORDER BY AA.INSCO_CD, AA.EXCEL_CD, AA.SORT_NO
+</select>
+
+<!-- 엑셀 업로드 테이블 관리 리스트 조회 -->
+<select id="selectUploadTableMst" parameterType="kr.co.fw.common.excel.ExcelVO" resultType="Hmap">
+/* excel-mapper.xml id="selectUploadTableMst" 엑셀 업로드 테이블 관리 리스트 조회 */
+SELECT A.MB_ID		/* 회사코드 VARCHAR2(20) */
+	 , A.DATA_CTG		/* 업무구분 VARCHAR2(10) */
+	 , CM1.CD_VL_NM AS DATA_CTG_NM	/* 업무구분명 */
+	 , A.TABLE_NAME	/* 테이블명 VARCHAR2(30) */
+	 , TAB.COMMENTS AS TABLE_COMMENT	/* 테이블 코멘트(설명) */
+	 , A.USE_YN		/* 사용여부 VARCHAR2(1) */
+	 , A.SORT_NO	/* 정렬순서 NUMBER(22) */
+	 , DECODE(A.UP_EMP_CD, NULL, A.IN_EMP_CD, A.UP_EMP_CD) AS MANAGE_EMP_CD
+	 , TO_CHAR(DECODE(A.UP_DTM, NULL, A.IN_DTM, A.UP_DTM), 'YYYY-MM-DD') AS MANAGE_DTM
+  FROM TBSY_EXCEL_UPLOAD_TABLE_MST A
+  LEFT OUTER JOIN (SELECT *
+ 			   		 FROM TBCM_COMMON_CODE
+ 			  		WHERE GRP_CMM_CD = 'DATA_CTG') CM1
+    ON A.MB_ID = CM1.MB_ID
+   AND A.DATA_CTG = CM1.CD_VL
+ INNER JOIN ALL_TAB_COMMENTS TAB
+    ON A.TABLE_NAME = TAB.TABLE_NAME
+ WHERE A.MB_ID = #{MB_ID}
+   AND TAB.OWNER = 'PAPYRUS'
+ <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(DATA_CTG)">
+   AND A.DATA_CTG = #{DATA_CTG}
+ </if>
+ORDER BY A.SORT_NO
+</select>
+
+<!-- 엑셀 업로드 테이블 입력 -->
+<insert id="insertUploadTableMst" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml id="insertUploadTableMst" 엑셀업로드 관리 테이블 입력 */
+INSERT
+  INTO TBSY_EXCEL_UPLOAD_TABLE_MST
+     ( MB_ID     /* 회사코드 VARCHAR2(20) */
+     , DATA_CTG  /* 업무구분 VARCHAR2(10) */
+     , TABLE_NAME     /* 테이블명 VARCHAR2(30) */
+     , USE_YN    /* 사용여부 VARCHAR2(1) */
+     , SORT_NO   /* 정렬순서 NUMBER(22) */
+     , IN_EMP_CD /* 입력자사번 VARCHAR2(20) */
+     , IN_DTM    /* 입력일시 DATE(7) */
+     )
+VALUES
+     ( #{MB_ID}
+     , #{DATA_CTG}
+     , #{TABLE_NAME}
+     , #{USE_YN}
+     , #{SORT_NO}
+     , #{IN_EMP_CD}
+     , SYSDATE
+     )
+</insert>
+
+<update id="updateUploadTableMst" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml id="updateUploadTableMst" 엑셀업로드 관리 테이블 수정 */
+UPDATE TBSY_EXCEL_UPLOAD_TABLE_MST
+   SET DATA_CTG = #{DATA_CTG}		/* 업무구분 VARCHAR2(10) */
+	 , USE_YN = #{USE_YN}			/* 사용여부 VARCHAR2(1) */
+	 , SORT_NO = #{SORT_NO}			/* 정렬순서 NUMBER(22) */
+	 , UP_EMP_CD = #{UP_EMP_CD}		/* 수정자사번 VARCHAR2(20) */
+	 , UP_DTM = SYSDATE				/* 수정일시 DATE(7) */
+ WHERE MB_ID = #{MB_ID}
+   AND TABLE_NAME = #{TABLE_NAME}
+</update>
+
+<delete id="deleteUploadTableMst" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml id="deleteUploadTableMst" 엑셀업로드 관리 테이블 사용안함처리 */
+UPDATE TBSY_EXCEL_UPLOAD_TABLE_MST
+   SET USE_YN = 'N'			/* 사용여부 VARCHAR2(1) */
+ WHERE MB_ID = #{MB_ID}
+   AND TABLE_NAME = #{TABLE_NAME}
+</delete>
+
+<select id="uploadTabColMngList" parameterType="kr.co.fw.common.excel.ExcelVO" resultType="Hmap">
+/* excel-mapper.xml id="uploadTabColMngList" 엑셀업로드 관리 테이블 컬럼 조회 */
+SELECT TB3.TABLE_NAME		/* 테이블명 */
+	 , TB3.COLUMN_NAME		/* 컬럼명 		*/
+     , NVL(TB5.COLUMN_COMMENT, TB3.COMMENTS) AS COLUMN_COMMENT	/* 컬럼 코멘트	*/
+     , TB3.DATA_TYPE		/* 컬럼 타입	*/
+     , TB3.DATA_LENGTH		/* 컬럼 길이	*/
+     , TB3.NULLABLE			/* 컬럼 널 여부	*/
+     , CASE
+     	   WHEN TB3.NULLABLE = 'N' THEN 'Y'
+     	   ELSE 'N'
+       END AS REQ_YN		/* 등록 할 때 맵핑마스터(가이드) 등록해야 하기 때문에 NULLABLE이 N이면 필수값으로 세팅하기 위한 값		*/
+     , NVL(TB5.USE_YN,'Y') AS USE_YN	/* 컬럼 맵핑 사용 여부 */
+     , CASE
+           WHEN TB5.SORT_NO IS NOT NULL THEN TB5.SORT_NO
+           ELSE TB3.COLUMN_ID
+       END AS SORT_NO		/* 정렬번호 */
+     , CASE
+           WHEN TB5.COLUMN_NAME IS NULL THEN 'NON_REGI'								/* 미등록컬럼 */
+           ELSE 'REGI'																/* 등록된컬럼 */
+       END AS BIGO
+  FROM (SELECT TB1.TABLE_NAME
+             , TB1.COLUMN_ID
+             , TB1.COLUMN_NAME
+             , TB2.COMMENTS
+             , TB1.DATA_TYPE
+             , TB1.DATA_LENGTH
+             , TB1.NULLABLE
+          FROM ALL_TAB_COLUMNS TB1
+             , ALL_COL_COMMENTS TB2
+         WHERE TB1.TABLE_NAME = TB2.TABLE_NAME
+           AND TB1.COLUMN_NAME = TB2.COLUMN_NAME
+           AND TB2.OWNER = 'PAPYRUS'
+           AND TB1.OWNER = 'PAPYRUS'
+           /* 자동으로 입력되는 컬럼이나 사용자가 입력해야하는 데이터가 아닌 컬럼 제외 */
+           AND TB1.COLUMN_NAME NOT IN ('MB_ID', 'SEQ', 'IN_EMP_CD', 'IN_DTM', 'UP_EMP_CD', 'UP_DTM', 'SORT_NO', 'USE_YN', 'IN_IP')
+      ORDER BY TB1.TABLE_NAME
+             , TB1.COLUMN_ID) TB3
+ INNER JOIN TBSY_EXCEL_UPLOAD_TABLE_MST TB4
+         ON TB3.TABLE_NAME = TB4.TABLE_NAME
+        AND TB3.TABLE_NAME = #{TABLE_NAME}
+        AND TB4.MB_ID = #{MB_ID}
+ LEFT OUTER JOIN TBSY_EXCEL_UPLOAD_COLUMN_MST TB5
+         ON TB4.MB_ID = TB5.MB_ID
+        AND TB4.TABLE_NAME = TB5.TABLE_NAME
+        AND TB3.COLUMN_NAME = TB5.COLUMN_NAME
+ORDER BY TB4.SORT_NO, NVL(TB5.SORT_NO, TB3.COLUMN_ID)
+</select>
+
+<update id="insertOrUpdateUploadTabCol" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml id="insertUploadTabCol" 엑셀업로드 맵핑 컬럼 추가  OR 수정*/
+MERGE INTO TBSY_EXCEL_UPLOAD_COLUMN_MST A
+USING DUAL
+ON (
+	A.MB_ID = #{MB_ID}
+AND A.TABLE_NAME = #{TABLE_NAME}
+AND A.COLUMN_NAME = #{COLUMN_NAME}
+)
+WHEN NOT MATCHED THEN
+	INSERT
+	  	 ( MB_ID     /* 회사코드 VARCHAR2(20) */
+		 , TABLE_NAME     /* 테이블명 VARCHAR2(30) */
+		 , COLUMN_NAME    /* 컬럼명 VARCHAR2(30) */
+		 , COLUMN_COMMENT /* 컬럼코멘트 VARCHAR2(30) */
+		 , DATA_TYPE /* 데이터유형 VARCHAR2(20) */
+		 , NULLABLE	 /* 빈값허용유무 VARCHAR2(1) */
+		 , USE_YN    /* 사용여부 VARCHAR2(1) */
+		 , SORT_NO   /* 정렬순서 NUMBER(22) */
+		 , IN_EMP_CD /* 입력자사번 VARCHAR2(20) */
+		 , IN_DTM    /* 입력일시 DATE(7) */
+	  	 )
+	VALUES
+		 ( #{MB_ID}
+		 , #{TABLE_NAME}
+		 , #{COLUMN_NAME}
+		 , #{COLUMN_COMMENT}
+		 , #{DATA_TYPE}
+		 , #{NULLABLE}
+		 , #{USE_YN}
+		 , #{SORT_NO}
+		 , #{IN_EMP_CD}
+		 , SYSDATE
+		 )
+WHEN MATCHED THEN
+	UPDATE
+	   SET COLUMN_COMMENT = #{COLUMN_COMMENT}   /* 컬럼코멘트 VARCHAR2(30) */
+		 , USE_YN = #{USE_YN}    /* 사용여부 VARCHAR2(1) */
+		 , SORT_NO = #{SORT_NO}  /* 정렬순서 NUMBER(22) */
+		 , UP_EMP_CD = #{UP_EMP_CD}   /* 수정자 VARCHAR2(20) */
+		 , UP_DTM = SYSDATE    /* 수정일시 DATE(7) */
+</update>
+
+<update id="insertOrUpdateMapMst" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml id="insertOrUpdateMapMst" 맵핑컬럼 입력 시 맵핑마스터 관리 입력 */
+MERGE INTO TBSY_EXCEL_DATA_MAP_MST AA
+USING (
+       SELECT A.COLUMN_NAME
+            , A.COLUMN_COMMENT
+            , B.EXCEL_CD
+            , A.SORT_NO
+            , A.MB_ID
+         FROM TBSY_EXCEL_UPLOAD_COLUMN_MST A
+        INNER JOIN TBSY_EXCEL_MST B
+           ON A.MB_ID = B.MB_ID
+          AND A.TABLE_NAME = B.TABLE_NAME
+        WHERE A.MB_ID = #{MB_ID}
+          AND A.TABLE_NAME = #{TABLE_NAME}
+          AND A.USE_YN = 'Y'						--사용이 Y인것만 입력
+          AND A.COLUMN_NAME = #{COLUMN_NAME}) BB
+ON (
+    AA.MB_ID = #{MB_ID}
+AND AA.MB_ID = BB.MB_ID
+AND AA.EXCEL_CD = BB.EXCEL_CD
+AND AA.DATA_CD = BB.COLUMN_NAME
+)
+WHEN NOT MATCHED THEN
+    INSERT
+         ( MB_ID
+         , EXCEL_CD
+         , DATA_CD
+         , GUIDE
+         , REQ_YN
+         , FIX_VAL
+         , DEFAULT_VAL
+         , SORT_NO
+         , IN_EMP_CD
+         , IN_DTM
+         )
+    VALUES
+         ( BB.MB_ID
+         , BB.EXCEL_CD
+         , BB.COLUMN_NAME
+         , BB.COLUMN_COMMENT
+         , #{REQ_YN}
+         , ''
+         , ''
+         , BB.SORT_NO
+         , #{IN_EMP_CD}
+         , SYSDATE
+         )
+</update>
+
+<update id="updateUploadTabCol" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml id="updateUploadTabCol" 엑셀업로드 맵핑 컬럼 수정 */
+UPDATE TBSY_EXCEL_UPLOAD_COLUMN_MST
+   SET COLUMN_NAME = #{COLUMN_NAME}    /* 컬럼명 VARCHAR2(30) */
+	 , COLUMN_COMMENT = #{COLUMN_COMMENT}   /* 컬럼코멘트 VARCHAR2(30) */
+	 , USE_YN = #{USE_YN}    /* 사용여부 VARCHAR2(1) */
+	 , SORT_NO = #{SORT_NO}  /* 정렬순서 NUMBER(22) */
+	 , UP_EMP_CD = #{UP_EMP_CD}   /* 수정자 VARCHAR2(20) */
+	 , UP_DTM = SYSDATE    /* 수정일시 DATE(7) */
+ WHERE MB_ID = #{MB_ID}
+   AND TABLE_NAME = #{TABLE_NAME}
+</update>
+
+<delete id="deleteUploadTabCol" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml id="deleteUploadTabCol" 엑셀업로드 맵핑 컬럼 사용안함처리 */
+UPDATE TBSY_EXCEL_UPLOAD_COLUMN_MST
+   SET USE_YN = 'N'
+ WHERE MB_ID = #{MB_ID}
+   AND TABLE_NAME = #{TABLE_NAME}
+</delete>
+
+<select id="selectTableColumn" parameterType="kr.co.fw.common.excel.ExcelVO" resultType="Hmap">
+/* excel-mapper.xml id="selectTableColumn" 엑셀업로드 관리 테이블 컬럼 조회 */
+SELECT COLUMN_NAME
+     , COLUMN_COMMENT
+  FROM TBSY_EXCEL_UPLOAD_COLUMN_MST
+ WHERE MB_ID = #{MB_ID}
+   AND TABLE_NAME = #{TABLE_NAME}
+   AND USE_YN = 'Y'
+ORDER BY SORT_NO
+</select>
+
+<select id="selectUploadTable" parameterType="kr.co.fw.common.excel.ExcelVO" resultType="Hmap">
+/* excel-mapper.xml id="selectUploadTable" 엑셀업로드 관리 테이블 조회 */
+SELECT A.TABLE_NAME
+     , A.TABLE_NAME||' : '||B.COMMENTS AS TABLE_COMMENT
+  FROM TBSY_EXCEL_UPLOAD_TABLE_MST A
+ INNER JOIN USER_TAB_COMMENTS B
+    ON A.TABLE_NAME = B.TABLE_NAME
+ WHERE A.MB_ID = #{MB_ID}
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(DATA_CTG)">
+   AND A.DATA_CTG = #{DATA_CTG}
+</if>
+ORDER BY SORT_NO
+</select>
+
+<delete id="deleteMonthExcelTemp" parameterType="kr.co.fw.common.excel.ExcelVO">
+/* excel-mapper.xml id="deleteMonthExcelTemp" 월별 엑셀 TEMP 데이터 삭제 */
+DELETE
+  FROM TBSY_EXCEL_DATA_MONTH
+ WHERE MB_ID = #{MB_ID}
+   AND COM_YM = #{COM_YM}
+   AND EXCEL_CD = #{EXCEL_CD}
+   AND DATA_CTG = #{DATA_CTG}
+</delete>
+
+<select id="getExcelDataMapMonth" parameterType="kr.co.fw.common.excel.ExcelVO" resultType="Hmap">
+/* excel-mapper.xml id="getExcelDataMapMonth" 월별 맵핑 저장 데이터 얻어오기 */
+SELECT A.MB_ID        /* 회원사ID VARCHAR2(20) */
+     , A.COM_YM       /* 마감월 VARCHAR2(6) */
+     , A.EXCEL_CD     /* 엑셀코드 VARCHAR2(5) */
+     , A.DATA_CD      /* 데이터코드(수수료마스터코드) VARCHAR2(20) */
+     , B.COLUMN_COMMENT AS DATA_NM  /* 데이터 코드 명 */
+     , A.COL_CD       /* 컬럼코드 VARCHAR2(4) */
+     , A.ROWSTART_SEQ /* 시작행일련번호 NUMBER(22) */
+     , A.SORT_NO      /* 정렬순서 NUMBER(22) */
+     , B.NULLABLE	  /* 빈값허용유무 VARCHAR2(1) */
+  FROM TBSY_EXCEL_DATA_MAP_MONTH A
+ INNER JOIN TBSY_EXCEL_UPLOAD_COLUMN_MST B
+    ON A.MB_ID = B.MB_ID
+   AND A.DATA_CD = B.COLUMN_NAME
+ WHERE A.MB_ID = #{MB_ID}
+   AND A.COM_YM = #{COM_YM}
+   AND A.EXCEL_CD = #{EXCEL_CD}
+   AND B.TABLE_NAME = #{TABLE_NAME}
+   AND B.USE_YN = 'Y'
+ORDER BY A.SORT_NO
+</select>
+
+<select id="confirmReqColsMap" parameterType="kr.co.fw.common.excel.ExcelVO" resultType="String">
+/* excel-mapping.xml id="confirmReqColsMap" 필수 맵핑 컬럼 확인 */
+SELECT LISTAGG(B.COLUMN_COMMENT, ', ') WITHIN GROUP(ORDER BY A.DATA_CD) AS REQCOLS
+  FROM TBSY_EXCEL_DATA_MAP_MST A
+     , TBSY_EXCEL_UPLOAD_COLUMN_MST B
+     , (SELECT *
+          FROM TBSY_EXCEL_DATA_MAP_MONTH
+         WHERE COM_YM = #{COM_YM}) C
+ WHERE A.EXCEL_CD = #{EXCEL_CD}
+   AND B.TABLE_NAME = #{TABLE_NAME}
+   AND A.DATA_CD = B.COLUMN_NAME
+   AND A.EXCEL_CD = C.EXCEL_CD(+)
+   AND A.DATA_CD = C.DATA_CD(+)
+   AND A.FIX_VAL IS NULL
+   AND A.REQ_YN = 'Y'
+   AND C.DATA_CD IS NULL
+</select>
+
+<insert id="call_PRC_EXCEL_UPLOAD" parameterType="kr.co.fw.common.excel.ExcelVO" statementType="CALLABLE" flushCache="true">
+/* excel-mapper.xml id="call_PRC_EXCEL_UPLOAD"  */
+call PKG_COMMON.PRC_EXCEL_UPLOAD(#{COM_YM}, #{TABLE_NAME}, #{EXCEL_CD}, #{IN_EMP_CD}, #{MB_ID})
+</insert>
+
+<select id="selectExcelInscoList" parameterType="kr.co.fw.common.excel.ExcelVO" resultType="Hmap">
+/* excel-mapper.xml id="selectExcelInscoList" 엑셀 업로드용 원수사 조회 리스트 */
+SELECT '공통' AS INSCO_NM
+     , 'ALL' AS INSCO_CD
+     , 0 AS SORT_NO
+     , #{MB_ID} AS MB_ID
+  FROM DUAL
+UNION ALL
+SELECT INSCO_NM
+     , INSCO_CD
+     , SORT_NO
+     , MB_ID
+  FROM TBCM_INSCO
+ WHERE MB_ID = #{MB_ID}
+   AND USE_YN = 'Y'
+ORDER BY SORT_NO
+</select>
+
+</mapper>

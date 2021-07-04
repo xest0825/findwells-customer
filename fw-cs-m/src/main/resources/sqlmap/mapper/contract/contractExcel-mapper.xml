@@ -1,0 +1,621 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ContractExcel">
+
+<!-- 신계약데이터검증 조회 -->
+<select id="selectNewExcelCheckList" resultType="Hmap" parameterType="NewContractExcelVO">
+/* contractExcel-mapper.xml selectNewExcelCheckList 신계약데이터검증 조회 */
+SELECT TE.COM_YM                         /* 마감월                 VARCHAR2(6)   */
+     , TE.EXCEL_CD                       /* 입력데이타(EXCEL) 코드 VARCHAR2(5)   */
+     , TI.INSCO_CD                       /* 원수사코드 */
+     , TI.INSCO_NM                       /* 원수사명 */
+     , TE.INSPOL_NO AS EXC_INSPOL_NO     /* 엑셀 증권번호          VARCHAR2(30)  */
+     , TC.INSPOL_NO AS ERP_INSPOL_NO
+     , TE.CONT_STATUS AS EXC_CONT_STATUS /* 엑셀 계약상태          VARCHAR2(30)  */
+     , TC.CONT_STATUS AS ERP_CONT_STATUS
+     , TE.MO_CD AS EXC_MO_CD             /* 엑셀 모집인코드        VARCHAR2(20)  */
+     , TC.MO_CD AS ERP_MO_CD
+     , TE.MO_NM AS EXC_MO_NM             /* 엑셀 모집인            VARCHAR2(50)  */
+     , TC.MO_NM AS ERP_MO_NM
+     , TE.PROD_NM AS EXC_PROD_NM         /* 엑셀 상품명            VARCHAR2(200) */
+     , TC.PROD_NM AS ERP_PROD_NM
+     , TE.GEAJA AS EXC_GEAJA             /* 엑셀 계약자            VARCHAR2(50)  */
+     , TC.GEAJA AS ERP_GEAJA
+     , TE.PIABO AS EXC_PIABO             /* 엑셀 피보험자          VARCHAR2(50)  */
+     , TC.PIABO AS ERP_PIABO
+     , TE.CONT_DATE AS EXC_CONT_DATE     /* 엑셀 계약일            VARCHAR2(20)  */
+     , TC.CONT_DATE AS ERP_CONT_DATE
+     , TE.NAPMETHOD AS EXC_NAPMETHOD     /* 엑셀 납입방법          VARCHAR2(20)  */
+     , TC.NAPMETHOD AS ERP_NAPMETHOD
+     , TE.PREM_AMT AS EXC_PREM_AMT       /* 엑셀 보험료            NUMBER(22)    */
+     , TC.PREM_AMT AS ERP_PREM_AMT
+  FROM (SELECT * FROM TBCN_EXCEL_NEW_CHECK_MONTH WHERE MB_ID = #{MB_ID}) TE    /* [CN][신계약] 엑셀/ERP 데이터 검증 */
+  LEFT OUTER JOIN TBCM_INSCO TI /* [CM][공통] 원수사 */
+    ON TE.MB_ID = TI.MB_ID
+   AND SUBSTR(TE.EXCEL_CD, 1, 3) = TI.INSCO_CD
+  LEFT OUTER JOIN
+  (SELECT A.MB_ID             /* 회원사ID               VARCHAR2(20)  */
+        , A.INSPOL_NO         /* 증권번호                                                                       VARCHAR2(40)   */
+        , A.CONT_STATUS       /* 계약상태(GRP_CMM_CD = CONT_STATUS)               VARCHAR2(20)   */
+        , A.MO_CD             /* 모집인코드                                                                     VARCHAR2(20)   */
+        , B.EMP_NM AS MO_NM   /* 모집인 */
+        , A.PROD_NM           /* 상품명                                                                         VARCHAR2(100)  */
+        , A.GEAJA             /* 계약자                                                                         VARCHAR2(100)  */
+        , A.PIABO             /* 피보험자                                                                       VARCHAR2(100)  */
+        , A.CONT_DATE         /* 계약일자                                                                       VARCHAR2(10)   */
+        , A.NAPMETHOD         /* 납입방법(GRP_CMM_CD = NAPMETHOD)                 VARCHAR2(20)   */
+        , A.PREM_AMT          /* 보험료                                                                         NUMBER(22)     */
+     FROM TBCN_CONTRACT A /* [CN][계약] 계약관리 */
+     LEFT OUTER JOIN TBIN_EMPMST B
+       ON A.MB_ID = B.MB_ID
+      AND A.MO_CD = B.EMP_CD
+    WHERE A.MB_ID = #{MB_ID} 
+    <![CDATA[AND NVL(A.DATA_DCD,'I') <> 'D']]>) TC
+    ON TE.MB_ID = TC.MB_ID
+   AND TE.INSPOL_NO = TC.INSPOL_NO
+ WHERE TE.MB_ID = #{MB_ID}
+   AND TE.COM_YM = #{COM_YM}
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(INSCO_CD)'>
+   AND TI.INSCO_CD IN <foreach collection="INSCO_CD_ARR"  item="item" open="("  separator="," close=")">#{item}</foreach>
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(INSPOL_NO)'>
+   AND TE.INSPOL_NO = #{INSPOL_NO}
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(CHECK_ITEM,"INSPOL_NO")'>
+   AND (TE.INSPOL_NO != TC.INSPOL_NO OR TC.INSPOL_NO IS NULL)
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(CHECK_ITEM,"CONT_STATUS")'>
+   AND TE.CONT_STATUS != TC.CONT_STATUS
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(CHECK_ITEM,"MO_CD")'>
+   AND TE.MO_CD != TC.MO_CD
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(CHECK_ITEM,"MO_NM")'>
+   AND TE.MO_NM != TC.MO_NM
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(CHECK_ITEM,"PROD_NM")'>
+   AND TE.PROD_NM != TC.PROD_NM
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(CHECK_ITEM,"GEAJA")'>
+   AND TRIM(REPLACE(REPLACE(TE.GEAJA, '주식회사', ''), '(주)', '')) != TRIM(REPLACE(REPLACE(TC.GEAJA, '주식회사', ''), '(주)', ''))
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(CHECK_ITEM,"PIABO")'>
+   AND TE.PIABO != TC.PIABO
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(CHECK_ITEM,"CONT_DATE")'>
+   AND REGEXP_REPLACE(TE.CONT_DATE,'[^0-9]','') != REGEXP_REPLACE(TC.CONT_DATE,'[^0-9]','')
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(CHECK_ITEM,"NAPMETHOD")'>
+   AND TE.NAPMETHOD != TC.NAPMETHOD
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(CHECK_ITEM,"PREM_AMT")'>
+   AND TE.PREM_AMT != TC.PREM_AMT
+</if>
+</select>
+
+<!-- 계약상태데이터검증 조회 -->
+<select id="selectStatusExcelCheckList" resultType="Hmap" parameterType="NewContractExcelVO">
+/* contractExcel-mapper.xml selectStatusExcelCheckList 계약상태데이터검증 조회 */
+SELECT TE.COM_YM         /* 마감월                 VARCHAR2(6)  */
+     , TE.EXCEL_CD       /* 입력데이타(EXCEL) 코드 VARCHAR2(5)  */
+     , TI.INSCO_CD                       /* 원수사코드 */
+     , TI.INSCO_NM                       /* 원수사명 */
+     , TE.INSPOL_NO AS EXC_INSPOL_NO     /* 엑셀 증권번호          VARCHAR2(30)  */
+     , TC.INSPOL_NO AS ERP_INSPOL_NO
+     , TE.CONT_STATUS AS EXC_CONT_STATUS /* 엑셀 계약상태          VARCHAR2(30)  */
+     , TC.CONT_STATUS AS ERP_CONT_STATUS
+     , TE.NAPCNT AS EXC_NAPCNT           /* 엑셀 납입회차          NUMBER(22)   */
+     , NVL(TC.NAPCNT, 1) AS ERP_NAPCNT
+     , TE.CONT_DATE AS EXC_CONT_DATE     /* 엑셀 계약일            VARCHAR2(20)  */
+     , TC.CONT_DATE AS ERP_CONT_DATE
+     , TE.NAP_MONTH AS EXC_NAP_MONTH     /* 엑셀 납입월            VARCHAR2(10) */
+     , TC.NAP_MONTH AS ERP_NAP_MONTH
+     , TE.NAP_DATE AS EXC_NAP_DATE       /* 엑셀 납입일자          VARCHAR2(10) */
+     , TC.NAP_DATE AS ERP_NAP_DATE
+     , TE.PREM_AMT AS EXC_PREM_AMT       /* 엑셀 보험료            NUMBER(22)    */
+     , TC.PREM_AMT AS ERP_PREM_AMT
+     , TE.STATUS_DATE AS EXC_STATUS_DATE /* 엑셀 상태변경일        VARCHAR2(10) */
+     , TC.STATUS_DATE AS ERP_STATUS_DATE
+     , TRUNC(MONTHS_BETWEEN(SYSDATE, TO_DATE(TE.CONT_DATE, 'YYYY-MM-DD'))) AS MONTH_NAPCNT /* 당월입금회차 */
+     , CASE WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, TO_DATE(TE.CONT_DATE, 'YYYY-MM-DD'))) = TE.NAPCNT THEN '입금'
+            WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, TO_DATE(TE.CONT_DATE, 'YYYY-MM-DD'))) = (TE.NAPCNT + 1) THEN '미입금'
+            WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, TO_DATE(TE.CONT_DATE, 'YYYY-MM-DD'))) = (TE.NAPCNT + 2) THEN '연체'
+            WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, TO_DATE(TE.CONT_DATE, 'YYYY-MM-DD'))) = (TE.NAPCNT + 3) THEN '당월실효'
+            WHEN TRUNC(MONTHS_BETWEEN(SYSDATE, TO_DATE(TE.CONT_DATE, 'YYYY-MM-DD'))) > (TE.NAPCNT + 3) THEN '기실효'
+            ELSE NULL
+        END AS SU_STATUS                 /* 수금상태 */
+     , SP.PRC_DATA AS PRC_CONT_STATUS     /* 처리 계약상태 */
+  FROM (SELECT * FROM TBCN_EXCEL_STATUS_MONTH WHERE MB_ID = #{MB_ID}) TE  /* [CN][계약] 계약상태 엑셀/ERP 데이터 검증 */
+  LEFT OUTER JOIN TBCM_INSCO TI /* [CM][공통] 원수사 */
+    ON TE.MB_ID = TI.MB_ID
+   AND SUBSTR(TE.EXCEL_CD, 1, 3) = TI.INSCO_CD
+  LEFT OUTER JOIN
+  (SELECT A.MB_ID             /* 회원사ID               VARCHAR2(20)  */
+        , A.INSPOL_NO         /* 증권번호                                                                       VARCHAR2(40)   */
+        , A.CONT_STATUS       /* 계약상태(GRP_CMM_CD = CONT_STATUS)               VARCHAR2(20)   */
+        , A.NAPCNT            /* 납입회차                                                                        NUMBER    */
+        , A.CONT_DATE         /* 계약일자                                                                       VARCHAR2(10)   */
+        , A.NAP_MONTH         /* 납입월                                                                         VARCHAR2(10)    */
+        , A.NAP_DATE          /* 납입일자                                                                       VARCHAR2(10)    */
+        , A.SUGUM_STATUS      /* 수금상태                                                                       VARCHAR2(20)    */
+        , A.PREM_AMT          /* 보험료                                                                         NUMBER(22)     */
+        , A.STATUS_DATE       /* 상태변경일                                                                      VARCHAR2(10)    */
+        , A.GIJUN_DATE        /* 데이터기준일                                                                     VARCHAR2(10)    */
+     FROM TBCN_CONTRACT A /* [CN][계약] 계약관리 */
+    WHERE A.MB_ID = #{MB_ID} <![CDATA[AND NVL(A.DATA_DCD,'I') <> 'D']]>) TC
+    ON TE.MB_ID = TC.MB_ID
+   AND TE.INSPOL_NO = TC.INSPOL_NO
+  LEFT OUTER JOIN SU_PRC_EXCEL_DATA SP	/* [SU][수수료]원수사별 엑셀데이터 => 처리데이터 관리테이블 */
+    ON TE.MB_ID = SP.MB_ID
+   AND SUBSTR(TE.EXCEL_CD, 1, 3) = SP.INSCO_CD
+   AND TE.CONT_STATUS = SP.EXCEL_DATA
+ WHERE TE.MB_ID = #{MB_ID}
+   AND TE.COM_YM = #{COM_YM}
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(INSCO_CD)'>
+   AND TI.INSCO_CD IN <foreach collection="INSCO_CD_ARR"  item="item" open="("  separator="," close=")">#{item}</foreach>
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(INSPOL_NO)'>
+   AND TE.INSPOL_NO = #{INSPOL_NO}
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(CHECK_ITEM,"INSPOL_NO")'>
+   AND (TE.INSPOL_NO != TC.INSPOL_NO OR TC.INSPOL_NO IS NULL)
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(CHECK_ITEM,"CONT_STATUS")'>
+   AND TE.CONT_STATUS != TC.CONT_STATUS
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(CHECK_ITEM,"NAPCNT")'>
+   AND TE.NAPCNT != TC.NAPCNT
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(CHECK_ITEM,"CONT_DATE")'>
+   AND REGEXP_REPLACE(TE.CONT_DATE,'[^0-9]','') != REGEXP_REPLACE(TC.CONT_DATE,'[^0-9]','')
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(CHECK_ITEM,"NAP_MONTH")'>
+   AND REGEXP_REPLACE(TE.NAP_MONTH,'[^0-9]','') != REGEXP_REPLACE(TC.NAP_MONTH,'[^0-9]','')
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(CHECK_ITEM,"NAP_DATE")'>
+   AND REGEXP_REPLACE(TE.NAP_DATE,'[^0-9]','') != REGEXP_REPLACE(TC.NAP_DATE,'[^0-9]','')
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(CHECK_ITEM,"PREM_AMT")'>
+   AND TE.PREM_AMT != TC.PREM_AMT
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(CHECK_ITEM,"STATUS_DATE")'>
+   AND REGEXP_REPLACE(TE.STATUS_DATE,'[^0-9]','') != REGEXP_REPLACE(TC.STATUS_DATE,'[^0-9]','')
+</if>
+</select>
+
+<sql id="selectContractList_SQL">
+/* contractExcel-mapper.xml id="selectContractList" 계약 조회(계약상태관리 메뉴) */
+SELECT A.MB_ID                 /* 회원사ID VARCHAR2(20) */
+     , A.SEQ                   /* 일련번호(TBCN_CONTRACT_FSB_SEQ) NUMBER(22) */
+     , A.INSPOL_NO             /* 증권번호 VARCHAR2(40) */
+     , A.INSCO_CD              /* 원수사코드 VARCHAR2(3) */
+     , INS.INSCO_NM			   /* 원수사명 */
+     , A.PROD_SEQ              /* 상품 일련번호 NUMBER(22) */
+     , A.PROD_NM               /* 상품명 VARCHAR2(100) */
+     , GUN.PROD_KIND1 AS PROD_KIND1
+     , A.PROD_KIND2            /* 상품구분2 VARCHAR2(20) */
+     , GUN.PROD_KIND2 AS PROD_KIND2_NM
+     , A.CONT_DATE             /* 계약일자 VARCHAR2(10) */
+     , A.INSU_STRT_DATE		   /* 계약시작일자 VARCHAR2(10) */
+     , A.INSU_END_DATE		   /* 계약종료일자 VARCHAR2(10) */
+     , A.ACCOUNT_END_DATE	   /* 초기계좌만기일 VARCHAR2(10) */
+     , A.CONT_STATUS           /* 계약상태(GRP_CMM_CD = CONT_STATUS) VARCHAR2(20) */
+     , CM3.CD_VL_NM AS CONT_STATUS_NM
+     , A.NAPCNT                /* 납입회차 NUMBER(22) */
+     , A.SUGUM_STATUS          /* 수금상태 VARCHAR2(20) */
+     , A.NAP_MONTH             /* 납입월 VARCHAR2(10) */
+     , A.NAP_DATE              /* 납입일자 VARCHAR2(10) */
+     , A.STATUS_DATE           /* 상태변경일 VARCHAR2(10) */
+     , A.GIJUN_DATE            /* 데이터기준일 VARCHAR2(10) */
+     , A.NAPMETHOD             /* 납입방법(GRP_CMM_CD = NAPMETHOD) VARCHAR2(20) */
+     , CM2.CD_VL_NM AS NAPMETHOD_NM
+     , A.NAPGI                 /* 납입기간 VARCHAR2(10) */
+     , A.NAPGI_GBN             /* 납입기간구분(GRP_CMM_CD = NAPGI_GBN) VARCHAR2(10) */
+     , CM1.CD_VL_NM AS NAPGI_GBN_NM
+     , A.PREM_AMT              /* 보험료 NUMBER(22) */
+     , A.MON_PREM_AMT          /* 월납보험료 NUMBER(22) */
+     , A.MO_CD
+     , EMP.EMP_NM AS MO_NM
+     , EMP.SCD AS MO_SCD
+     , SCD.SNM AS MO_SNM
+     , SCD.SNMPATH AS MO_SNMPATH
+     , G.CUST_ID AS GEAJA			     /* 계약자ID */
+     , G.CUST_NM AS GEAJA_NM		     /* 계약자이름 */
+     , H.CUST_ID AS PIABO			     /* 피보험자ID */
+     , H.CUST_NM AS PIABO_NM		     /* 피보험자이름 */
+     , I.CUST_ID AS BENEFICIARY		     /* 수익자ID */
+     , I.CUST_NM AS BENEFICIARY_NM	     /* 수익자이름 */
+  FROM TBCN_CONTRACT A
+ INNER JOIN TBIN_EMPMST EMP						/* 모집인 정보 */
+    ON A.MB_ID = EMP.MB_ID
+   AND A.MO_CD = EMP.EMP_CD
+ INNER JOIN (SELECT A.*
+                  , SUBSTR(SYS_CONNECT_BY_PATH(SNM, '>'), 2) AS SNMPATH
+               FROM TBIN_SCD A
+              START WITH PSCD IS NULL
+             CONNECT BY PRIOR SCD = PSCD) SCD	/* 모집인 조직정보 */
+    ON A.MB_ID = EMP.MB_ID
+   AND EMP.SCD = SCD.SCD
+ INNER JOIN TBCN_PRODUCT PROD					/* 상품정보 */
+    ON A.MB_ID = EMP.MB_ID
+   AND A.PROD_SEQ = PROD.SEQ
+ INNER JOIN TBCN_BYENHWAN_RATE BYEN				/* 변환율 정보 */
+    ON PROD.MB_ID = BYEN.MB_ID
+   AND PROD.GUN_SEQ = BYEN.SEQ
+ INNER JOIN TBCN_PRODUCT_GROUP GUN				/* 상품군 정보 */
+    ON BYEN.MB_ID = GUN.MB_ID
+   AND BYEN.PROD_KIND2 = GUN.PROD_KIND2
+ INNER JOIN TBCM_INSCO INS
+    ON A.MB_ID = INS.MB_ID
+   AND A.INSCO_CD = INS.INSCO_CD
+  LEFT JOIN (SELECT CD_VL
+                  , CD_VL_NM
+               FROM TBCM_COMMON_CODE
+              WHERE MB_ID = #{MB_ID}
+                AND GRP_CMM_CD = 'NAPGI_GBN') CM1	/* 납기구분 공통코드 */
+    ON A.NAPGI_GBN = CM1.CD_VL
+  LEFT JOIN (SELECT CD_VL
+                  , CD_VL_NM
+               FROM TBCM_COMMON_CODE
+              WHERE MB_ID = #{MB_ID}
+                AND GRP_CMM_CD = 'NAPMETHOD') CM2	/* 납입방법(납입주기) 공통코드 */
+    ON A.NAPMETHOD = CM2.CD_VL
+  LEFT JOIN (SELECT CD_VL
+                  , CD_VL_NM
+               FROM TBCM_COMMON_CODE
+              WHERE MB_ID = #{MB_ID}
+                AND GRP_CMM_CD = 'CONT_STATUS') CM3	/* 계약상태 공통코드 */
+    ON A.CONT_STATUS = CM3.CD_VL
+    LEFT OUTER JOIN (  SELECT MB_ID,
+                             SEQ,
+                             GUBUN,
+                             LISTAGG (CUST_ID, ',') WITHIN GROUP (ORDER BY CUST_ID) AS CUST_ID,
+                             LISTAGG (CUST_NM, ',') WITHIN GROUP (ORDER BY CUST_ID) AS CUST_NM
+                        FROM (SELECT A.SEQ,
+                                     A.GUBUN,
+                                     A.CUST_ID,
+                                     A.MB_ID,
+                                     B.CUST_NM
+                                FROM TBCN_CONTRACT_CUSTOMER A
+                                     LEFT JOIN TBCS_CUSTOMER B
+                                        ON A.CUST_ID = B.CUST_ID AND A.MB_ID = B.MB_ID)
+                           WHERE GUBUN='GEAJA'
+                    GROUP BY SEQ, GUBUN, MB_ID) G  /* 계약자 조회 */
+    ON A.MB_ID = G.MB_ID
+   AND A.SEQ = G.SEQ
+ LEFT OUTER JOIN (  SELECT MB_ID,
+                             SEQ,
+                             GUBUN,
+                             LISTAGG (CUST_ID, ',') WITHIN GROUP (ORDER BY CUST_ID) AS CUST_ID,
+                             LISTAGG (CUST_NM, ',') WITHIN GROUP (ORDER BY CUST_ID) AS CUST_NM
+                        FROM (SELECT A.SEQ,
+                                     A.GUBUN,
+                                     A.CUST_ID,
+                                     A.MB_ID,
+                                     B.CUST_NM
+                                FROM TBCN_CONTRACT_CUSTOMER A
+                                     LEFT JOIN TBCS_CUSTOMER B
+                                        ON A.CUST_ID = B.CUST_ID AND A.MB_ID = B.MB_ID)
+                           WHERE GUBUN='PIABO'
+                    GROUP BY SEQ, GUBUN, MB_ID) H  /* 피보험자 조회 */
+    ON A.MB_ID = H.MB_ID
+   AND A.SEQ = H.SEQ   
+ LEFT OUTER JOIN (  SELECT MB_ID,
+                             SEQ,
+                             GUBUN,
+                             LISTAGG (CUST_ID, ',') WITHIN GROUP (ORDER BY CUST_ID) AS CUST_ID,
+                             LISTAGG (CUST_NM, ',') WITHIN GROUP (ORDER BY CUST_ID) AS CUST_NM
+                        FROM (SELECT A.SEQ,
+                                     A.GUBUN,
+                                     A.CUST_ID,
+                                     A.MB_ID,
+                                     B.CUST_NM
+                                FROM TBCN_CONTRACT_CUSTOMER A
+                                     LEFT JOIN TBCS_CUSTOMER B
+                                        ON A.CUST_ID = B.CUST_ID AND A.MB_ID = B.MB_ID)
+                           WHERE GUBUN='BENEFICIARY'
+                    GROUP BY SEQ, GUBUN, MB_ID) I   /* 수익자 조회 */
+    ON A.MB_ID = I.MB_ID
+   AND A.SEQ = I.SEQ     
+ WHERE A.MB_ID = #{MB_ID}
+ <![CDATA[AND NVL(A.DATA_DCD,'I') <> 'D']]>
+   AND (EMP.SCD IN (SELECT SCD
+ 					  FROM TBSY_USER_SCD_READ
+ 					 WHERE MB_ID = #{MB_ID}
+ 					   AND EMP_CD = #{IN_EMP_CD}) OR A.MO_CD = #{IN_EMP_CD})
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_SCD)">
+   AND EMP.SCD = #{SRCH_SCD}
+</if>
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_EMP)">
+   AND (EMP.EMP_CD LIKE '%'||#{SRCH_EMP}||'%' OR EMP.EMP_NM LIKE '%'||#{SRCH_EMP}||'%')
+</if>
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_WORD)">
+   AND (UPPER(A.INSPOL_NO) LIKE '%'||UPPER(#{SRCH_WORD})||'%' OR G.CUST_NM LIKE '%'||UPPER(#{SRCH_WORD})||'%' OR H.CUST_NM LIKE '%'||UPPER(#{SRCH_WORD})||'%' OR I.CUST_NM LIKE '%'||UPPER(#{SRCH_WORD})||'%')
+</if>
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_INSCO)">
+   AND A.INSCO_CD = #{SRCH_INSCO}
+</if>
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_CONT_STATUS)">
+   AND A.CONT_STATUS = #{SRCH_CONT_STATUS}
+</if>
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_NAPMETHOD)">
+   AND A.NAPMETHOD = #{SRCH_NAPMETHOD}
+</if>
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_PROD_KIND2)">
+   AND A.PROD_KIND2 = #{SRCH_PROD_KIND2}
+</if>
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_PROD)">
+   AND A.PROD_NM LIKE '%'||UPPER(#{SRCH_PROD})||'%'
+</if>
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_START_DATE)">
+   AND A.CONT_DATE >= #{SRCH_START_DATE}
+</if>
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_END_DATE)">
+   AND A.CONT_DATE <![CDATA[<=]]> #{SRCH_END_DATE}
+</if>
+ORDER BY A.CONT_DATE DESC
+</sql>
+
+<select id="selectContractList" parameterType="NewContractExcelVO" resultType="bmap">
+<include refid="Common.PagingStart"/>
+<include refid="selectContractList_SQL"/>
+<include refid="Common.PagingEnd"/>
+</select>
+
+<select id="selectStatusExcelTmpList" parameterType="NewContractExcelVO" resultType="bmap">
+/* contractExcel-mapper.xml id="selectStatusExcelTmpList" 계약상태 temp 리스트 */
+SELECT A.MB_ID
+     , A.SEQ
+     , A.COM_YM
+     , A.INSCO_CD
+     , B.INSCO_NM
+     , A.INSPOL_NO
+     , A.PREM_AMT
+     , A.NAPCNT
+     , A.NAP_MONTH
+     , A.NAP_DATE
+     , A.STATUS
+     , CM1.CD_VL_NM AS STATUS_NM
+     , A.STATUS_DATE
+     , A.GIJUN_DATE
+     , A.ERROR_COL
+     , A.FILE_NO
+  FROM TBCN_CONTRACT_STATUS_TMP A
+ INNER JOIN TBCM_INSCO B
+    ON A.INSCO_CD = B.INSCO_CD
+ INNER JOIN (SELECT CD_VL, CD_VL_NM FROM TBCM_COMMON_CODE WHERE MB_ID = #{MB_ID} AND GRP_CMM_CD = 'CONT_STATUS') CM1
+    ON A.STATUS = CM1.CD_VL
+ WHERE A.MB_ID = #{MB_ID}
+   AND A.MB_ID = B.MB_ID
+   AND A.COM_YM = #{COM_YM}
+ <if test='@kr.co.fw.common.util.CommUtil@isEquals(ERROR_YN, "N")'>
+   AND A.ERROR_COL IS NULL
+ </if>
+ <if test='@kr.co.fw.common.util.CommUtil@isEquals(ERROR_YN, "Y")'>
+   AND A.ERROR_COL IS NOT NULL
+ </if>
+</select>
+
+<!-- 계약상태 업로드 TEMP 테이블 삭제 -->
+<delete id="deleteMonthTmpExcel" parameterType="NewContractExcelVO">
+/* contractExcel-mapper.xml id="deleteMonthTmpExcel" 계약상태 업로드 TEMP 테이블 삭제 */
+DELETE
+  FROM TBCN_CONTRACT_STATUS_TMP
+ WHERE MB_ID = #{MB_ID}
+</delete>
+
+<insert id="insertContStatExcelTmp" parameterType="NewContractExcelVO">
+/* contractExcel-mapper.xml id="insertContStatExcelTmp" 계약상태 엑셀 데이터 INSERT */
+INSERT
+  INTO TBCN_CONTRACT_STATUS_TMP
+  	 ( MB_ID        /* 회원사코드 VARCHAR2(10) */
+	 , SEQ          /* 시퀀스 NUMBER(22) -  TMP 테이블은 MAX값으로 SEQ 생성 */
+	 , COM_YM       /* 마감월 VARCHAR2(6) */
+	 , MO_CD        /* 모집인 사원번호 VARCHAR2(10) */
+	 , INSCO_CD     /* 원수사코드 VARCHAR2(10) */
+	 , INSPOL_NO    /* 증권번호 VARCHAR2(30) */
+	 , PREM_AMT     /* 보험료 NUMBER(22) */
+	 , NAPCNT       /* 납입회차 NUMBER(22) */
+	 , NAP_MONTH    /* 납입월 VARCHAR2(6) */
+	 , NAP_DATE     /* 납입일 VARCHAR2(10) */
+	 , STATUS       /* 계약상태 VARCHAR2(3) */
+	 , STATUS_DATE  /* 상태변경일 VARCHAR2(10) */
+	 , GIJUN_DATE   /* 데이터 기준일 VARCHAR2(10) */
+	 , ERROR_COL    /* 에러 컬럼 VARCHAR2(100) */
+	 , FILE_NO      /* 업로드 파일 번호(TBSY_FILE_INFO 테이블의 FILE_NO VARCHAR2(100) */
+	 , IN_EMP_CD    /* 입력자 사번 VARCHAR2(20) */
+	 , IN_DTM       /* 입력일시 DATE(7) */
+  	 )
+VALUES
+	 ( #{MB_ID}
+	 , #{SEQ}
+	 , #{COM_YM}
+	 , #{MO_CD}
+	 , #{INSCO_CD}
+	 , #{INSPOL_NO}
+	 , REPLACE(#{PREM_AMT}, ',', '')
+	 , REPLACE(#{NAPCNT}, ',', '')
+	 , REPLACE(#{NAP_MONTH}, '-', '')
+	 , #{NAP_DATE}
+	 , #{STATUS}
+	 , #{STATUS_DATE}
+	 , #{GIJUN_DATE}
+	 , DECODE((SELECT INSCO_CD
+				 FROM TBCM_INSCO
+				WHERE MB_ID = #{MB_ID}
+				  AND INSCO_CD = #{INSCO_CD}), NULL, 'INSCO_CD,', '')||
+	   DECODE((SELECT INSPOL_NO
+	   			 FROM TBCN_CONTRACT_FSB
+	   			WHERE MB_ID = #{MB_ID}
+	   			<![CDATA[AND NVL(DATA_DCD,'I') <> 'D']]>
+	   			  AND INSPOL_NO = #{INSPOL_NO}), NULL, 'INSPOL_NO,', '')||
+	   DECODE(#{NAPCNT}, NULL, 'NAPCNT,', '')||
+	   DECODE(#{NAP_MONTH}, NULL, 'NAP_MONTH,', '')||
+	   DECODE((SELECT CD_VL
+				 FROM TBCM_COMMON_CODE
+				WHERE MB_ID = #{MB_ID}
+				  AND GRP_CMM_CD = 'CONT_STATUS'
+				  AND CD_VL = #{STATUS}), NULL, 'STATUS,', '')
+	 , #{FILE_NO}
+	 , #{IN_EMP_CD}
+	 , #{IN_DTM}
+	 )
+</insert>
+
+<select id="getStatusFileInfo" parameterType="NewContractExcelVO" resultType="bmap">
+/* contractExcel-mapper.xml id="getStatusFileInfo" 계약상태 업로드 파일 정보 */
+SELECT A.FILE_NO
+     , A.FILE_PATH
+     , A.FILE_URL
+     , A.FILE_NM
+     , A.FILE_SIZE
+     , A.FILE_MIME
+     , A.FILE_FORMAT
+     , A.ATTACH_GBN
+     , A.SEQ
+     , A.MB_ID
+  FROM TBSY_FILE_INFO A
+ INNER JOIN (SELECT FILE_NO
+               FROM TBCN_CONTRACT_STATUS_TMP
+              WHERE MB_ID = #{MB_ID}
+                AND COM_YM = #{COM_YM}
+              GROUP BY FILE_NO) B
+    ON A.FILE_NO = B.FILE_NO
+ WHERE MB_ID = #{MB_ID}
+   AND ATTACH_GBN = 'CONT_STAT'
+</select>
+
+<delete id="deleteLowerGijundData" parameterType="NewContractExcelVO">
+/* contractExcel-mapper.xml id="deleteLowerGijundData" 데이터 기준일 비교하여 업로드 데이터보다 이전인 데이터 삭제 */
+DELETE
+  FROM TBCN_CONTRACT_STATUS A
+ WHERE A.MB_ID = #{MB_ID}
+   AND A.COM_YM = #{COM_YM}
+   AND EXISTS (SELECT 1
+   				 FROM TBCN_CONTRACT_STATUS_TMP B
+   				WHERE B.MB_ID = #{MB_ID}
+   				  AND B.COM_YM = #{COM_YM}
+   				  AND A.INSPOL_NO = B.INSPOL_NO
+   				  AND A.INSCO_CD = B.INSCO_CD
+   				  AND A.GIJUN_DATE <![CDATA[<=]]> B.GIJUN_DATE)
+</delete>
+
+<insert id="applyContractStatus" parameterType="NewContractExcelVO">
+/* contractExcel-mapper.xml id="applyContractStatus" 계약상태 적용 */
+INSERT
+  INTO TBCN_CONTRACT_STATUS
+     ( MB_ID        /* 회원사코드 VARCHAR2(10) */
+     , SEQ          /* 시퀀스 NUMBER(22) */
+     , COM_YM       /*  VARCHAR2(6) */
+     , MO_CD        /* 모집인 사원번호 VARCHAR2(10) */
+     , INSCO_CD     /* 원수사코드 VARCHAR2(10) */
+     , INSPOL_NO    /* 증권번호 VARCHAR2(30) */
+     , PREM_AMT     /* 보험료 NUMBER(22) */
+     , NAPCNT       /* 납입회차 NUMBER(22) */
+     , NAP_MONTH    /* 납입월 VARCHAR2(6) */
+     , NAP_DATE     /* 납입일 VARCHAR2(10) */
+     , STATUS       /* 계약상태 VARCHAR2(3) */
+     , STATUS_DATE  /* 상태변경일 VARCHAR2(10) */
+     , GIJUN_DATE   /* 데이터 기준일 VARCHAR2(10) */
+     , SORT_NO      /* 정렬번호 NUMBER(22) */
+     , IN_EMP_CD    /* 입력자 사번 VARCHAR2(20) */
+     , IN_DTM       /* 입력일시 DATE(7) */
+     )
+SELECT MB_ID          /* 회원사코드 VARCHAR2(10) */
+     , TBCN_CONTRACT_STATUS_SEQ.NEXTVAL AS SEQ            /*  NUMBER(22) */
+     , COM_YM         /* 마감월 VARCHAR2(6) */
+     , MO_CD          /* 모집인 사원번호 VARCHAR2(10) */
+     , INSCO_CD       /* 원수사코드 VARCHAR2(10) */
+     , INSPOL_NO      /* 증권번호 VARCHAR2(30) */
+     , PREM_AMT       /* 보험료 NUMBER(22) */
+     , NAPCNT         /* 납입회차 NUMBER(22) */
+     , NAP_MONTH      /* 납입월 VARCHAR2(6) */
+     , NAP_DATE       /* 납입일 VARCHAR2(10) */
+     , STATUS         /* 계약상태 VARCHAR2(20) */
+     , STATUS_DATE    /* 상태변경일 VARCHAR2(10) */
+     , GIJUN_DATE     /* 데이터 기준일 VARCHAR2(10) */
+     , (SELECT NVL(MAX(SORT_NO), 0)
+          FROM TBCN_CONTRACT_STATUS
+         WHERE MB_ID = A.MB_ID
+           AND INSPOL_NO = A.INSPOL_NO) + ROW_NUMBER() OVER(PARTITION BY INSPOL_NO ORDER BY SEQ) AS SORT_NO
+	 , #{IN_EMP_CD}   /* 입력자 사번 VARCHAR2(20) */
+     , SYSDATE        /* 입력일시 DATE(7) */
+  FROM TBCN_CONTRACT_STATUS_TMP A
+ WHERE MB_ID = #{MB_ID}
+   AND COM_YM = #{COM_YM}
+   AND ERROR_COL IS NULL
+</insert>
+
+<update id="applyStatusToCont" parameterType="NewContractExcelVO">
+/* contractExcel-mapper.xml id="applyStatusToCont" 계약데이터에 상태 적용 */
+UPDATE TBCN_CONTRACT A
+   SET (A.CONT_STATUS, A.NAPCNT, A.NAP_MONTH, A.NAP_DATE, A.STATUS_DATE, A.GIJUN_DATE)
+        = (SELECT B.STATUS, B.NAPCNT, B.NAP_MONTH, B.NAP_DATE, B.STATUS_DATE, B.GIJUN_DATE
+             FROM TBCN_CONTRACT_STATUS B
+            WHERE B.MB_ID = A.MB_ID
+              AND B.COM_YM = #{COM_YM}
+              AND A.INSPOL_NO = B.INSPOL_NO
+              AND A.INSCO_CD = B.INSCO_CD
+              AND NVL(A.GIJUN_DATE, A.CONT_DATE) <![CDATA[<=]]> B.GIJUN_DATE)
+ WHERE A.MB_ID = #{MB_ID}
+   AND (A.INSPOL_NO, A.INSCO_CD) IN (SELECT BB.INSPOL_NO, BB.INSCO_CD
+									   FROM TBCN_CONTRACT_STATUS BB
+                                      WHERE BB.MB_ID = A.MB_ID
+                                        AND BB.COM_YM = #{COM_YM}
+                                        AND A.INSPOL_NO = BB.INSPOL_NO
+                                        AND A.INSCO_CD = BB.INSCO_CD
+                                        AND NVL(A.GIJUN_DATE, A.CONT_DATE) <![CDATA[<=]]> BB.GIJUN_DATE)
+</update>
+
+<select id="selectStatusDetailList" parameterType="NewContractExcelVO" resultType="bmap">
+/* contractExcel-mapper.xml id="selectStatusDetailList" 계약상태 상세 리스트 조회 */
+SELECT A.MB_ID           /* 회원사코드 VARCHAR2(10) */
+     , A.SEQ          	 /* 시퀀스 NUMBER(22) */
+     , A.COM_YM       	 /* 마감월 VARCHAR2(6) */
+     , A.MO_CD           /* 모집인 사원번호 VARCHAR2(10) */
+     , A.INSCO_CD        /* 원수사코드 VARCHAR2(10) */
+     , INS.INSCO_NM
+     , A.INSPOL_NO       /* 증권번호 VARCHAR2(30) */
+     , A.PREM_AMT     	 /* 보험료 NUMBER(22) */
+     , A.NAPCNT       	 /* 납입회차 NUMBER(22) */
+     , A.NAP_MONTH    	 /* 납입월 VARCHAR2(6) */
+     , A.NAP_DATE     	 /* 납입일 VARCHAR2(10) */
+     , A.STATUS       	 /* 계약상태 VARCHAR2(20) */
+     , CM1.CD_VL_NM AS STATUS_NM
+     , A.STATUS_DATE  	 /* 상태변경일 VARCHAR2(10) */
+     , A.GIJUN_DATE   	 /* 데이터 기준일 VARCHAR2(10) */
+     , A.SORT_NO      	 /* 정렬번호 NUMBER(22) */
+     , ROW_NUMBER() OVER(PARTITION BY A.INSPOL_NO ORDER BY A.COM_YM DESC, A.STATUS_DATE DESC) AS ROW_NUM
+  FROM TBCN_CONTRACT_STATUS A
+ INNER JOIN TBCM_INSCO INS
+    ON A.MB_ID = INS.MB_ID
+   AND A.INSCO_CD = INS.INSCO_CD
+  LEFT JOIN (SELECT CD_VL, CD_VL_NM FROM TBCM_COMMON_CODE WHERE GRP_CMM_CD = 'CONT_STATUS' AND MB_ID = #{MB_ID}) CM1
+    ON A.STATUS = CM1.CD_VL
+ WHERE A.MB_ID = #{MB_ID}
+   AND A.INSPOL_NO = #{INSPOL_NO}
+</select>
+
+<update id="updateStatusDetail" parameterType="NewContractExcelVO">
+/* contractExcel-mapper.xml id="updateStatusDetail" 계약상태 상세 수정 */
+UPDATE TBCN_CONTRACT_STATUS
+   SET NAPCNT = #{NAPCNT}
+   	 , NAP_MONTH = #{NAP_MONTH}
+   	 , STATUS = #{STATUS}
+   	 , STATUS_DATE = #{STATUS_DATE}
+   	 , GIJUN_DATE = #{GIJUN_DATE}
+ WHERE SEQ = #{SEQ}
+</update>
+
+<update id="applyStatusToContOne"  parameterType="NewContractExcelVO">
+/* contractExcel-mapper.xml id="applyStatusToContOne" 계약상태 상세 수정 시 제일 최신 계약상태일 경우 계약에 반영  */
+UPDATE TBCN_CONTRACT
+   SET NAPCNT = #{NAPCNT}
+   	 , NAP_MONTH = #{NAP_MONTH}
+   	 , CONT_STATUS = #{STATUS}
+   	 , STATUS_DATE = #{STATUS_DATE}
+   	 , GIJUN_DATE = #{GIJUN_DATE}
+ WHERE INSPOL_NO = #{INSPOL_NO}
+</update>
+</mapper>

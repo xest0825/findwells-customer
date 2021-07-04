@@ -1,0 +1,1332 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Contract">
+
+<!-- 계약관리 목록조회 -->
+<sql id="selectContractList_SQL">
+/* contract-mapper.xml selectContractList 계약관리 목록조회 */
+SELECT A.MB_ID             /* 회원사ID                                                                       VARCHAR2(20)   */
+     , A.SEQ               /* 일련번호(TBCN_CONTRACT_SEQ)                                                    NUMBER(22)     */
+     , A.INSPOL_NO         /* 증권번호                                                                       VARCHAR2(40)   */
+     , A.IFA_CD
+     , A.INSCO_CD          /* 원수사코드                                                                     VARCHAR2(3)    */
+     , C.INSCO_NM          /* 원수사명 */
+     , A.PROD_SEQ          /* 상품 일련번호                                                                  NUMBER(22)     */
+     , A.PROD_NM           /* 상품명                                                                         VARCHAR2(100)  */
+     , E.PROD_KIND1        /* 상품구분1 */
+     , A.PROD_KIND2        /* 상품구분2                                                                      VARCHAR2(20)   */
+     , A.CONT_DATE         /* 계약일자                                                                       VARCHAR2(10)   */
+     , A.CONT_STATUS       /* 계약상태(GRP_CMM_CD = CONT_STATUS)                                             VARCHAR2(4)    */
+     , A.NAPCNT            /* 납입회차                                                                        NUMBER    */
+     , A.SUGUM_STATUS      /* 수금상태                                                                       VARCHAR2(20)    */
+     , A.NAP_MONTH         /* 납입월                                                                         VARCHAR2(10)    */
+     , A.NAP_DATE          /* 납입일자                                                                       VARCHAR2(10)    */
+     , A.STATUS_DATE       /* 상태변경일                                                                      VARCHAR2(10)    */
+     , A.GIJUN_DATE        /* 데이터기준일                                                                     VARCHAR2(10)    */
+     , A.NAPMETHOD         /* 납입방법(GRP_CMM_CD = NAPMETHOD)                                               VARCHAR2(20)   */
+     , A.NAPGI             /* 납입기간                                                                       VARCHAR2(10)   */
+     , A.NAPGI_GBN         /* 납입기간구분(GRP_CMM_CD = NAPGI_GBN)                                           VARCHAR2(10)   */
+     , CM1.CD_VL_NM AS NAPGI_GBN_NM
+     , A.PREM_AMT          /* 보험료                                                                         NUMBER(22)     */
+     , A.CREDIT			   /* 크레딧                                                                         NUMBER(22)     */
+     , NVL(A.UPREM_AMT,0) AS    UPREM_AMT   
+     , NVL(A.HPREM_AMT,0) AS    HPREM_AMT   
+     , A.MON_PREM_AMT      /* 월납보험료                                                                     NUMBER(22)     */
+     , A.INSU_STRT_DATE    /* 보험시작일                                                                     VARCHAR2(10)   */
+     , A.INSU_END_DATE     /* 보험종료일                                                                     VARCHAR2(10)   */
+     , A.ACCOUNT_END_DATE  /* 초기계좌만기일                                                               VARCHAR2(10)   */
+     , A.MO_CD             /* 모집인코드                                                                     VARCHAR2(20)   */
+     , B.EMP_NM AS MO_NM   /* 모집인명 */
+     , A.YU_CD             /* 유지FP코드                                                                     VARCHAR2(20)   */
+     , F.EMP_NM AS YU_NM   /* 유지FP명 */
+     , A.ISSUE             /* 이슈사항                                                                       VARCHAR2(1000) */
+     , A.MEMO              /* 메모                                                                           VARCHAR2(4000) */
+	 , A.AUTO_TRANS_YN         /* 자동이체여부(GRP_CMM_CD = AUTO_TRANS_YN) VARCHAR2(1)   */
+	 , A.BANK                  /* 은행코드(GRP_CMM_CD = BANK)              VARCHAR2(50)  */
+	 , A.OWNER                 /* 예금주                                   VARCHAR2(30)  */
+	 , A.BK_ID                 /* 계좌번호                                 VARCHAR2(50)  */
+	 , A.REGI_AUTO_TRANS_YN    /* 자동송금등록여부                         VARCHAR2(1)   */
+     , A.IN_EMP_CD         /* 입력자사번                                                                     VARCHAR2(20)   */
+     , A.IN_DTM            /* 입력일시                                                                       DATE(7)        */
+     , A.IN_IP             /* 입력 IP                                                                        VARCHAR2(15)   */
+     , A.UP_EMP_CD         /* 수정자사번                                                                     VARCHAR2(20)   */
+     , A.UP_DTM            /* 수정일시                                                                       DATE(7)        */
+     , G.CUST_ID AS GEAJA			     /* 계약자ID */
+     , G.CUST_NM AS GEAJA_NM		     /* 계약자이름 */
+     , H.CUST_ID AS PIABO			     /* 피보험자ID */
+     , H.CUST_NM AS PIABO_NM		     /* 피보험자이름 */
+     , I.CUST_ID AS BENEFICIARY		     /* 수익자ID */
+     , I.CUST_NM AS BENEFICIARY_NM	     /* 수익자이름 */
+     , A.USD_NAP_MONTH 					 /* USD 월납화 */
+     , A.HKD_NAP_MONTH 					 /* HKD 월납화 */
+  FROM TBCN_CONTRACT A /* [CN][계약] 계약관리 */
+  LEFT OUTER JOIN TBIN_EMPMST B	/* 사원(모집인)조회 */
+    ON A.MB_ID = B.MB_ID
+   AND A.MO_CD = B.EMP_CD
+  LEFT OUTER JOIN TBCM_INSCO C	/* 원수사조회 */
+    ON A.MB_ID = C.MB_ID
+   AND A.INSCO_CD = C.INSCO_CD
+  LEFT OUTER JOIN TBCN_PRODUCT_GROUP E	/* 상품군 조회 */
+    ON A.MB_ID = E.MB_ID
+   AND A.PROD_KIND2 = E.PROD_KIND2
+  LEFT OUTER JOIN TBIN_EMPMST F	/* 사원(유지FP)조회 */
+    ON A.MB_ID = F.MB_ID
+   AND A.YU_CD = F.EMP_CD
+  LEFT JOIN (SELECT CD_VL
+                  , CD_VL_NM
+               FROM TBCM_COMMON_CODE
+              WHERE MB_ID = #{MB_ID}
+                AND GRP_CMM_CD = 'NAPGI_GBN') CM1	/* 납기구분 공통코드 */
+    ON A.NAPGI_GBN = CM1.CD_VL
+  LEFT OUTER JOIN (  SELECT MB_ID,
+                             SEQ,
+                             GUBUN,
+                             LISTAGG (CUST_ID, ',') WITHIN GROUP (ORDER BY CUST_ID) AS CUST_ID,
+                             LISTAGG (CUST_NM, ',') WITHIN GROUP (ORDER BY CUST_ID) AS CUST_NM
+                        FROM (SELECT A.SEQ,
+                                     A.GUBUN,
+                                     A.CUST_ID,
+                                     A.MB_ID,
+                                     B.CUST_NM
+                                FROM TBCN_CONTRACT_CUSTOMER A
+                                     LEFT JOIN TBCS_CUSTOMER B
+                                        ON A.CUST_ID = B.CUST_ID AND A.MB_ID = B.MB_ID)
+                           WHERE GUBUN='GEAJA'
+                    GROUP BY SEQ, GUBUN, MB_ID) G  /* 계약자 조회 */
+    ON A.MB_ID = G.MB_ID
+   AND A.SEQ = G.SEQ
+ LEFT OUTER JOIN (  SELECT MB_ID,
+                             SEQ,
+                             GUBUN,
+                             LISTAGG (CUST_ID, ',') WITHIN GROUP (ORDER BY CUST_ID) AS CUST_ID,
+                             LISTAGG (CUST_NM, ',') WITHIN GROUP (ORDER BY CUST_ID) AS CUST_NM
+                        FROM (SELECT A.SEQ,
+                                     A.GUBUN,
+                                     A.CUST_ID,
+                                     A.MB_ID,
+                                     B.CUST_NM
+                                FROM TBCN_CONTRACT_CUSTOMER A
+                                     LEFT JOIN TBCS_CUSTOMER B
+                                        ON A.CUST_ID = B.CUST_ID AND A.MB_ID = B.MB_ID)
+                           WHERE GUBUN='PIABO'
+                    GROUP BY SEQ, GUBUN, MB_ID) H  /* 피보험자 조회 */
+    ON A.MB_ID = H.MB_ID
+   AND A.SEQ = H.SEQ   
+ LEFT OUTER JOIN (  SELECT MB_ID,
+                             SEQ,
+                             GUBUN,
+                             LISTAGG (CUST_ID, ',') WITHIN GROUP (ORDER BY CUST_ID) AS CUST_ID,
+                             LISTAGG (CUST_NM, ',') WITHIN GROUP (ORDER BY CUST_ID) AS CUST_NM
+                        FROM (SELECT A.SEQ,
+                                     A.GUBUN,
+                                     A.CUST_ID,
+                                     A.MB_ID,
+                                     B.CUST_NM
+                                FROM TBCN_CONTRACT_CUSTOMER A
+                                     LEFT JOIN TBCS_CUSTOMER B
+                                        ON A.CUST_ID = B.CUST_ID AND A.MB_ID = B.MB_ID)
+                           WHERE GUBUN='BENEFICIARY'
+                    GROUP BY SEQ, GUBUN, MB_ID) I   /* 수익자 조회 */
+    ON A.MB_ID = I.MB_ID
+   AND A.SEQ = I.SEQ     
+ WHERE A.MB_ID = #{MB_ID}
+   AND A.MO_CD NOT IN ('SADMIN', 'ADMIN', 'INSCOM')
+    <![CDATA[AND NVL(A.DATA_DCD,'I') <> 'D']]>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS,"ROLE_ADMIN") 
+	  and @kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS,"ROLE_SUPER") 
+	  and @kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS,"ROLE_STAFF")'>
+   AND A.MO_CD IN (SELECT EMP_CD
+                    FROM TBIN_EMPMST 
+                   START WITH EMP_CD = #{IN_EMP_CD}
+                 CONNECT BY PRIOR EMP_CD = MG_EMP_CD)
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(INSCO_CD)'>
+    AND A.INSCO_CD = #{INSCO_CD} /* 원수사 */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(CONT_STATUS)'>
+    AND A.CONT_STATUS = #{CONT_STATUS} /* 계약상태 */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(NAPMETHOD)'>
+    AND A.NAPMETHOD = #{NAPMETHOD} /* 납입방법 */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(PROD_KIND2)'>
+    AND A.PROD_KIND2 = #{PROD_KIND2} /* 상품군2 */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(PROD_NM)'>
+    AND A.PROD_NM LIKE '%'||#{PROD_NM}||'%' /* 상품명 */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_CON_START_VALUE)'>
+<![CDATA[ AND A.CONT_DATE >= #{SRCH_CON_START_VALUE} /* 계약시작일 */ ]]>
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_CON_END_VALUE)'>
+<![CDATA[ AND A.CONT_DATE <= #{SRCH_CON_END_VALUE}  /* 계약종료일 */ ]]>
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_CON_EMP_WORD)'>
+   AND ( A.MO_CD IN (SELECT EMP_CD FROM TBIN_EMPMST WHERE EMP_NM LIKE '%'||#{SRCH_CON_EMP_WORD}||'%')   /* 모집인명 */ 
+	OR   A.MO_CD LIKE ('%'||#{SRCH_CON_EMP_WORD}||'%') /* 모집인코드 */
+	OR   A.YU_CD LIKE ('%'||#{SRCH_CON_EMP_WORD}||'%')	/* 유지FP코드 */
+	OR   F.EMP_NM LIKE ('%'||#{SRCH_CON_EMP_WORD}||'%')   /* 유지FP명 */
+	)
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_CON_WORD)'>
+<![CDATA[
+   AND ( UPPER(A.INSPOL_NO) LIKE '%'||UPPER(#{SRCH_CON_WORD})||'%'  /* 증권번호 */
+    OR   G.CUST_NM LIKE '%'||#{SRCH_CON_WORD}||'%'  /* 계약자 */
+    OR   H.CUST_NM LIKE '%'||#{SRCH_CON_WORD}||'%'  /* 피보험자 */
+    OR   I.CUST_NM LIKE '%'||#{SRCH_CON_WORD}||'%'  /* 수익자 */
+    )
+	]]>
+</if>
+</sql>
+
+<select id="selectContractList" resultType="Hmap" parameterType="ContractVO">
+<include refid="Common.PagingStart"/>
+<include refid="selectContractList_SQL"/>
+ORDER BY A.CONT_DATE DESC, A.SEQ DESC
+<include refid="Common.PagingEnd"/>
+</select>
+
+<select id="selectContractListExcel" resultType="Hmap" parameterType="ContractVO">
+<include refid="selectContractList_SQL"/>
+ORDER BY A.CONT_DATE DESC, A.SEQ DESC
+</select>
+
+<!-- 하나의 계약조회 -->
+<select id="selectContract" resultType="Hmap" parameterType="ContractVO">
+/* contract-mapper.xml selectContract 계약 조회 */
+SELECT A.MB_ID             /* 회원사ID                                                                       VARCHAR2(20)   */
+     , A.SEQ               /* 일련번호(TBCN_CONTRACT_SEQ)                                                    NUMBER(22)     */
+     , A.INSPOL_NO         /* 증권번호                                                                       VARCHAR2(40)   */
+     , A.INSCO_CD          /* 원수사코드                                                                     VARCHAR2(3)    */
+     , C.INSCO_NM          /* 원수사명 */
+     , A.PROD_SEQ          /* 상품 일련번호                                                                  NUMBER(22)     */
+     , A.PROD_NM           /* 상품명                                                                         VARCHAR2(100)  */
+     , A.PROD_KIND2        /* 상품구분2                                                                      VARCHAR2(20)   */
+     , A.CONT_DATE         /* 계약일자                                                                       VARCHAR2(10)   */
+     , A.CONT_STATUS       /* 계약상태(GRP_CMM_CD = CONT_STATUS)                                             VARCHAR2(4)    */
+     , A.NAPCNT            /* 납입회차                                                                        NUMBER    */
+     , A.SUGUM_STATUS      /* 수금상태                                                                       VARCHAR2(20)    */
+     , A.NAP_MONTH         /* 납입월                                                                         VARCHAR2(10)    */
+     , A.NAP_DATE          /* 납입일자                                                                       VARCHAR2(10)    */
+     , A.STATUS_DATE       /* 상태변경일                                                                      VARCHAR2(10)    */
+     , A.GIJUN_DATE        /* 데이터기준일                                                                     VARCHAR2(10)    */
+     , A.NAPMETHOD         /* 납입방법(GRP_CMM_CD = NAPMETHOD)                                               VARCHAR2(20)   */
+     , A.NAPGI             /* 납입기간                                                                       VARCHAR2(10)   */
+     , A.NAPGI_GBN         /* 납입기간구분(GRP_CMM_CD = NAPGI_GBN)                                           VARCHAR2(10)   */
+     , A.PREM_AMT          /* 보험료                                                                         NUMBER(22)     */
+     , A.MON_PREM_AMT      /* 월납보험료                                                                     NUMBER(22)     */
+     , A.INSU_STRT_DATE    /* 보험시작일                                                                     VARCHAR2(10)   */
+     , A.INSU_END_DATE     /* 보험종료일                                                                     VARCHAR2(10)   */
+     , A.ACCOUNT_END_DATE  /* 초기계좌만기일                                                                VARCHAR2(10)   */
+     , A.MO_CD             /* 모집인코드                                                                     VARCHAR2(20)   */
+     , B.EMP_NM AS MO_NM   /* 모집인명 */
+     , D.SNM AS MO_SNM     /* 모집인소속 */
+     , D.SNMPATH AS MO_SNMPATH	/* 모집인 소속경로 */
+	 , '['||A.MO_CD||':'||B.EMP_NM||'] '|| D.SNMPATH AS EMPINFO	/* 모집사원정보(계약수정 시 퀵서치에서 사용) */
+     , A.YU_CD             /* 유지FP코드                                                                     VARCHAR2(20)   */
+     , E.EMP_NM AS YU_NM   /* 유지FP명 */
+     , F.SNMPATH AS YU_SNMPATH	/* 유지FP 소속경로 */
+     , A.ISSUE             /* 이슈사항                                                                       VARCHAR2(1000) */
+     , A.MEMO              /* 메모                                                                           VARCHAR2(4000) */
+     , A.BIGO              /* 비고                                                                           VARCHAR2(100)  */
+	 , A.AUTO_TRANS_YN         /* 자동이체여부(GRP_CMM_CD = AUTO_TRANS_YN) VARCHAR2(1)   */
+	 , A.BANK                  /* 은행코드(GRP_CMM_CD = BANK)              VARCHAR2(50)  */
+	 , A.OWNER                 /* 예금주                                   VARCHAR2(30)  */
+	 , A.BK_ID                 /* 계좌번호                                 VARCHAR2(50)  */
+	 , A.REGI_AUTO_TRANS_YN    /* 자동송금등록여부                         VARCHAR2(1)   */
+     , A.IN_EMP_CD         /* 입력자사번                                                                     VARCHAR2(20)   */
+     , A.IN_DTM            /* 입력일시                                                                       DATE(7)        */
+     , A.IN_IP             /* 입력 IP                                                                        VARCHAR2(15)   */
+     , A.UP_EMP_CD         /* 수정자사번                                                                     VARCHAR2(20)   */
+     , A.UP_DTM            /* 수정일시                                                                       DATE(7)        */
+     , A.BENEFICIARY  /*수익자		*/
+	 , A.UPREM_AMT  /*납입금_미국달러(USD)		*/
+	 , A.HPREM_AMT  /*납입금_홍콩달러(HKD)		*/
+	 , A.DEPOSITRE_TOTAL  /*예금적립금총액		*/
+	 , A.PREM_PAID  /*총 기납입원금		*/
+	 , A.TRUST  /*신탁여부		*/
+	 , A.CUS_ACC_ID  /*고객접속ID		*/
+	 , A.IFA_CD		/*IFA 코드		*/
+	 , CM1.CD_VL_NM AS IFA_CD_NM	/*IFA 코드명		*/
+	 
+     , J.CUST_ID AS GEAJA			     /* 계약자ID */
+     , J.CUST_NM AS GEAJA_NM		     /* 계약자이름 */
+     , K.CUST_ID AS PIABO			     /* 피보험자ID */
+     , K.CUST_NM AS PIABO_NM		     /* 피보험자이름 */
+     , L.CUST_ID AS BENEFICIARY		     /* 수익자ID */
+     , L.CUST_NM AS BENEFICIARY_NM	     /* 수익자이름 */
+     
+     , A.CREDIT
+     , A.USD_NAP_MONTH 					 /* USD 월납화 */
+     , A.HKD_NAP_MONTH 					 /* HKD 월납화 */
+  FROM TBCN_CONTRACT A /* [CN][계약] 계약관리 */
+  LEFT OUTER JOIN TBIN_EMPMST B	/* 사원(모집인)조회 */
+    ON A.MB_ID = B.MB_ID
+   AND A.MO_CD = B.EMP_CD
+  LEFT OUTER JOIN TBCM_INSCO C	/* 원수사조회 */
+    ON A.MB_ID = C.MB_ID
+   AND A.INSCO_CD = C.INSCO_CD
+  LEFT OUTER JOIN 
+    (SELECT SUBSTR(SYS_CONNECT_BY_PATH(SCD,'/'), 2) AS SCDPATH
+          , SUBSTR(SYS_CONNECT_BY_PATH(SNM,'/'), 2) AS SNMPATH
+          , SCD
+          , SNM
+          , MB_ID
+       FROM (SELECT * FROM TBIN_SCD WHERE MB_ID = #{MB_ID} ) A
+      START WITH PSCD IS NULL
+    CONNECT BY PRIOR SCD = PSCD
+    ) D  /* 조직(모집인)조회 */
+    ON A.MB_ID = D.MB_ID
+   AND B.SCD = D.SCD
+  LEFT OUTER JOIN TBIN_EMPMST E	/* 사원(유지FP)조회 */
+    ON A.MB_ID = E.MB_ID
+   AND A.YU_CD = E.EMP_CD
+  LEFT OUTER JOIN 
+    (SELECT SUBSTR(SYS_CONNECT_BY_PATH(SCD,'/'), 2) AS SCDPATH
+          , SUBSTR(SYS_CONNECT_BY_PATH(SNM,'/'), 2) AS SNMPATH
+          , SCD
+          , SNM
+          , MB_ID
+       FROM (SELECT * FROM TBIN_SCD WHERE MB_ID = #{MB_ID} ) A
+      START WITH PSCD IS NULL
+    CONNECT BY PRIOR SCD = PSCD
+    ) F  /* 조직(유지FP)조회 */
+    ON A.MB_ID = F.MB_ID
+   AND E.SCD = F.SCD
+  LEFT OUTER JOIN 
+  	(SELECT CD_VL, CD_VL_NM, MB_ID 
+  		FROM TBCM_COMMON_CODE 
+  	   WHERE GRP_CMM_CD='IFA_CD') CM1
+  	ON A.MB_ID = CM1.MB_ID
+   AND A.IFA_CD = CM1.CD_VL
+    LEFT OUTER JOIN
+         (  SELECT MB_ID,
+                   SEQ,
+                   GUBUN,
+                   LISTAGG (CUST_ID, ',') WITHIN GROUP (ORDER BY CUST_ID)
+                      AS CUST_ID,
+                   LISTAGG (CUST_NM, ',') WITHIN GROUP (ORDER BY CUST_ID)
+                      AS CUST_NM
+              FROM (SELECT A.SEQ,
+                           A.GUBUN,
+                           A.CUST_ID,
+                           A.MB_ID,
+                           B.CUST_NM
+                      FROM TBCN_CONTRACT_CUSTOMER A
+                           LEFT JOIN TBCS_CUSTOMER B
+                              ON A.CUST_ID = B.CUST_ID AND A.MB_ID = B.MB_ID)
+             WHERE GUBUN = 'GEAJA'
+          GROUP BY SEQ, GUBUN, MB_ID) J                           /* 계약자 조회 */
+            ON A.MB_ID = J.MB_ID AND A.SEQ = J.SEQ
+         LEFT OUTER JOIN
+         (  SELECT MB_ID,
+                   SEQ,
+                   GUBUN,
+                   LISTAGG (CUST_ID, ',') WITHIN GROUP (ORDER BY CUST_ID)
+                      AS CUST_ID,
+                   LISTAGG (CUST_NM, ',') WITHIN GROUP (ORDER BY CUST_ID)
+                      AS CUST_NM
+              FROM (SELECT A.SEQ,
+                           A.GUBUN,
+                           A.CUST_ID,
+                           A.MB_ID,
+                           B.CUST_NM
+                      FROM TBCN_CONTRACT_CUSTOMER A
+                           LEFT JOIN TBCS_CUSTOMER B
+                              ON A.CUST_ID = B.CUST_ID AND A.MB_ID = B.MB_ID)
+             WHERE GUBUN = 'PIABO'
+          GROUP BY SEQ, GUBUN, MB_ID) K                          /* 피보험자 조회 */
+            ON A.MB_ID = K.MB_ID AND A.SEQ = K.SEQ
+         LEFT OUTER JOIN
+         (  SELECT MB_ID,
+                   SEQ,
+                   GUBUN,
+                   LISTAGG (CUST_ID, ',') WITHIN GROUP (ORDER BY CUST_ID)
+                      AS CUST_ID,
+                   LISTAGG (CUST_NM, ',') WITHIN GROUP (ORDER BY CUST_ID)
+                      AS CUST_NM
+              FROM (SELECT A.SEQ,
+                           A.GUBUN,
+                           A.CUST_ID,
+                           A.MB_ID,
+                           B.CUST_NM
+                      FROM TBCN_CONTRACT_CUSTOMER A
+                           LEFT JOIN TBCS_CUSTOMER B
+                              ON A.CUST_ID = B.CUST_ID AND A.MB_ID = B.MB_ID)
+             WHERE GUBUN = 'BENEFICIARY'
+          GROUP BY SEQ, GUBUN, MB_ID) L                           /* 수익자 조회 */
+            ON A.MB_ID = L.MB_ID AND A.SEQ = L.SEQ
+ WHERE A.MB_ID = #{MB_ID}
+   AND A.MO_CD NOT IN ('SADMIN', 'ADMIN', 'INSCOM')
+   AND A.SEQ = #{SEQ}
+</select>
+
+<!-- 계약자, 피보험자, 수익자 조회 -->
+<select id="selectContractCustomer" resultType="Hmap" parameterType="ContractVO">
+/* contract-mapper.xml selectContractCustomer 계약자, 피보험자, 수익자 조회 */
+SELECT A.GUBUN, A.CUST_ID, B.CUST_NM
+  FROM TBCN_CONTRACT_CUSTOMER A
+       LEFT JOIN TBCS_CUSTOMER B
+          ON A.CUST_ID = B.CUST_ID AND A.MB_ID = B.MB_ID
+ WHERE A.MB_ID = #{MB_ID }
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SEQ)'>
+ 	AND A.SEQ = #{SEQ } 
+</if> 
+</select>
+
+<!-- 계약자, 피보험자, 수익자 상세 조회 -->
+<select id="selectContractCustomerList" resultType="Hmap" parameterType="ContractVO">
+/* contract-mapper.xml selectContractCustomerList 계약자, 피보험자, 수익자 상세조회 */
+SELECT A.GUBUN			/* 계약자, 피보험자, 수익자 구분			*/
+		,B.CUST_NM 		/* 고객명								*/
+		,B.GNDR_CD 		/* 성별구분코드(GRP_CMM_CD = GNDR_CD')	*/
+		,B.SSN 			/* 주민등록번호							*/
+		,B.MEMO 		/* 메모								*/
+		,B.CUST_NME 	/* 영문고객명							*/
+		,B.CUST_CELL 	/* 핸드폰번호							*/
+		,B.EMAIL 		/* 이메일								*/
+		,B.ADDR1 		/* 한글주소							*/
+		,B.ADDR2 		/* 한글상세주소							*/
+		,B.ADDRE1 		/* 영문주소							*/
+		,B.ADDRE2 		/* 영문상세주소							*/
+		,B.BUSINESS_NUM /* 사업자번호							*/
+		,B.TELNO 		/* 추가연락처							*/
+		,B.FOREIGN_YN 	/* 외국인코드							*/
+		,B.CUST_ID 		/* 고객 ID							*/
+		,B.PASSPORT_NUM /* 여권번호							*/
+		,B.ZIPCD 		/* 우편번호							*/
+  FROM TBCN_CONTRACT_CUSTOMER A
+       LEFT OUTER JOIN TBCS_CUSTOMER B
+          ON A.MB_ID = B.MB_ID 
+          AND A.CUST_ID = B.CUST_ID
+ WHERE  A.MB_ID = #{MB_ID } 
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SEQ)'>
+ 	AND A.SEQ = #{SEQ } 
+</if> 
+ ORDER BY (
+              CASE A.GUBUN
+	               WHEN 'GEAJA' THEN 1
+	               WHEN 'PIABO' THEN 2
+	               ELSE 3
+              END
+            )
+</select>
+
+<!-- 쉐어 목록조회 -->
+<select id="selectShareList" resultType="ShareVO" parameterType="ShareVO">
+/* contract-mapper.xml selectShareList 쉐어 목록조회 */
+SELECT A.MB_ID         /* 회원사ID                            VARCHAR2(20)  */
+     , A.SEQ           /* 일련번호(TBCN_CONTRACT_SHARE_SEQ)   NUMBER(22)    */
+     , A.SHARE_CD      /* 쉐어구분코드(GRP_CMM_CD = SHARE_CD) VARCHAR2(1)   */
+     , A.INSPOL_NO     /* 증권번호                            VARCHAR2(40)  */
+     , A.INSCO_CD      /* 원수사코드                          VARCHAR2(3)   */
+     , A.SCD           /* 조직코드                            VARCHAR2(10)  */
+     , C.SNM           /* 조직명 */
+     , C.SNMPATH       /* 소속경로 */
+     , A.EMP_CD        /* 사원번호                            VARCHAR2(20)  */
+     , B.EMP_NM        /* 사원명 */
+     , B.JIKCHK        /* 직책 */
+     , B.HPNO          /* 휴대전화 */
+     , A.RET_RATIO     /* 성적(유지율)쉐어비율                NUMBER(22)    */
+     , A.FEES_RATIO    /* 수수료쉐어비율                      NUMBER(22)    */
+     , A.REF_SEQ       /* 계약 일련번호                       NUMBER(22)    */
+     , A.SORT_NO       /* 정렬순서                            NUMBER(22)    */
+     , A.BIGO          /* 비고                                VARCHAR2(100) */
+     , A.IN_EMP_CD     /* 입력자사번                          VARCHAR2(20)  */
+     , A.IN_DTM        /* 입력일시                            DATE(7)       */
+     , A.IN_IP         /* 입력IP                              VARCHAR2(15)  */
+     , A.UP_EMP_CD     /* 수정자사번                          VARCHAR2(20)  */
+     , A.UP_DTM        /* 수정일시                            DATE(7)       */
+  FROM TBCN_CONTRACT_SHARE A /* [CN][계약] 쉐어관리 */
+  LEFT OUTER JOIN TBIN_EMPMST B    /* 사원조회 */
+    ON A.MB_ID = B.MB_ID
+   AND A.EMP_CD = B.EMP_CD
+  LEFT OUTER JOIN 
+    (SELECT SUBSTR(SYS_CONNECT_BY_PATH(SCD,'/'), 2) AS SCDPATH
+          , SUBSTR(SYS_CONNECT_BY_PATH(SNM,'/'), 2) AS SNMPATH
+          , SCD
+          , SNM
+          , MB_ID
+       FROM (SELECT * FROM TBIN_SCD WHERE MB_ID = #{MB_ID} ) A
+      START WITH PSCD IS NULL
+    CONNECT BY PRIOR SCD = PSCD
+    ) C /* [조직마스터] */
+    ON  A.MB_ID = C.MB_ID
+    AND A.SCD   = C.SCD
+ WHERE A.MB_ID = #{MB_ID}
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(REF_SEQ)'>
+   AND A.REF_SEQ = #{REF_SEQ}	/* 계약 일련번호 */
+</if>
+ ORDER BY SORT_NO
+</select>
+
+<!-- 증권번호 중복 검증 -->
+<select id="selectContractCheck" resultType="Integer" parameterType="ContractVO">
+/* contract-mapper.xml selectContractCheck 플랜번호 중복 검증 */
+SELECT COUNT(*)
+  FROM TBCN_CONTRACT
+ WHERE MB_ID = #{MB_ID}
+ <![CDATA[AND NVL(DATA_DCD,'I') <> 'D']]>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(INSPOL_NO)'>
+   AND INSPOL_NO = #{INSPOL_NO}	/* 플랜번호 */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(INSCO_CD)'>
+   AND INSCO_CD = #{INSCO_CD}	/* 원수사코드 */
+</if>
+</select>
+
+<!-- 계약 입력 -->
+<insert id="insertContract" parameterType="ContractVO">
+<selectKey resultType="String" keyProperty="SEQ" order="BEFORE">
+	SELECT TBCN_CONTRACT_FSB_SEQ.NEXTVAL AS SEQ FROM DUAL
+</selectKey>
+/* contract-mapper.xml insertContract 계약 입력 */
+INSERT
+  INTO TBCN_CONTRACT /* [CN][계약] 계약관리 */
+     ( MB_ID             /* 회원사ID                                                                       VARCHAR2(20)   */
+     , SEQ               /* 일련번호(TBCN_CONTRACT_SEQ)                                                    NUMBER(22)     */
+     , INSPOL_NO         /* 증권번호                                                                       VARCHAR2(40)   */
+     , INSCO_CD          /* 원수사코드                                                                     VARCHAR2(3)    */
+     , PROD_SEQ          /* 상품 일련번호                                                                  NUMBER(22)     */
+     , PROD_NM           /* 상품명                                                                         VARCHAR2(100)  */
+     , CONT_DATE         /* 계약일자                                                                       VARCHAR2(10)   */
+     , CONT_STATUS       /* 계약상태(GRP_CMM_CD = CONT_STATUS)                                             VARCHAR2(4)    */
+     , NAPMETHOD         /* 납입방법(GRP_CMM_CD = NAPMETHOD)                                               VARCHAR2(20)   */
+     , NAPGI             /* 납입기간                                                                       VARCHAR2(10)   */
+     , NAPGI_GBN         /* 납입기간구분(GRP_CMM_CD = NAPGI_GBN)                                           VARCHAR2(10)   */
+     , INSU_STRT_DATE    /* 보험시작일                                                                     VARCHAR2(10)   */
+     , INSU_END_DATE     /* 보험종료일                                                                     VARCHAR2(10)   */
+     , ACCOUNT_END_DATE  /* 초기계좌만기일                                                                VARCHAR2(10)   */
+     , MO_CD             /* 모집인코드                                                                     VARCHAR2(20)   */
+     , YU_CD             /* 유지FP코드                                                                     VARCHAR2(20)   */
+     , ISSUE             /* 이슈사항                                                                       VARCHAR2(1000) */
+     , MEMO              /* 메모                                                                           VARCHAR2(4000) */
+	 , AUTO_TRANS_YN         /* 납입방법(GRP_CMM_CD = AUTO_TRANS_YN) VARCHAR2(1)   */
+     , IN_EMP_CD         /* 입력자사번                                                                     VARCHAR2(20)   */
+     , IN_DTM            /* 입력일시                                                                       DATE(7)        */
+     , IN_IP             /* 입력 IP                                                                        VARCHAR2(15)   */
+	 , UPREM_AMT  		/*납입금_미국달러(USD)		*/
+	 , HPREM_AMT  		/*납입금_홍콩달러(HKD)		*/
+	 , DEPOSITRE_TOTAL  /*예금적립금총액				*/
+	 , PREM_PAID  		/*총 기납입원금				*/
+	 , TRUST  			/*신탁여부					*/
+	 , CUS_ACC_ID  		/*고객접속ID				*/
+	 , IFA_CD			/*IFA 코드		*/
+	 , CREDIT			/*크레딧 		*/
+	 , USD_NAP_MONTH	/*USD 월납화 	*/
+	 , HKD_NAP_MONTH	/*HKD 월납화 	*/
+     )
+VALUES
+     ( #{MB_ID         }   /* 회원사ID                                                                       VARCHAR2(20)   */
+     , #{SEQ           }   /* 일련번호(TBCN_CONTRACT_FSB_SEQ)                                                    NUMBER(22)     */
+     , #{INSPOL_NO     }   /* 증권번호                                                                       VARCHAR2(40)   */
+     , #{INSCO_CD      }   /* 원수사코드                                                                     VARCHAR2(3)    */
+     , #{PROD_SEQ      }   /* 상품 일련번호                                                                  NUMBER(22)     */
+     , #{PROD_NM       }   /* 상품명                                                                         VARCHAR2(100)  */
+     , #{CONT_DATE     }   /* 계약일자                                                                       VARCHAR2(10)   */
+     , #{CONT_STATUS   }   /* 계약상태(GRP_CMM_CD = CONT_STATUS)                                             VARCHAR2(4)    */
+     , #{NAPMETHOD     }   /* 납입방법(GRP_CMM_CD = NAPMETHOD)                                               VARCHAR2(20)   */
+     , #{NAPGI         }   /* 납입기간                                                                       VARCHAR2(10)   */
+     , #{NAPGI_GBN     }   /* 납입기간구분(GRP_CMM_CD = NAPGI_GBN)                                           VARCHAR2(10)   */
+     , #{INSU_STRT_DATE}   /* 보험시작일                                                                     VARCHAR2(10)   */
+     , #{INSU_END_DATE }   /* 보험종료일                                                                     VARCHAR2(10)   */
+     , #{ACCOUNT_END_DATE} /* 초기계좌만기일                                                                VARCHAR2(10)   */
+     , #{MO_CD         }   /* 모집인코드                                                                     VARCHAR2(20)   */
+     , #{YU_CD         }   /* 유지FP코드                                                                     VARCHAR2(20)   */
+     , #{ISSUE         }   /* 이슈사항                                                                       VARCHAR2(1000) */
+     , #{MEMO          }   /* 메모                                                                           VARCHAR2(4000) */
+     , #{AUTO_TRANS_YN      }   /* 자동이체여부(GRP_CMM_CD = AUTO_TRANS_YN)                                       VARCHAR2(1)    */
+     , #{IN_EMP_CD     }   /* 입력자사번                                                                     VARCHAR2(20)   */
+     , SYSDATE             /* 입력일시                                                                       DATE(7)        */
+     , #{IN_IP         }   /* 입력 IP      VARCHAR2(15)   */            
+	 , #{UPREM_AMT		} /*납입금_미국달러(USD)		*/
+	 , #{HPREM_AMT		} /*납입금_홍콩달러(HKD)		*/
+	 , #{DEPOSITRE_TOTAL} /*예금적립금총액		*/
+	 , #{PREM_PAID		} /*총 기납입원금		*/
+	 , #{TRUST			} /*신탁여부		*/
+	 , #{CUS_ACC_ID		} /*고객접속ID		*/   
+	 , #{IFA_CD			} /*IFA 코드		*/ 
+	 , (NVL(#{UPREM_AMT},0) + NVL(#{HPREM_AMT}/8,0)) 
+	 		* (CASE WHEN #{NAPMETHOD} = '월납' THEN 12
+		            WHEN #{NAPMETHOD} = '3월납' THEN 4
+		            WHEN #{NAPMETHOD} = '6월납' THEN 2
+		            WHEN #{NAPMETHOD} = '년납' THEN 1
+		            WHEN #{NAPMETHOD} = '일시납' THEN 1
+	  			END)  
+             * CASE WHEN #{NAPMETHOD}= '일시납' THEN 1 
+             		ELSE TO_NUMBER(NVL(#{NAPGI},0)) 
+             	END  
+             * (SELECT BYENHWAN_RATE/100 AS BYENHWAN_RATE 
+             		FROM TBCN_PRODUCT 
+             	  WHERE INSCO_CD = #{INSCO_CD} 
+             	    AND SEQ = #{PROD_SEQ})
+	,(NVL(#{UPREM_AMT},0)/(CASE WHEN #{NAPMETHOD} = '월납' THEN 1
+					            WHEN #{NAPMETHOD} = '3월납' THEN 3
+					            WHEN #{NAPMETHOD} = '6월납' THEN 6
+					            WHEN #{NAPMETHOD} = '년납' THEN 12
+					            WHEN #{NAPMETHOD} = '일시납' THEN 12*TO_NUMBER(NVL (#{NAPGI},0)) 
+					        END))  
+	,(NVL(#{HPREM_AMT},0)/(CASE WHEN #{NAPMETHOD} = '월납' THEN 1
+					            WHEN #{NAPMETHOD} = '3월납' THEN 3
+					            WHEN #{NAPMETHOD} = '6월납' THEN 6
+					            WHEN #{NAPMETHOD} = '년납' THEN 12
+					            WHEN #{NAPMETHOD} = '일시납' THEN 12*TO_NUMBER(NVL (#{NAPGI},0)) 
+					        END))  	                                              
+     )
+</insert>
+
+<!-- 계약 수정 -->
+<update id="updateContract" parameterType="ContractVO">
+/* contract-mapper.xml updateContract 계약 수정*/
+UPDATE TBCN_CONTRACT /* [CN][계약] 계약관리 */
+   SET INSPOL_NO      = #{INSPOL_NO     }    /* 증권번호                                                                       VARCHAR2(40)   */
+     , INSCO_CD       = #{INSCO_CD      }    /* 원수사코드                                                                     VARCHAR2(3)    */
+     , PROD_SEQ       = #{PROD_SEQ      }    /* 상품 일련번호                                                                  NUMBER(22)     */
+     , PROD_NM        = #{PROD_NM       }    /* 상품명                                                                         VARCHAR2(100)  */
+     , PROD_KIND2     = (SELECT PROD_KIND2 FROM TBCN_PRODUCT WHERE MB_ID = #{MB_ID} AND SEQ = #{PROD_SEQ})   /* 상품구분2        VARCHAR2(20)   */
+     , CONT_DATE      = #{CONT_DATE     }    /* 계약일자                                                                       VARCHAR2(10)   */
+     , CONT_STATUS    = #{CONT_STATUS   }    /* 계약상태(GRP_CMM_CD = CONT_STATUS)                                             VARCHAR2(20)   */
+     , NAPMETHOD      = #{NAPMETHOD     }    /* 납입방법(GRP_CMM_CD = NAPMETHOD)                                               VARCHAR2(20)   */
+     , NAPGI          = #{NAPGI         }    /* 납입기간                                                                       VARCHAR2(10)   */
+     , NAPGI_GBN      = #{NAPGI_GBN     }    /* 납입기간구분(GRP_CMM_CD = NAPGI_GBN)                                           VARCHAR2(10)   */
+     , PREM_AMT       = #{PREM_AMT      }    /* 보험료                                                                         NUMBER(22)     */
+     , MON_PREM_AMT   = #{MON_PREM_AMT  }    /* 월납보험료                                                                     NUMBER(22)     */
+     , INSU_STRT_DATE = #{INSU_STRT_DATE}    /* 보험시작일                                                                     VARCHAR2(10)   */
+     , INSU_END_DATE  = #{INSU_END_DATE }    /* 보험종료일                                                                     VARCHAR2(10)   */
+     , ACCOUNT_END_DATE = #{ACCOUNT_END_DATE}/* 초기계좌만기일                                                                VARCHAR2(10)   */
+     , MO_CD          = #{MO_CD         }    /* 모집인코드                                                                     VARCHAR2(20)   */
+     , YU_CD          = #{YU_CD         }    /* 유지FP코드                                                                     VARCHAR2(20)   */
+     , ISSUE          = #{ISSUE         }    /* 이슈사항                                                                       VARCHAR2(1000) */
+     , MEMO           = #{MEMO          }    /* 메모                                                                           VARCHAR2(4000) */
+     , AUTO_TRANS_YN       = #{AUTO_TRANS_YN      }    /* 자동이체여부(GRP_CMM_CD = AUTO_TRANS_YN)                                       VARCHAR2(1)    */
+     , BANK                = #{BANK               }    /* 은행코드(GRP_CMM_CD = BANK)                                                    VARCHAR2(50)   */
+     , OWNER               = #{OWNER              }    /* 예금주                                                                         VARCHAR2(30)   */
+     , BK_ID               = #{BK_ID              }    /* 계좌번호                                                                       VARCHAR2(50)   */
+     , REGI_AUTO_TRANS_YN  = #{REGI_AUTO_TRANS_YN }    /* 자동송금등록여부                                                               VARCHAR2(1)    */
+     , BIGO           = #{BIGO          }    /* 비고                                                                           VARCHAR2(100)  */
+     , UP_EMP_CD      = #{UP_EMP_CD     }    /* 수정자사번                                                                     VARCHAR2(20)   */
+     , UP_DTM         = SYSDATE              /* 수정일시                                                                       DATE(7)        */
+     , BENEFICIARY		= #{BENEFICIARY		} /*수익자				*/
+	 , UPREM_AMT		= #{UPREM_AMT		} /*납입금_미국달러(USD)		*/
+	 , HPREM_AMT		= #{HPREM_AMT		} /*납입금_홍콩달러(HKD)		*/
+	 , DEPOSITRE_TOTAL	= #{DEPOSITRE_TOTAL	} /*예금적립금총액			*/
+	 , PREM_PAID		= #{PREM_PAID		} /*총 기납입원금			*/
+	 , TRUST			= #{TRUST			} /*신탁여부				*/
+	 , CUS_ACC_ID		= #{CUS_ACC_ID		} /*고객접속ID				*/
+	 , IFA_CD			= #{IFA_CD			} /*IFA 코드		*/
+	 , CREDIT			=(NVL(#{UPREM_AMT},0) + NVL(#{HPREM_AMT}/8,0)) 
+	 							* (CASE WHEN #{NAPMETHOD} = '월납' THEN 12
+							            WHEN #{NAPMETHOD} = '3월납' THEN 4
+							            WHEN #{NAPMETHOD} = '6월납' THEN 2
+							            WHEN #{NAPMETHOD} = '년납' THEN 1
+							            WHEN #{NAPMETHOD} = '일시납' THEN 1
+		             				END)  
+			             		* CASE WHEN #{NAPMETHOD}= '일시납' THEN 1 ELSE TO_NUMBER(NVL(#{NAPGI},0)) END  
+			             		* (SELECT BYENHWAN_RATE/100 AS BYENHWAN_RATE 
+			             				FROM TBCN_PRODUCT 
+			             			  WHERE INSCO_CD = #{INSCO_CD} 
+			             			    AND SEQ = #{PROD_SEQ})
+	,USD_NAP_MONTH		=(NVL(#{UPREM_AMT},0)/(CASE WHEN #{NAPMETHOD} = '월납' THEN 1
+										            WHEN #{NAPMETHOD} = '3월납' THEN 3
+										            WHEN #{NAPMETHOD} = '6월납' THEN 6
+										            WHEN #{NAPMETHOD} = '년납' THEN 12
+										            WHEN #{NAPMETHOD} = '일시납' THEN 12*TO_NUMBER(NVL (#{NAPGI},0)) 
+			             						END))
+	,HKD_NAP_MONTH		=(NVL(#{HPREM_AMT},0)/(CASE WHEN #{NAPMETHOD} = '월납' THEN 1
+										            WHEN #{NAPMETHOD} = '3월납' THEN 3
+										            WHEN #{NAPMETHOD} = '6월납' THEN 6
+										            WHEN #{NAPMETHOD} = '년납' THEN 12
+										            WHEN #{NAPMETHOD} = '일시납' THEN 12*TO_NUMBER(NVL (#{NAPGI},0)) 
+			             						END)) 
+ WHERE MB_ID = #{MB_ID}
+   AND SEQ = #{SEQ}
+</update>
+
+<!-- 계약 삭제 -->
+<update id="deleteContract" parameterType="ContractVO">
+/* contract-mapper.xml deleteContract 계약 삭제 */
+UPDATE TBCN_CONTRACT /* [CN][계약] 계약관리 */
+ 	SET DATA_DCD='D', 
+	UP_EMP_CD=#{IN_EMP_CD}, 
+	UP_DTM=SYSDATE
+ WHERE MB_ID = #{MB_ID}
+   AND SEQ = #{SEQ}
+</update>
+
+<!-- 계약자, 피보험자, 수익자 삭제 -->
+<delete id="deleteContractCustomer" parameterType="ContractVO">
+/* contract-mapper.xml deleteContractCustomer 계약자, 피보험자, 수익자 삭제 */
+DELETE TBCN_CONTRACT_CUSTOMER
+ WHERE MB_ID = #{MB_ID}
+   AND SEQ = #{SEQ}
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(BIGO)'>
+   AND GUBUN = #{BIGO}
+</if>
+</delete>
+
+<!-- 계약자, 피보험자, 수익자 입력  -->
+<insert id="insertOrUpdateContractCustomer" parameterType="ContractVO">
+/* contract-mapper.xml insertOrUpdateContractCustomer 계약자, 피보험자, 수익자 입력 */
+INSERT INTO TBCN_CONTRACT_CUSTOMER
+	 ( MB_ID	    /* 회원사ID         	VARCHAR2(20)  */
+   	 , SEQ			/* 일련번호(TBCN_CONTRACT_SHARE_SEQ)   NUMBER(22)    */
+   	 , GUBUN		/* 구분            	      	VARCHAR2(10)  */
+   	 , CUST_ID		/* 고객ID            	VARCHAR2(20)  */
+   	 , IN_DTM		/* 입력일시                          	DATE(7)       */
+   	 , IN_EMP_CD	/* 입력IP            	VARCHAR2(15)  */
+   	 )
+   	VALUES
+     (  #{MB_ID}
+   	  , #{SEQ}
+   	  , #{BIGO}
+   	  , #{CUST_ID}
+   	  , SYSDATE
+      , #{IN_EMP_CD}
+      )
+</insert>
+
+<!-- 쉐어 입력 -->
+<insert id="insertShare" parameterType="ShareVO">
+/* contract-mapper.xml insertShare 쉐어 입력 */
+INSERT
+  INTO TBCN_CONTRACT_SHARE /* [CN][계약] 쉐어관리 */
+     ( MB_ID         /* 회원사ID                            VARCHAR2(20)  */
+     , SEQ           /* 일련번호(TBCN_CONTRACT_SHARE_SEQ)   NUMBER(22)    */
+     , SHARE_CD      /* 쉐어구분코드(GRP_CMM_CD = SHARE_CD) VARCHAR2(1)   */
+     , INSPOL_NO     /* 증권번호                            VARCHAR2(40)  */
+     , INSCO_CD      /* 원수사코드                          VARCHAR2(3)   */
+     , SCD           /* 조직코드                            VARCHAR2(10)  */
+     , EMP_CD        /* 사원번호                            VARCHAR2(20)  */
+     , RET_RATIO     /* 성적(유지율)쉐어비율                NUMBER(22)    */
+     , FEES_RATIO    /* 수수료쉐어비율                      NUMBER(22)    */
+     , REF_SEQ       /* 계약 일련번호                       NUMBER(22)    */
+     , SORT_NO       /* 정렬순서                            NUMBER(22)    */
+     , BIGO          /* 비고                                VARCHAR2(100) */
+     , IN_EMP_CD     /* 입력자사번                          VARCHAR2(20)  */
+     , IN_DTM        /* 입력일시                            DATE(7)       */
+     , IN_IP         /* 입력IP                              VARCHAR2(15)  */
+     )
+VALUES
+     ( #{MB_ID     }   /* 회원사ID                            VARCHAR2(20)  */
+     , TBCN_CONTRACT_SHARE_SEQ.NEXTVAL   /* 일련번호(TBCN_CONTRACT_SHARE_SEQ)   NUMBER(22)    */
+     , #{SHARE_CD  }   /* 쉐어구분코드(GRP_CMM_CD = SHARE_CD) VARCHAR2(1)   */
+     , #{INSPOL_NO }   /* 증권번호                            VARCHAR2(40)  */
+     , #{INSCO_CD  }   /* 원수사코드                          VARCHAR2(3)   */
+     , #{SCD       }   /* 조직코드                            VARCHAR2(10)  */
+     , #{EMP_CD    }   /* 사원번호                            VARCHAR2(20)  */
+     , #{RET_RATIO }   /* 성적(유지율)쉐어비율                NUMBER(22)    */
+     , #{FEES_RATIO}   /* 수수료쉐어비율                      NUMBER(22)    */
+     , #{REF_SEQ   }   /* 계약 일련번호                       NUMBER(22)    */
+     , #{SORT_NO   }   /* 정렬순서                            NUMBER(22)    */
+     , #{BIGO      }   /* 비고                                VARCHAR2(100) */
+     , #{IN_EMP_CD }   /* 입력자사번                          VARCHAR2(20)  */
+     , SYSDATE         /* 입력일시                            DATE(7)       */
+     , #{IN_IP     }   /* 입력IP                              VARCHAR2(15)  */
+     )
+</insert>
+
+<!-- 쉐어 수정 -->
+<update id="updateShare" parameterType="ShareVO">
+/* contract-mapper.xml insertShare 쉐어 수정 */
+UPDATE TBCN_CONTRACT_SHARE /* [CN][계약] 쉐어관리 */
+   SET SHARE_CD   = #{SHARE_CD  }    /* 쉐어구분코드(GRP_CMM_CD = SHARE_CD) VARCHAR2(1)   */
+     , INSPOL_NO  = #{INSPOL_NO }    /* 증권번호                            VARCHAR2(40)  */
+     , INSCO_CD   = #{INSCO_CD  }    /* 원수사코드                          VARCHAR2(3)   */
+     , SCD        = #{SCD       }    /* 조직코드                            VARCHAR2(10)  */
+     , EMP_CD     = #{EMP_CD    }    /* 사원번호                            VARCHAR2(20)  */
+     , RET_RATIO  = #{RET_RATIO }    /* 성적(유지율)쉐어비율                NUMBER(22)    */
+     , FEES_RATIO = #{FEES_RATIO}    /* 수수료쉐어비율                      NUMBER(22)    */
+     , REF_SEQ    = #{REF_SEQ   }    /* 계약 일련번호                       NUMBER(22)    */
+     , SORT_NO    = #{SORT_NO   }    /* 정렬순서                            NUMBER(22)    */
+     , BIGO       = #{BIGO      }    /* 비고                                VARCHAR2(100) */
+     , UP_EMP_CD  = #{UP_EMP_CD }    /* 수정자사번                          VARCHAR2(20)  */
+     , UP_DTM     = SYSDATE          /* 수정일시                            DATE(7)       */
+ WHERE MB_ID = #{MB_ID}
+   AND SEQ = #{SEQ}
+</update>
+
+<!-- 쉐어 삭제 -->
+<delete id="deleteShare" parameterType="ShareVO">
+/* contract-mapper.xml insertShare 쉐어 삭제 */
+DELETE TBCN_CONTRACT_SHARE /* [CN][계약] 쉐어관리 */
+ WHERE MB_ID = #{MB_ID}
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(REF_SEQ)'>
+   AND REF_SEQ = #{REF_SEQ}	/* 계약 일련번호 */
+</if>
+</delete>
+
+<select id="selectContractTotal" resultType="ContractVO" parameterType="ContractVO">
+SELECT COUNT(*) AS TOTAL_COUNT
+	   ,SUM(NVL(CREDIT,0)) AS TOTAL_CREDIT
+	   ,SUM(NVL(USD_NAP_MONTH,0)) AS TOTAL_USD_NAP_MONTH
+	   ,SUM(NVL(HKD_NAP_MONTH,0)) AS TOTAL_HKD_NAP_MONTH
+	   FROM(
+	<include refid="selectContractList_SQL"/>
+)
+</select>
+
+<!-- ****************************보유계약 start **************************** -->
+
+<!-- 보유계약관리 목록조회 -->
+<select id="selectExistingContractList" resultType="Hmap" parameterType="ContractVO">
+	<include refid="selectExistingContractList_SQL"/>
+</select>
+
+<select id="selectExistingContractList2" resultType="Hmap" parameterType="ContractVO">
+	<include refid="Common.PagingStart"/>
+	<include refid="selectExistingContractList_SQL"/>
+	<include refid="Common.PagingEnd"/>
+</select>
+
+<select id="selectExistingContractTotal" resultType="ContractVO" parameterType="ContractVO">
+SELECT COUNT(*) AS TOTAL_COUNT
+	   ,SUM(NVL(CREDIT,0)) AS TOTAL_CREDIT
+	   ,SUM(NVL(USD_NAP_MONTH,0)) AS TOTAL_USD_NAP_MONTH
+	   ,SUM(NVL(HKD_NAP_MONTH,0)) AS TOTAL_HKD_NAP_MONTH
+	   FROM(
+	<include refid="selectExistingContractList_SQL"/>
+)
+</select>
+
+<sql id ="selectExistingContractList_SQL">
+	/* contract-mapper.xml selectExistingContractList 보유계약관리 목록조회 */
+SELECT A.MB_ID             /* 회원사ID                                                                       VARCHAR2(20)   */
+     , A.SEQ               /* 일련번호(TBCN_CONTRACT_SEQ)                                                    NUMBER(22)     */
+     , A.INSPOL_NO         /* 증권번호                                                                       VARCHAR2(40)   */
+     , A.IFA_CD
+     , A.INSCO_CD          /* 원수사코드                                                                     VARCHAR2(3)    */
+     , C.INSCO_NM          /* 원수사명 */
+     , A.PROD_SEQ          /* 상품 일련번호                                                                  NUMBER(22)     */
+     , A.PROD_NM           /* 상품명                                                                         VARCHAR2(100)  */
+     , E.PROD_KIND1        /* 상품구분1 */
+     , A.PROD_KIND2        /* 상품구분2                                                                      VARCHAR2(20)   */
+     , A.CONT_DATE         /* 계약일자                                                                       VARCHAR2(10)   */
+     , A.CONT_STATUS       /* 계약상태(GRP_CMM_CD = CONT_STATUS)                                             VARCHAR2(4)    */
+     , A.NAPCNT            /* 납입회차                                                                        NUMBER    */
+     , A.SUGUM_STATUS      /* 수금상태                                                                       VARCHAR2(20)    */
+     , A.NAP_MONTH         /* 납입월                                                                         VARCHAR2(10)    */
+     , A.NAP_DATE          /* 납입일자                                                                       VARCHAR2(10)    */
+     , A.STATUS_DATE       /* 상태변경일                                                                      VARCHAR2(10)    */
+     , A.GIJUN_DATE        /* 데이터기준일                                                                     VARCHAR2(10)    */
+     , A.NAPMETHOD         /* 납입방법(GRP_CMM_CD = NAPMETHOD)                                               VARCHAR2(20)   */
+     , A.NAPGI             /* 납입기간                                                                       VARCHAR2(10)   */
+     , A.NAPGI_GBN         /* 납입기간구분(GRP_CMM_CD = NAPGI_GBN)                                           VARCHAR2(10)   */
+     , A.PREM_AMT          /* 보험료                                                                         NUMBER(22)     */
+     , A.CREDIT			   /* 크레딧																		 NUMBER(25)     */
+     , A.MON_PREM_AMT      /* 월납보험료                                                                     NUMBER(22)     */
+     , A.INSU_STRT_DATE    /* 보험시작일                                                                     VARCHAR2(10)   */
+     , A.INSU_END_DATE     /* 보험종료일                                                                     VARCHAR2(10)   */
+     , A.ACCOUNT_END_DATE  /* 초기계좌만기일                                                               VARCHAR2(10)   */
+     , A.MO_CD             /* 모집인코드                                                                     VARCHAR2(20)   */
+     , B.EMP_NM AS MO_NM   /* 모집인명 */
+     , A.YU_CD             /* 유지FP코드                                                                     VARCHAR2(20)   */
+     , I.EMP_NM AS YU_NM   /* 유지FP명 */
+     , A.ISSUE             /* 이슈사항                                                                       VARCHAR2(1000) */
+	 , A.AUTO_TRANS_YN         /* 자동이체여부(GRP_CMM_CD = AUTO_TRANS_YN) VARCHAR2(1)   */
+	 , A.REGI_AUTO_TRANS_YN    /* 자동송금등록여부                         VARCHAR2(1)   */
+     , A.BIGO              /* 비고                                                                           VARCHAR2(100)  */
+     , A.IN_EMP_CD         /* 입력자사번                                                                     VARCHAR2(20)   */
+     , A.IN_DTM            /* 입력일시                                                                       DATE(7)        */
+     , A.IN_IP             /* 입력 IP                                                                        VARCHAR2(15)   */
+     , A.UP_EMP_CD         /* 수정자사번                                                                     VARCHAR2(20)   */
+     , A.UP_DTM            /* 수정일시                                                                       DATE(7)        */
+	 , CM1.CD_VL_NM AS NAPGI_GBN_NM
+     , J.CUST_ID AS GEAJA			     /* 계약자ID */
+     , J.CUST_NM AS GEAJA_NM		     /* 계약자이름 */
+     , K.CUST_ID AS PIABO			     /* 피보험자ID */
+     , K.CUST_NM AS PIABO_NM		     /* 피보험자이름 */
+     , L.CUST_ID AS BENEFICIARY		     /* 수익자ID */
+     , L.CUST_NM AS BENEFICIARY_NM	     /* 수익자이름 */
+     , NVL(A.UPREM_AMT,0) AS UPREM_AMT
+     , NVL(A.HPREM_AMT,0) AS HPREM_AMT
+     , A.USD_NAP_MONTH 		/* USD 월납화 */
+     , A.HKD_NAP_MONTH 		/* HKD 월납화 */
+  FROM TBCN_CONTRACT A /* [CN][계약] 계약관리 */
+  LEFT OUTER JOIN TBIN_EMPMST B    /* 사원(모집인)조회 */
+    ON A.MB_ID = B.MB_ID
+   AND A.MO_CD = B.EMP_CD
+  LEFT OUTER JOIN TBCM_INSCO C    /* 원수사조회 */
+    ON A.MB_ID = C.MB_ID
+   AND A.INSCO_CD = C.INSCO_CD
+  LEFT OUTER JOIN TBCN_PRODUCT_GROUP E    /* 상품군 조회 */
+    ON A.MB_ID = E.MB_ID
+   AND A.PROD_KIND2 = E.PROD_KIND2
+  LEFT OUTER JOIN TBIN_EMPMST I    /* 사원(유지FP)조회 */
+    ON A.MB_ID = I.MB_ID
+   AND A.YU_CD = I.EMP_CD
+   LEFT JOIN (SELECT CD_VL
+                  , CD_VL_NM
+               FROM TBCM_COMMON_CODE
+              WHERE MB_ID = #{MB_ID}
+                AND GRP_CMM_CD = 'NAPGI_GBN') CM1	/* 납기구분 공통코드 */
+     ON A.NAPGI_GBN = CM1.CD_VL
+<![CDATA[ 
+         LEFT OUTER JOIN
+         (  SELECT MB_ID,
+                   SEQ,
+                   GUBUN,
+                   LISTAGG (CUST_ID, ',') WITHIN GROUP (ORDER BY CUST_ID)
+                      AS CUST_ID,
+                   LISTAGG (CUST_NM, ',') WITHIN GROUP (ORDER BY CUST_ID)
+                      AS CUST_NM
+              FROM (SELECT A.SEQ,
+                           A.GUBUN,
+                           A.CUST_ID,
+                           A.MB_ID,
+                           B.CUST_NM
+                      FROM TBCN_CONTRACT_CUSTOMER A
+                           LEFT JOIN TBCS_CUSTOMER B
+                              ON A.CUST_ID = B.CUST_ID AND A.MB_ID = B.MB_ID)
+             WHERE GUBUN = 'GEAJA'
+          GROUP BY SEQ, GUBUN, MB_ID) J                           /* 계약자 조회 */
+            ON A.MB_ID = J.MB_ID AND A.SEQ = J.SEQ
+         LEFT OUTER JOIN
+         (  SELECT MB_ID,
+                   SEQ,
+                   GUBUN,
+                   LISTAGG (CUST_ID, ',') WITHIN GROUP (ORDER BY CUST_ID)
+                      AS CUST_ID,
+                   LISTAGG (CUST_NM, ',') WITHIN GROUP (ORDER BY CUST_ID)
+                      AS CUST_NM
+              FROM (SELECT A.SEQ,
+                           A.GUBUN,
+                           A.CUST_ID,
+                           A.MB_ID,
+                           B.CUST_NM
+                      FROM TBCN_CONTRACT_CUSTOMER A
+                           LEFT JOIN TBCS_CUSTOMER B
+                              ON A.CUST_ID = B.CUST_ID AND A.MB_ID = B.MB_ID)
+             WHERE GUBUN = 'PIABO'
+          GROUP BY SEQ, GUBUN, MB_ID) K                          /* 피보험자 조회 */
+            ON A.MB_ID = K.MB_ID AND A.SEQ = K.SEQ
+         LEFT OUTER JOIN
+         (  SELECT MB_ID,
+                   SEQ,
+                   GUBUN,
+                   LISTAGG (CUST_ID, ',') WITHIN GROUP (ORDER BY CUST_ID)
+                      AS CUST_ID,
+                   LISTAGG (CUST_NM, ',') WITHIN GROUP (ORDER BY CUST_ID)
+                      AS CUST_NM
+              FROM (SELECT A.SEQ,
+                           A.GUBUN,
+                           A.CUST_ID,
+                           A.MB_ID,
+                           B.CUST_NM
+                      FROM TBCN_CONTRACT_CUSTOMER A
+                           LEFT JOIN TBCS_CUSTOMER B
+                              ON A.CUST_ID = B.CUST_ID AND A.MB_ID = B.MB_ID)
+             WHERE GUBUN = 'BENEFICIARY'
+          GROUP BY SEQ, GUBUN, MB_ID) L                           /* 수익자 조회 */
+            ON A.MB_ID = L.MB_ID AND A.SEQ = L.SEQ ]]>
+ WHERE A.MB_ID = #{MB_ID}
+   AND A.MO_CD NOT IN ('SADMIN', 'ADMIN', 'INSCOM')
+    <![CDATA[AND NVL(A.DATA_DCD,'I') <> 'D']]>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS,"ROLE_ADMIN") 
+	  and @kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS,"ROLE_SUPER") 
+	  and @kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS,"ROLE_STAFF")'>
+   AND A.MO_CD IN (SELECT EMP_CD
+                    FROM TBIN_EMPMST 
+                   START WITH EMP_CD = #{IN_EMP_CD}
+                 CONNECT BY PRIOR EMP_CD = MG_EMP_CD)
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(INSCO_CD)'>
+    AND A.INSCO_CD = #{INSCO_CD} /* 원수사 */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(CONT_STATUS)'>
+    AND A.CONT_STATUS = #{CONT_STATUS} /* 계약상태 */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(NAPMETHOD)'>
+    AND A.NAPMETHOD = #{NAPMETHOD} /* 납입방법 */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(PROD_KIND2)'>
+    AND A.PROD_KIND2 = #{PROD_KIND2} /* 상품군2 */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(PROD_NM)'>
+    AND A.PROD_NM LIKE '%'||#{PROD_NM}||'%' /* 상품명 */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(SRCH_CON_VALUE,"ISSUE")'>
+	<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_CON_START_VALUE)'>
+	<![CDATA[ AND A.CONT_DATE >= #{SRCH_CON_START_VALUE} /* 계약시작일 */ ]]>
+	</if>
+	<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_CON_END_VALUE)'>
+	<![CDATA[ AND A.CONT_DATE <= #{SRCH_CON_END_VALUE}  /* 계약종료일 */ ]]>
+	</if>
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(SRCH_CON_VALUE,"CONSTR")'>
+	<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_CON_START_VALUE)'>
+	<![CDATA[ AND A.INSU_STRT_DATE >= #{SRCH_CON_START_VALUE} /* 계약시작일 */ ]]>
+	</if>
+	<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_CON_END_VALUE)'>
+	<![CDATA[ AND A.INSU_STRT_DATE <= #{SRCH_CON_END_VALUE}  /* 계약종료일 */ ]]>
+	</if>
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(SRCH_CON_VALUE,"CONEND")'>
+	<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_CON_START_VALUE)'>
+	<![CDATA[ AND A.INSU_END_DATE >= #{SRCH_CON_START_VALUE} /* 계약시작일 */ ]]>
+	</if>
+	<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_CON_END_VALUE)'>
+	<![CDATA[ AND A.INSU_END_DATE <= #{SRCH_CON_END_VALUE}  /* 계약종료일 */ ]]>
+	</if>
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_CON_EMP_WORD)'>
+   AND ( A.MO_CD IN (SELECT EMP_CD FROM TBIN_EMPMST WHERE EMP_NM LIKE '%'||#{SRCH_CON_EMP_WORD}||'%')   /* 모집인명 */ 
+	OR   A.MO_CD LIKE ('%'||#{SRCH_CON_EMP_WORD}||'%') /* 모집인코드 */ 
+	OR   A.YU_CD LIKE ('%'||#{SRCH_CON_EMP_WORD}||'%')	/* 관리사원코드 */
+	OR   A.YU_CD LIKE ('%'||#{SRCH_CON_EMP_WORD}||'%')	/* 유지FP코드 */
+	OR   I.EMP_NM LIKE ('%'||#{SRCH_CON_EMP_WORD}||'%')   /* 유지FP명 */)
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_CON_WORD)'>
+<![CDATA[
+   AND ( UPPER(A.INSPOL_NO) LIKE '%'||UPPER(#{SRCH_CON_WORD})||'%'  /* 증권번호 */
+    OR   J.CUST_NM LIKE '%'||#{SRCH_CON_WORD}||'%'  /* 계약자 */
+    OR   K.CUST_NM LIKE '%'||#{SRCH_CON_WORD}||'%'  /* 피보험자 */
+    OR   L.CUST_NM LIKE '%'||#{SRCH_CON_WORD}||'%'  /* 수익자자 */
+    )
+	]]>
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SEARCH_WORD)'>
+<![CDATA[   
+   AND ( A.MO_CD IN (SELECT EMP_CD FROM TBIN_EMPMST WHERE EMP_NM LIKE '%'||#{SEARCH_WORD}||'%')   /* 모집인명 */ 
+	OR   A.MO_CD LIKE ('%'||#{SEARCH_WORD}||'%') /* 모집인코드 */ 
+	OR   A.YU_CD LIKE ('%'||#{SEARCH_WORD}||'%')	/* 관리사원코드 */
+	OR   A.YU_CD LIKE ('%'||#{SEARCH_WORD}||'%')	/* 유지FP코드 */
+	OR   I.EMP_NM LIKE ('%'||#{SEARCH_WORD}||'%')   /* 유지FP명 */)
+    OR ( UPPER(A.INSPOL_NO) LIKE '%'||UPPER(#{SEARCH_WORD})||'%'  /* 증권번호 */
+    OR   J.CUST_NM LIKE '%'||#{SEARCH_WORD}||'%'  /* 계약자 */
+    OR   K.CUST_NM LIKE '%'||#{SEARCH_WORD}||'%'  /* 피보험자 */
+    OR   L.CUST_NM LIKE '%'||#{SEARCH_WORD}||'%'  /* 수익자자 */
+    )
+	]]>
+</if>
+ORDER BY A.CONT_DATE DESC, A.SEQ DESC
+</sql>
+
+<!-- ****************************보유계약 end **************************** -->
+
+<!-- 인별업적 목록조회 -->
+<select id="selectTotalContViewList" resultType="ContractVO" parameterType="ContractVO">
+	<include refid="selectTotalContViewList_SQL"/>
+</select>
+
+<select id="selectTotalContListExcel" resultType="ContractVO" parameterType="Hmap">
+<include refid="selectTotalContViewList_SQL"/>
+</select>
+
+<sql id ="selectTotalContViewList_SQL">
+ 	/* contract-mapper.xml selectTotalContViewList 업적조회 리스트 */	        
+	SELECT EMP.EMP_CD
+	     , EMP.EMP_NM
+	     , EMP.EMPSTA
+         , NVL(TB1.CONT_CNT, 0) AS CONT_CNT				  /*  [기간] 건수		*/
+         , NVL(TB1.CONT_CREDIT, 0) AS CONT_CREDIT		  /*  [기간] CREDIT		*/
+         , NVL(TB1.CONT_USD, 0) AS CONT_USD				  /*  [기간] USD		*/
+         , NVL(TB1.CONT_HKD, 0) AS CONT_HKD			      /*  [기간] HKD		*/
+         , NVL(TB2.CONT_CNT_M, 0) AS CONT_CNT_M			  /*  [당월] 건수		*/
+         , NVL(TB2.CONT_CREDIT_M, 0) AS CONT_CREDIT_M	  /*  [당월] CREDIT		*/
+         , NVL(TB2.CONT_USD_M, 0) AS CONT_USD_M  		  /*  [당월] USD		*/
+         , NVL(TB2.CONT_HKD_M, 0) AS CONT_HKD_M			  /*  [당월] HKD		*/
+         , NVL(TB3.CONT_CNT_Y, 0) AS CONT_CNT_Y			  /*  [당년] 건수		*/
+         , NVL(TB3.CONT_CREDIT_Y, 0) AS CONT_CREDIT_Y  	  /*  [당년] CREDTI		*/
+         , NVL(TB3.CONT_USD_Y, 0) AS CONT_USD_Y			  /*  [당년] USD		*/
+         , NVL(TB3.CONT_HKD_Y, 0) AS CONT_HKD_Y			  /*  [당년] HKD		*/
+         , NVL(TB4.CONT_CNT_PY, 0) AS CONT_CNT_PY		  /*  [직전1년] 건수	*/
+         , NVL(TB4.CONT_CREDIT_PY, 0) AS CONT_CREDIT_PY   /*  [직전1년] CREDIT	*/
+         , NVL(TB4.CONT_USD_PY, 0) AS CONT_USD_PY		  /*  [직전1년] USD		*/
+         , NVL(TB4.CONT_HKD_PY, 0) AS CONT_HKD_PY         /*  [직전1년] HKD		*/
+	  FROM (SELECT * FROM TBIN_EMPMST_FSB WHERE MB_ID = #{MB_ID}) EMP
+	  LEFT OUTER JOIN( SELECT TB1.MO_CD AS EMP_CD
+				            , TB2.EMP_NM AS EMP_NM
+				            , TB2.EMPSTA
+				            , COUNT(INSPOL_NO) AS CONT_CNT
+				            , SUM(CREDIT) AS CONT_CREDIT
+				            , SUM(USD_NAP_MONTH) AS CONT_USD
+				            , SUM(HKD_NAP_MONTH) AS CONT_HKD
+				         FROM (SELECT * FROM TBCN_CONTRACT WHERE MB_ID = #{MB_ID})TB1
+				         LEFT OUTER JOIN (SELECT * FROM TBIN_EMPMST_FSB WHERE MB_ID = #{MB_ID})TB2
+				           ON TB1.MO_CD = TB2.EMP_CD
+					 	WHERE TB1.CONT_DATE BETWEEN #{SRCH_TERM_START_VALUE} AND #{SRCH_TERM_END_VALUE}
+				        GROUP BY TB1.MO_CD, TB2.EMP_NM, TB2.EMPSTA)TB1
+	    ON EMP.EMP_CD = TB1.EMP_CD
+	   AND EMP.EMPSTA = TB1.EMPSTA
+	  LEFT OUTER JOIN( SELECT TB1.MO_CD AS EMP_CD
+	                        , TB2.EMPSTA
+	                        , COUNT(INSPOL_NO) AS CONT_CNT_M
+	                        , SUM(CREDIT) AS CONT_CREDIT_M
+	                        , SUM(USD_NAP_MONTH) AS CONT_USD_M
+	                        , SUM(HKD_NAP_MONTH) AS CONT_HKD_M
+	                     FROM (SELECT * FROM TBCN_CONTRACT WHERE MB_ID = #{MB_ID})TB1
+	                     LEFT OUTER JOIN (SELECT * FROM TBIN_EMPMST_FSB WHERE MB_ID = #{MB_ID})TB2
+	                       ON TB1.MO_CD = TB2.EMP_CD
+	  					WHERE SUBSTR(REPLACE(TB1.CONT_DATE, '-', ''), 0, 6) = SUBSTR(REPLACE(#{SRCH_TERM_END_VALUE}, '-', ''), 0, 6)
+	                    GROUP BY TB1.MO_CD, TB2.EMPSTA)TB2
+	    ON EMP.EMP_CD = TB2.EMP_CD
+	   AND EMP.EMPSTA = TB2.EMPSTA
+	  LEFT OUTER JOIN( SELECT TB1.MO_CD AS EMP_CD
+	                        , TB2.EMPSTA
+	                        , COUNT(INSPOL_NO) AS CONT_CNT_Y
+	                        , SUM(CREDIT) AS CONT_CREDIT_Y
+	                        , SUM(USD_NAP_MONTH) AS CONT_USD_Y
+	                        , SUM(HKD_NAP_MONTH) AS CONT_HKD_Y
+	                     FROM (SELECT * FROM TBCN_CONTRACT WHERE MB_ID = #{MB_ID})TB1
+	                     LEFT OUTER JOIN (SELECT * FROM TBIN_EMPMST_FSB WHERE MB_ID = #{MB_ID})TB2
+	                       ON TB1.MO_CD = TB2.EMP_CD
+	                    WHERE SUBSTR(REPLACE(TB1.CONT_DATE, '-', ''), 0, 4) = SUBSTR(REPLACE(#{SRCH_TERM_END_VALUE}, '-', ''), 0, 4)   
+	                    GROUP BY TB1.MO_CD, TB2.EMPSTA)TB3
+	    ON EMP.EMP_CD = TB3.EMP_CD
+	   AND EMP.EMPSTA = TB3.EMPSTA
+	  LEFT OUTER JOIN( SELECT TB1.MO_CD AS EMP_CD
+	                        , TB2.EMPSTA
+	                        , COUNT(INSPOL_NO) AS CONT_CNT_PY
+	                        , SUM(CREDIT) AS CONT_CREDIT_PY
+	                        , SUM(USD_NAP_MONTH) AS CONT_USD_PY
+	                        , SUM(HKD_NAP_MONTH) AS CONT_HKD_PY
+	                     FROM (SELECT * FROM TBCN_CONTRACT WHERE MB_ID = #{MB_ID})TB1
+	                     LEFT OUTER JOIN (SELECT * FROM TBIN_EMPMST_FSB WHERE MB_ID = #{MB_ID})TB2
+	                       ON TB1.MO_CD = TB2.EMP_CD
+	                    WHERE SUBSTR(REPLACE(TB1.CONT_DATE, '-', ''), 0, 6) 
+	                  BETWEEN (SUBSTR(REPLACE(ADD_MONTHS(#{SRCH_TERM_END_VALUE}, -12), '/', ''), 0, 6)-12)
+	                      AND SUBSTR(REPLACE(#{SRCH_TERM_END_VALUE}, '-', ''), 0, 6)  
+	                    GROUP BY TB1.MO_CD, TB2.EMPSTA)TB4
+	    ON EMP.EMP_CD = TB4.EMP_CD
+	   AND EMP.EMPSTA = TB4.EMPSTA
+     WHERE EMP.EMP_CD NOT IN ('SADMIN', 'ADMIN', 'INSCOM')
+   <if test='@kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS,"ROLE_ADMIN") 
+		 and @kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS,"ROLE_SUPER") 
+		 and @kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS,"ROLE_STAFF")'>
+	   AND EMP.EMP_CD IN (SELECT EMP_CD
+							FROM (SELECT * FROM TBIN_EMPMST_FSB WHERE MB_ID = #{MB_ID})
+						   START WITH EMP_CD = #{IN_EMP_CD}
+						 CONNECT BY PRIOR EMP_CD = MG_EMP_CD)
+   </if>
+   <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(EMPSTA)'>
+	   AND EMP.EMPSTA = #{EMPSTA} 
+   </if>	   
+   <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_CON_EMP_WORD)'>
+	   AND ( EMP.EMP_CD LIKE '%' || #{SRCH_CON_EMP_WORD} || '%'
+		  OR EMP.EMP_NM LIKE '%' || #{SRCH_CON_EMP_WORD} || '%')
+   </if>
+     ORDER BY EMP_CD
+</sql>
+
+
+<!-- 실적상세 목록조회 -->
+<select id="selectEmpContDetailList" resultType="ContractVO" parameterType="ContractVO">
+	<include refid="selectEmpContDetailList_SQL"/>
+</select>
+
+<select id="selectEmpContDetailListExcel" resultType="ContractVO" parameterType="Hmap">
+	<include refid="selectEmpContDetailList_SQL"/>
+</select>
+
+<sql id ="selectEmpContDetailList_SQL">
+	/* contract-mapper.xml selectEmpContDetailList 실적상세 리스트 */	    
+	SELECT TB1.SEQ
+         , TB2.EMP_CD
+         , TB2.EMP_NM
+         , TB1.IFA_CD
+         , TB1.INSCO_CD
+         , TB1.INSPOL_NO
+         , TB1.PROD_NM
+         , TB1.CONT_DATE
+         , TB1.CONT_STATUS
+         , TB1.NAPMETHOD
+         , TB1.NAPGI 
+         , TB1.NAPGI_GBN
+         , TB1.USD_NAP_MONTH
+         , TB1.HKD_NAP_MONTH
+         , TB1.CREDIT
+	     , J.CUST_ID AS GEAJA			     /* 계약자ID */
+	     , J.CUST_NM AS GEAJA_NM		     /* 계약자이름 */
+	     , K.CUST_ID AS PIABO			     /* 피보험자ID */
+	     , K.CUST_NM AS PIABO_NM		     /* 피보험자이름 */
+	     , L.CUST_ID AS BENEFICIARY		     /* 수익자ID */
+	     , L.CUST_NM AS BENEFICIARY_NM	     /* 수익자이름 */
+      FROM( SELECT *
+              FROM TBCN_CONTRACT
+             WHERE MB_ID = #{MB_ID}) TB1
+      LEFT OUTER JOIN( SELECT * 
+                         FROM TBIN_EMPMST_FSB 
+                        WHERE MB_ID = #{MB_ID})TB2
+        ON TB1.MO_CD = TB2.EMP_CD
+	<![CDATA[ 
+      LEFT OUTER JOIN( SELECT MB_ID
+                   		    , SEQ
+                   			, GUBUN
+                   			, LISTAGG (CUST_ID, ',') 
+                   			   WITHIN GROUP (ORDER BY CUST_ID) AS CUST_ID
+                  			, LISTAGG (CUST_NM, ',') 
+                  			   WITHIN GROUP (ORDER BY CUST_ID) AS CUST_NM
+              			 FROM (SELECT A.SEQ
+                           			, A.GUBUN
+                           			, A.CUST_ID
+                           			, A.MB_ID
+                           			, B.CUST_NM
+                      			 FROM TBCN_CONTRACT_CUSTOMER A
+                           		 LEFT JOIN TBCS_CUSTOMER B
+                             	   ON A.CUST_ID = B.CUST_ID 
+                             	  AND A.MB_ID = B.MB_ID)
+             		    WHERE GUBUN = 'GEAJA'
+          				GROUP BY SEQ, GUBUN, MB_ID) J   /* 계약자 조회 */
+        ON TB1.MB_ID = J.MB_ID 
+       AND TB1.SEQ = J.SEQ
+      LEFT OUTER JOIN( SELECT MB_ID
+                   			, SEQ
+                   			, GUBUN
+                   			, LISTAGG (CUST_ID, ',') 
+                   			   WITHIN GROUP (ORDER BY CUST_ID) AS CUST_ID
+                   			, LISTAGG (CUST_NM, ',') 
+                   			   WITHIN GROUP (ORDER BY CUST_ID) AS CUST_NM
+              			 FROM( SELECT A.SEQ
+                           		    , A.GUBUN
+                           			, A.CUST_ID
+                           			, A.MB_ID
+                           			, B.CUST_NM
+                      			 FROM TBCN_CONTRACT_CUSTOMER A
+                           		 LEFT JOIN TBCS_CUSTOMER B
+                             	   ON A.CUST_ID = B.CUST_ID 
+                             	  AND A.MB_ID = B.MB_ID)
+             			WHERE GUBUN = 'PIABO'
+          				GROUP BY SEQ, GUBUN, MB_ID) K                          /* 피보험자 조회 */
+        ON TB1.MB_ID = K.MB_ID 
+       AND TB1.SEQ = K.SEQ
+      LEFT OUTER JOIN( SELECT MB_ID
+                   			, SEQ
+                   			, GUBUN
+                   			, LISTAGG (CUST_ID, ',')
+                   			   WITHIN GROUP (ORDER BY CUST_ID) AS CUST_ID
+                   			, LISTAGG (CUST_NM, ',')
+                   			   WITHIN GROUP (ORDER BY CUST_ID) AS CUST_NM
+              			 FROM (SELECT A.SEQ
+                           			, A.GUBUN
+                           			, A.CUST_ID
+                           			, A.MB_ID
+                           			, B.CUST_NM
+                      			 FROM TBCN_CONTRACT_CUSTOMER A
+                           		 LEFT JOIN TBCS_CUSTOMER B
+                              	   ON A.CUST_ID = B.CUST_ID 
+                              	  AND A.MB_ID = B.MB_ID)
+            		     WHERE GUBUN = 'BENEFICIARY'
+         	 			 GROUP BY SEQ, GUBUN, MB_ID) L                           /* 수익자 조회 */
+        ON TB1.MB_ID = L.MB_ID 
+       AND TB1.SEQ = L.SEQ ]]>
+     WHERE TB1.MO_CD NOT IN ('SADMIN', 'ADMIN', 'INSCOM')
+   <if test='@kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS,"ROLE_ADMIN") 
+		 and @kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS,"ROLE_SUPER") 
+		 and @kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS,"ROLE_STAFF")'>
+	   AND TB1.MO_CD IN (SELECT EMP_CD
+						   FROM (SELECT * FROM TBIN_EMPMST_FSB WHERE MB_ID = #{MB_ID})
+						  START WITH EMP_CD = #{IN_EMP_CD}
+						CONNECT BY PRIOR EMP_CD = MG_EMP_CD)
+   </if>	   
+   <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_CON_EMP_WORD)'>
+	   AND ( TB2.EMP_CD LIKE '%' || #{SRCH_CON_EMP_WORD} || '%'
+		  OR TB2.EMP_NM LIKE '%' || #{SRCH_CON_EMP_WORD} || '%')
+   </if>
+   <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_TERM_START_VALUE)
+   		 and @kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_TERM_END_VALUE)'>
+	   AND TB1.CONT_DATE BETWEEN #{SRCH_TERM_START_VALUE} AND #{SRCH_TERM_END_VALUE} 
+   </if>  
+</sql>
+
+<!-- 하위 업적 조회 -->
+<select id="getSemicontractTreeViewList" resultType="ContractVO" parameterType="ContractVO">
+	<include refid="getSemicontractTreeViewList_SQL"/>
+</select>
+
+<!-- 하위 업적 조회(계약건) -->
+<sql id="getSemicontractTreeViewList_SQL">
+	SELECT TB2.EMP_LEVEL
+		 , TB2.ISLEAF
+		 , EMP.EMP_CD
+	     , EMP.EMP_NM
+	     , EMP.EMPSTA
+         , NVL(TB1.CONT_CNT, 0) AS CONT_CNT				  /*  [기간] 건수		*/
+         , NVL(TB1.CONT_CREDIT, 0) AS CONT_CREDIT		  /*  [기간] CREDIT		*/
+         , NVL(TB1.CONT_USD, 0) AS CONT_USD				  /*  [기간] USD		*/
+         , NVL(TB1.CONT_HKD, 0) AS CONT_HKD			      /*  [기간] HKD		*/
+	  FROM (SELECT * FROM TBIN_EMPMST WHERE MB_ID = #{MB_ID}) EMP
+	  LEFT OUTER JOIN( SELECT TB1.MO_CD AS EMP_CD
+				            , TB2.EMP_NM AS EMP_NM
+				            , TB2.EMPSTA
+				            , COUNT(INSPOL_NO) AS CONT_CNT
+				            , SUM(CREDIT) AS CONT_CREDIT
+				            , SUM(USD_NAP_MONTH) AS CONT_USD
+				            , SUM(HKD_NAP_MONTH) AS CONT_HKD
+				         FROM (SELECT * FROM TBCN_CONTRACT WHERE MB_ID = #{MB_ID})TB1
+				         LEFT OUTER JOIN (SELECT * FROM TBIN_EMPMST WHERE MB_ID = #{MB_ID})TB2
+				           ON TB1.MO_CD = TB2.EMP_CD
+				<where>
+					<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_TERM_START_VALUE)'>
+					   <![CDATA[
+					      AND TB1.CONT_DATE > TO_DATE(#{SRCH_TERM_START_VALUE}) 
+					   ]]>    
+					</if>	   
+					<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_TERM_END_VALUE)'>
+					   <![CDATA[
+					      AND TB1.CONT_DATE > TO_DATE(#{SRCH_TERM_END_VALUE}) + 1 
+					   ]]>
+					</if>
+				</where>
+				        GROUP BY TB1.MO_CD, TB2.EMP_NM, TB2.EMPSTA)TB1
+	    ON EMP.EMP_CD = TB1.EMP_CD
+	   AND EMP.EMPSTA = TB1.EMPSTA
+	 INNER JOIN(<include refid="EMPTREEVIEW_SQL"/>)TB2
+	    ON EMP.EMP_CD = TB2.EMP_CD
+	   AND EMP.MB_ID = TB2.MB_ID
+     WHERE EMP.EMP_CD NOT IN ('SADMIN', 'ADMIN', 'INSCOM')
+   <if test='@kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS,"ROLE_ADMIN") 
+		 and @kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS,"ROLE_SUPER") 
+		 and @kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS,"ROLE_STAFF")'>
+	   AND EMP.EMP_CD IN (SELECT EMP_CD
+							FROM (SELECT * 
+							   		FROM TBIN_EMPMST
+							   	   WHERE MB_ID = #{MB_ID})
+						   START WITH EMP_CD = #{IN_EMP_CD}
+						 CONNECT BY PRIOR EMP_CD = MG_EMP_CD)
+   </if>
+   <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(EMPSTA)'>
+	   AND EMP.EMPSTA = #{EMPSTA} 
+   </if>	   
+   <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_CON_EMP_WORD)'>
+	   AND ( EMP.EMP_CD LIKE '%' || #{SRCH_CON_EMP_WORD} || '%'
+		  OR EMP.EMP_NM LIKE '%' || #{SRCH_CON_EMP_WORD} || '%')
+   </if>
+     ORDER BY EMP.EMP_CD ASC
+</sql>
+
+<!-- 하위 업적 조회(사번 레벨 분류) -->
+<sql id="EMPTREEVIEW_SQL">
+			SELECT LEVEL AS EMP_LEVEL       /* 레벨 */
+			     , CONNECT_BY_ISLEAF AS ISLEAF  /* 자식이 있으면 0 없으면 1 */
+			     , MB_ID
+			     , EMP_CD
+			  FROM TBIN_EMPMST 
+			 WHERE MB_ID = #{MB_ID}
+			   AND EMP_CD NOT IN ( 'SADMIN', 'ADMIN', 'INSCOM' )
+	<choose>
+	 	<when test='@kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS,"ROLE_ADMIN") 
+		  and @kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS,"ROLE_SUPER") 
+		  and @kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS,"ROLE_STAFF")
+		  and @kr.co.fw.common.util.CommUtil@isEmpty(EMP_CD)'>
+ 			   AND EMP_CD = #{IN_EMP_CD}
+             START WITH EMP_CD = #{IN_EMP_CD}
+	 	</when>
+	 	<when test='@kr.co.fw.common.util.CommUtil@isEmpty(EMP_CD) 
+	 	  and @kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_EMP)'>
+ 			   AND EMP_CD = #{SRCH_EMP}
+              START WITH EMP_CD = #{SRCH_EMP}
+	 	</when>
+	 	<when test='@kr.co.fw.common.util.CommUtil@isEmpty(EMP_CD)'>
+ 			   AND MG_EMP_CD IS NULL
+             START WITH EMP_CD = 'FW0000'
+	 	</when>
+	 	<otherwise>
+ 			   AND MG_EMP_CD = #{EMP_CD}
+             START WITH EMP_CD = #{EMP_CD}
+	 	</otherwise>
+ 	</choose> 
+  		   CONNECT BY PRIOR EMP_CD = MG_EMP_CD
+</sql>
+
+</mapper>

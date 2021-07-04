@@ -1,0 +1,368 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Menu">
+
+<!-- 메뉴 리스트 조회 -->
+ <select id="getResourcesList" resultType="Hmap" parameterType="kr.co.fw.system.menu.ResourcesVO" >  
+/* menu-mapper.xml getResourcesList 메뉴 리스트 조회 */
+<![CDATA[
+SELECT * 
+  FROM (SELECT DISTINCT
+		       LEVEL AS LV                    /* 레벨                          */ 
+		     , CONNECT_BY_ISLEAF AS ISLEAF    /* 자식이 있으면 0 없으면 1      */
+		     , A.RESOURCE_ID                  /* 리소스ID     VARCHAR2(20)     */
+		     , A.RESOURCE_NAME 				  /* 리소스명     VARCHAR2(50)     */
+		     , A.RESOURCE_URL                 /* 리소스URL    VARCHAR2(100)    */
+		     , A.RESOURCE_PATTERN             /* 리소스패턴   VARCHAR2(100)    */
+		     , A.RESOURCE_TYPE                /* 리소스타입   VARCHAR2(10)     */
+		     , A.PRNT_RESOURCE_ID             /* 부모리소스ID VARCHAR2(20)     */
+			 , A.MENU_ICON                    /* 메뉴 아이콘        VARCHAR2(200) */
+		     , A.USE_YN                       /* 사용여부     VARCHAR2(1)      */
+		     , A.SORT_NO                   	  /* 정렬순서     NUMBER(3,0)      */
+		     , A.IN_EMP_CD                    /* 입력자사번   VARCHAR2(20)     */
+		     , A.IN_DTM                       /* 입력일시     TIMESTAMP(6)(11) */
+		     , A.UP_EMP_CD                    /* 수정자사번   VARCHAR2(20)     */
+		     , A.UP_DTM                       /* 수정일시     TIMESTAMP(6)(11) */
+		     , SUBSTR(SYS_CONNECT_BY_PATH(A.RESOURCE_NAME,' > '),3) MENU_PATH
+		     , CASE WHEN A.RESOURCE_URL = '${CURRENT_MENU}' THEN 'Y' ELSE 'N' END  AS  CURRENT_MENU /* 현재 메뉴 여부 */
+		  FROM (SELECT * 
+		  		  FROM TBSY_RESOURCES
+		  		 WHERE MB_ID = '${MB_ID}'
+		  		   AND USE_YN = 'Y'
+		  		   AND MENU_GBN_CD='MENU'
+		  		   AND RESOURCE_TYPE = 'URL') A  /* [SY] 리소스마스터(메뉴) */
+		     , (SELECT *
+		      	FROM TBSY_RESOURCES_ROLE
+		      	WHERE MB_ID = '${MB_ID}'
+		  			AND ROLE_ID IN (
+		  							SELECT ROLE_ID 
+							          FROM TBSY_USER_ROLE_MAP 
+							         WHERE USER_ID = '${IN_EMP_CD}' 
+							           AND MB_ID  = '${MB_ID}'
+							       )  ) B  
+		       WHERE 1=1
+		       	AND A.RESOURCE_ID = B.RESOURCE_ID                                                 
+		   START WITH A.PRNT_RESOURCE_ID = 'CM_100' AND A.MB_ID = '${MB_ID}'
+		   CONNECT BY PRIOR  A.RESOURCE_ID =  A.PRNT_RESOURCE_ID
+		                 AND A.MENU_GBN_CD = 'MENU'
+		                 AND A.MB_ID = '${MB_ID}'
+		   ORDER SIBLINGS BY A.SORT_NO
+)
+ORDER BY LV, SORT_NO, RESOURCE_ID
+]]>
+</select>
+
+
+<!-- ajax로 메뉴 조회  -->  
+ <select id="getResourcesListAjax" resultType="kr.co.fw.system.menu.ResourcesVO" parameterType="kr.co.fw.system.menu.ResourcesVO" >  
+/* menu-mapper.xml getResourcesListAjax 메뉴 리스트 조회 (AJAX) */
+<![CDATA[
+SELECT DISTINCT
+       LEVEL AS LV                    /* 레벨						   */ 
+     , CONNECT_BY_ISLEAF AS ISLEAF    /* 자식이 있으면 0 없으면 1      */
+     , A.RESOURCE_ID                  /* 리소스ID     VARCHAR2(20)     */
+     , A.RESOURCE_NAME                /* 리소스명     VARCHAR2(50)     */
+     , A.RESOURCE_URL                 /* 리소스URL    VARCHAR2(100)    */
+     , A.RESOURCE_PATTERN             /* 리소스패턴   VARCHAR2(100)    */
+     , A.RESOURCE_TYPE                /* 리소스타입   VARCHAR2(10)     */
+     , A.PRNT_RESOURCE_ID             /* 부모리소스ID VARCHAR2(20)     */
+     , A.MENU_ICON                    /* 메뉴 아이콘        VARCHAR2(200) */
+     , A.USE_YN                       /* 사용여부     VARCHAR2(1)      */
+     , A.SORT_NO                   	  /* 정렬순서     NUMBER(3,0)      */
+     , A.IN_EMP_CD                    /* 입력자사번   VARCHAR2(20)     */
+     , A.IN_DTM                       /* 입력일시     TIMESTAMP(6)(11) */
+     , A.UP_EMP_CD                    /* 수정자사번   VARCHAR2(20)     */
+     , A.UP_DTM                       /* 수정일시     TIMESTAMP(6)(11) */
+     , A.MENU_GBN_CD                  /* 메뉴 팝업 구분 */
+     , SUBSTR(SYS_CONNECT_BY_PATH(A.RESOURCE_NAME,' > '),3) MENU_PATH
+     , CASE WHEN A.RESOURCE_URL = #{CURRENT_MENU} THEN 'Y' ELSE 'N' END  AS  CURRENT_MENU /*현재 메뉴 여부*/
+  FROM TBSY_RESOURCES A         /* [ICOM][보안]보안리소스마스터(메뉴) */
+     , TBSY_RESOURCES_ROLE B  
+ WHERE A.MB_ID = #{MB_ID} AND A.USE_YN = 'Y'
+   AND B.MB_ID = #{MB_ID}  
+   AND A.RESOURCE_ID = B.RESOURCE_ID
+   AND A.RESOURCE_ID = #{RESOURCE_ID}                                                 
+   AND A.RESOURCE_TYPE = 'URL' 
+   AND B.ROLE_ID IN 
+      (
+        SELECT ROLE_ID FROM TBSY_USER_ROLE_MAP WHERE USER_ID =  #{IN_EMP_CD} AND MB_ID = #{MB_ID}
+         UNION ALL 
+        SELECT PRNT_ROLE_ID AS ROLE_IN FROM TBSY_ROLES_HIERARCHY WHERE MB_ID = #{MB_ID}
+         START WITH CHLD_ROLE_ID IN  (SELECT ROLE_ID FROM TBSY_USER_ROLE_MAP WHERE USER_ID =  #{IN_EMP_CD} AND MB_ID = #{MB_ID} )    
+       CONNECT BY PRIOR  PRNT_ROLE_ID =  CHLD_ROLE_ID     
+      ) 
+   START WITH A.PRNT_RESOURCE_ID = 'CM_100' AND A.MB_ID = #{MB_ID}
+   CONNECT BY PRIOR A.RESOURCE_ID =  A.PRNT_RESOURCE_ID AND A.MB_ID = #{MB_ID}
+   ORDER SIBLINGS BY A.SORT_NO
+]]>
+</select>
+
+
+<!-- 메뉴관리 화면에서 하위 리스트 조회 -->
+ <select id="getResources" resultType="kr.co.fw.system.menu.ResourcesVO" parameterType="kr.co.fw.system.menu.ResourcesVO" >  
+/* menu-mapper.xml getResources 메뉴관리 화면에서 하위 리스트 조회 */
+<![CDATA[
+ SELECT LEVEL AS LV                  /* 레벨*/ 
+      , CONNECT_BY_ISLEAF AS ISLEAF  /* 자식이 있으면 0 없으면 1 */
+      , RESOURCE_ID                  /* 리소스ID     VARCHAR2(20)     */
+      , RESOURCE_NAME ||' ['||RESOURCE_ID||'] - '||
+        CASE WHEN USE_YN = 'Y' THEN '사용'
+            ELSE '미사용'
+        END AS RESOURCE_NAME 		 /* 리소스명     VARCHAR2(50)     */
+      , RESOURCE_URL                 /* 리소스URL    VARCHAR2(100)    */
+      , RESOURCE_PATTERN             /* 리소스패턴   VARCHAR2(100)    */
+      , RESOURCE_TYPE                /* 리소스타입   VARCHAR2(10)     */
+      , PRNT_RESOURCE_ID             /* 부모리소스ID VARCHAR2(20)     */
+      , MENU_ICON                    /* 메뉴 아이콘        VARCHAR2(200) */
+      , SORT_NO                      /* 정렬순서     NUMBER(3,0)      */
+      , USE_YN						 /* 사용여부 */
+      , IN_EMP_CD                    /* 입력자사번   VARCHAR2(20)     */
+      , IN_DTM                       /* 입력일시     TIMESTAMP(6)(11) */
+      , UP_EMP_CD                    /* 수정자사번   VARCHAR2(20)     */
+      , UP_DTM                       /* 수정일시     TIMESTAMP(6)(11) */
+   FROM (SELECT * FROM TBSY_RESOURCES WHERE MB_ID = #{MB_ID} ) /* [SY] 리소스마스터(메뉴) */
+  WHERE MENU_GBN_CD = 'MENU'
+]]>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(RESOURCE_ID)'>
+    AND  PRNT_RESOURCE_ID = #{RESOURCE_ID}
+  START WITH RESOURCE_ID = #{RESOURCE_ID} AND MB_ID = #{MB_ID} 
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEmpty(RESOURCE_ID)'>
+    AND PRNT_RESOURCE_ID = 'CM_100'
+  START WITH RESOURCE_ID = 'CM_100' AND MB_ID = #{MB_ID} 
+</if>
+CONNECT BY PRIOR RESOURCE_ID = PRNT_RESOURCE_ID AND MB_ID = #{MB_ID}
+  ORDER SIBLINGS BY SORT_NO
+</select>
+
+<!-- 메뉴 조회-->  
+<select id="getMenu" resultType="kr.co.fw.system.menu.ResourcesVO" parameterType="kr.co.fw.system.menu.ResourcesVO" >  
+/* menu-mapper.xml getMenu 메뉴 조회 */
+ SELECT LEVEL AS LV                  /* 레벨 */ 
+	  , CONNECT_BY_ISLEAF AS ISLEAF  /* 자식이 있으면 0 없으면 1 */
+	  , A.RESOURCE_ID                  /* 리소스ID     VARCHAR2(20)     */
+	  , A.RESOURCE_NAME                /* 리소스명     VARCHAR2(50)     */
+	  , A.RESOURCE_URL                 /* 리소스URL    VARCHAR2(100)    */
+	  , A.RESOURCE_PATTERN             /* 리소스패턴   VARCHAR2(100)    */
+	  , A.CLS_RESOURCE_ID              /* 마감 리소스 아이디*/
+	  , A.MENU_GBN_CD              	 /* 메뉴 구분 */
+	  , CM.CD_VL_NM AS MENU_GBN_NM
+	  , A.RESOURCE_TYPE                /* 리소스타입   VARCHAR2(10)     */
+	  , A.PRNT_RESOURCE_ID           	 /* 부모리소스ID VARCHAR2(20)     */
+	  , A.MENU_ICON                    /* 메뉴 아이콘        VARCHAR2(200) */
+	  , A.USE_YN               		 /* 사용여부     VARCHAR2(1)      */
+	  , A.SORT_NO                   	 /* 정렬순서     NUMBER(3,0)      */
+	  , A.IN_EMP_CD                    /* 입력자사번   VARCHAR2(20)     */
+	  , A.IN_DTM                       /* 입력일시     TIMESTAMP(6)(11) */
+	  , A.UP_EMP_CD                    /* 수정자사번   VARCHAR2(20)     */
+	  , A.UP_DTM                       /* 수정일시     TIMESTAMP(6)(11) */
+   FROM (SELECT * FROM TBSY_RESOURCES WHERE MB_ID = #{MB_ID} ) A     /* [ICOM][보안]보안리소스마스터(메뉴) */
+   LEFT OUTER JOIN TBCM_COMMON_CODE CM
+     ON A.MB_ID = CM.MB_ID
+    AND A.MENU_GBN_CD = CM.CD_VL
+  WHERE 1 = 1
+    AND CM.GRP_CMM_CD = 'MENU_GBN_CD'
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SEARCH_WORD)'>
+  <![CDATA[   AND ( UPPER(RESOURCE_NAME) LIKE '%'|| UPPER(#{SEARCH_WORD}) ||'%' OR UPPER(RESOURCE_ID) LIKE  '%'|| UPPER(#{SEARCH_WORD}) ||'%' ) ]]>
+</if>
+  START WITH PRNT_RESOURCE_ID = 'CM_100' AND A.MB_ID = #{MB_ID}
+CONNECT BY PRIOR RESOURCE_ID = PRNT_RESOURCE_ID AND A.MB_ID = #{MB_ID}
+  ORDER SIBLINGS BY SORT_NO
+</select>
+
+
+<!-- 메뉴 저장 --> 
+<insert id="insertMenu" parameterType="kr.co.fw.system.menu.ResourcesVO" >
+/* menu-mapper.xml insertMenu 메뉴 저장 */
+<![CDATA[
+INSERT
+  INTO TBSY_RESOURCES /* [SY] 리소스마스터(메뉴) */
+     ( RESOURCE_ID            /* 리소스ID     VARCHAR2(20)     */
+     , RESOURCE_NAME          /* 리소스명     VARCHAR2(50)     */
+     , RESOURCE_URL           /* 리소스URL    VARCHAR2(100)    */
+     , RESOURCE_PATTERN       /* 리소스패턴   VARCHAR2(100)    */
+     , CLS_RESOURCE_ID        /* 마감 리소스 아이디 		   */
+     , MENU_GBN_CD			  /* 메뉴 구분코드 				   */
+     , RESOURCE_TYPE          /* 리소스타입   VARCHAR2(10)     */
+     , PRNT_RESOURCE_ID       /* 부모리소스ID VARCHAR2(20)     */
+     , MENU_ICON              /* 메뉴 아이콘        VARCHAR2(200) */
+     , USE_YN                 /* 사용여부     VARCHAR2(1)      */
+     , SORT_NO             	  /* 정렬순서     NUMBER(3,0)      */
+     , IN_EMP_CD              /* 입력자사번   VARCHAR2(20)     */
+     , IN_DTM                 /* 입력일시     TIMESTAMP 	   */
+     , UP_EMP_CD			  /* 수정자사번   VARCHAR2(20)     */	
+     , UP_DTM				  /* 입력일시     TIMESTAMP        */	
+     , MB_ID				  /* 회사ID */
+     , SYSTEM_GUBUN			  /* 시스템구분 */
+     )
+VALUES
+     ( #{RESOURCE_ID       }   /* 리소스ID     VARCHAR2(20)     */
+     , #{RESOURCE_NAME     }   /* 리소스명     VARCHAR2(50)     */
+     , #{RESOURCE_URL      }   /* 리소스URL    VARCHAR2(100)    */
+     , #{RESOURCE_PATTERN  }   /* 리소스패턴   VARCHAR2(100)    */
+     , #{CLS_RESOURCE_ID   }   /* 마감리소스아이디 VARCHAR2(100) */
+     , #{MENU_GBN_CD	   }   /* 메뉴 구분코드	*/		 
+     , 'URL'   				   /* 리소스타입   VARCHAR2(10)     */
+     , #{PRNT_RESOURCE_ID}     /* 부모리소스ID VARCHAR2(20)     */
+     , #{MENU_ICON         }   /* 메뉴 아이콘        VARCHAR2(200) */
+     , #{USE_YN            }   /* 사용여부     VARCHAR2(1)      */
+     , #{SORT_NO           }   /* 정렬순서     NUMBER(3,0)      */
+     , #{IN_EMP_CD         }   /* 입력자사번   VARCHAR2(20)     */
+     , SYSDATE				   /* 입력일시     TIMESTAMP(6)(11) */
+     , #{UP_EMP_CD         }   /* 수정자사번   VARCHAR2(20)     */
+     , SYSDATE				   /* 수정일시     TIMESTAMP(6)(11) */ 
+     , #{MB_ID}				   /* 회사ID */
+     , 'COMMON'				   /* 시스템구분 */
+     )
+]]>
+</insert>
+    
+    
+<!-- 메뉴 수정 --> 
+<update id="updateMenu" parameterType="kr.co.fw.system.menu.ResourcesVO">
+/* menu-mapper.xml updateMenu 메뉴 수정 */
+<![CDATA[
+UPDATE TBSY_RESOURCES /* [SY] 리소스마스터(메뉴) */
+   SET RESOURCE_NAME      = #{RESOURCE_NAME     }    /* 리소스명     VARCHAR2(50)     */
+     , RESOURCE_URL       = #{RESOURCE_URL      }    /* 리소스URL    VARCHAR2(100)    */
+     , RESOURCE_PATTERN   = #{RESOURCE_PATTERN  }    /* 리소스패턴   VARCHAR2(100)    */
+     , PRNT_RESOURCE_ID	  = #{PRNT_RESOURCE_ID	}    /* 부모리소스ID VARCHAR2(20)     */
+     , MENU_ICON          = #{MENU_ICON         }    /* 메뉴 아이콘        VARCHAR2(200) */
+     , CLS_RESOURCE_ID    = #{CLS_RESOURCE_ID	}	 /* 마감 리소스 아이디			  */
+	 , MENU_GBN_CD 		  = #{MENU_GBN_CD		}	 /* 메뉴 구분코드 				  */
+	 , USE_YN             = #{USE_YN	     	}    /* 사용여부     VARCHAR2(1)      */
+     , SORT_NO         	  = #{SORT_NO        	}    /* 정렬순서     NUMBER(3,0)      */
+     , UP_EMP_CD          = #{UP_EMP_CD         }    /* 수정자사번   VARCHAR2(20)     */
+     , UP_DTM             = SYSDATE				     /* 수정일시     TIMESTAMP(6)(11) */
+ WHERE MB_ID       = #{MB_ID} 						 /* 회사ID */
+   AND RESOURCE_ID = #{RESOURCE_ID} 				 /* 리소스ID VARCHAR2(20) */
+]]>
+</update>
+
+
+<!-- 메뉴 삭제 -->
+<delete id="deleteMenu" parameterType="kr.co.fw.system.menu.ResourcesVO">
+/* menu-mapper.xml deleteMenu 메뉴 삭제 */
+<![CDATA[
+DELETE TBSY_RESOURCES /* [SY] 리소스마스터(메뉴) */
+ WHERE MB_ID 	   = #{MB_ID}		/* 회사 ID */ 
+   AND RESOURCE_ID = #{RESOURCE_ID} /* 리소스ID VARCHAR2(20) */
+]]>
+</delete>
+
+
+<!-- 롤메핑 조회 -->
+<select id="getMenuRole" resultType="kr.co.fw.system.menu.ResourcesVO" parameterType="kr.co.fw.system.menu.ResourcesVO" >  
+/* menu-mapper.xml getMenuRole 롤메핑 조회 */
+<![CDATA[
+SELECT A.RESOURCE_ID    /* 리소스아이디 VARCHAR2(20)     */
+     , A.ROLE_ID        /* 롤코드       VARCHAR2(50)     */
+     , A.IN_EMP_CD      /* 입력자사번   VARCHAR2(20)     */
+     , A.IN_DTM         /* 입력일시     TIMESTAMP(6)(11) */
+     , A.UP_EMP_CD      /* 수정자사번   VARCHAR2(20)     */
+     , A.UP_DTM         /* 수정일시     TIMESTAMP(6)(11) */
+     , B.ROLE_NAME      /* 롤코드명     VARCHAR2(50)     */
+  FROM TBSY_RESOURCES_ROLE  A /* [SY] 리소스마스터(메뉴) */
+       LEFT OUTER JOIN TBSY_ROLES_MST B /* [SY] 롤마스터 */
+       ON  A.MB_ID   = B.MB_ID
+       AND A.ROLE_ID = B.ROLE_ID
+ WHERE A.MB_ID 	     = #{MB_ID}  
+   AND A.RESOURCE_ID = #{RESOURCE_ID} /* 리소스아이디 VARCHAR2(20) */
+ ]]>
+</select>
+
+
+<!-- 롤메핑 저장 -->
+<insert id="insertMenuRole" parameterType="kr.co.fw.system.menu.ResourcesVO" >
+/* menu-mapper.xml insertMenuRole 롤메핑 저장 */
+<![CDATA[
+INSERT
+  INTO TBSY_RESOURCES_ROLE /* [SY] 리소스-롤 맵핑 */
+     ( RESOURCE_ID    /* 리소스아이디 VARCHAR2(20)     */
+     , ROLE_ID        /* 롤코드       VARCHAR2(50)     */
+     , IN_EMP_CD      /* 입력자사번   VARCHAR2(20)     */
+     , IN_DTM         /* 입력일시     TIMESTAMP(6)(11) */
+     , MB_ID		  /* 회사ID */
+     , SYSTEM_GUBUN   /* 시스템구분 */
+     )
+VALUES
+     ( #{RESOURCE_ID}   /* 리소스아이디 VARCHAR2(20)     */
+     , #{ROLE_ID    }   /* 롤코드       VARCHAR2(50)     */
+     , #{UP_EMP_CD  }   /* 입력자사번   VARCHAR2(20)     */
+     , SYSDATE          /* 입력일시     TIMESTAMP(6)(11) */
+     , #{MB_ID		}	/* 회사ID */
+     , 'COMMON'			/* 시스템구분 */
+     )
+]]>
+</insert>
+
+
+<!--롤메핑 수정 --> 
+<update id="updateMenuRole" parameterType="kr.co.fw.system.menu.ResourcesVO">    
+/* menu-mapper.xml updateMenuRole 롤메핑 수정 */
+<![CDATA[
+UPDATE TBSY_RESOURCES_ROLE     /* [SY] 리소스-롤 맵핑 */
+   SET RESOURCE_ID = #{RESOURCE_ID}    /* 리소스아이디 VARCHAR2(20)     */
+     , ROLE_ID     = #{ROLE_ID    }    /* 롤코드       VARCHAR2(50)     */
+     , UP_EMP_CD   = #{UP_EMP_CD  }    /* 수정자사번   VARCHAR2(20)     */
+     , UP_DTM      = SYSDATE		   /* 수정일시     TIMESTAMP(6)(11) */
+ WHERE MB_ID       = #{MB_ID      }    /* 회싸ID */
+   AND RESOURCE_ID = #{RESOURCE_ID}    /* 리소스아이디 VARCHAR2(20) */
+   AND ROLE_ID     = #{ROLE_ID    }    /* 롤코드       VARCHAR2(50) */
+ ]]>
+</update>    
+    
+    
+<!-- 롤메핑삭제 -->
+<delete id="deleteMenuRole" parameterType="kr.co.fw.system.menu.ResourcesVO">
+/* menu-mapper.xml deleteMenuRole 롤메핑 삭제 */
+<![CDATA[
+DELETE TBSY_RESOURCES_ROLE /* [SY] 리소스-롤 맵핑 */
+ ]]>
+ WHERE MB_ID = #{MB_ID} 
+   AND RESOURCE_ID = <![CDATA[#{RESOURCE_ID}]]> /* 리소스아이디 VARCHAR2(20) */
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(ROLE_ID)'>
+   AND ROLE_ID     = <![CDATA[#{ROLE_ID    }]]> /* 롤코드       VARCHAR2(50) */
+</if>
+</delete>
+
+
+<!-- 롤메핑 조회 -->
+<select id="getMenuRoleMaster" resultType="kr.co.fw.system.menu.ResourcesVO" parameterType="kr.co.fw.system.menu.ResourcesVO" >  
+/* menu-mapper.xml getMenuRoleMaster 롤메핑 조회 */
+SELECT ROLE_ID        /* 롤코드     VARCHAR2(50)     */
+     , ROLE_NAME      /* 롤명       VARCHAR2(50)     */
+     , IN_EMP_CD      /* 입력자사번 VARCHAR2(20)     */
+     , IN_DTM         /* 입력일시   TIMESTAMP(6)(11) */
+     , UP_EMP_CD      /* 수정자사번 VARCHAR2(20)     */
+     , UP_DTM         /* 수정일시   TIMESTAMP(6)(11) */
+  FROM TBSY_ROLES_MST /* [SY] 롤마스터 */
+ WHERE MB_ID = #{MB_ID}
+   AND ROLE_ID != 'ROLE_SUPER'
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(ROLE_ID)'>
+  <![CDATA[ AND ROLE_ID = #{ROLE_ID} /* 롤코드 VARCHAR2(50) */]]>
+</if>
+ ORDER BY IN_DTM DESC
+</select>
+
+<!-- 원수사 홈페이지 조회 -->
+<select id="selectInscoHomeUrlList" parameterType="InscoVO" resultType="Hmap">
+/* insco-mapper.xml selectInscoHomeUrlList 원수사 링크 목록 조회 */
+SELECT A.MB_ID         /* 회원사ID     VARCHAR2(20)   */
+     , A.INSCO_CD      /* 원수사코드   VARCHAR2(3)    */
+     , A.INSCO_NM      /* 원수사명     VARCHAR2(20)   */
+     , A.CI_URL        /* CI URL       VARCHAR2(100)  */
+     , A.HOME_URL      /* 홈페이지 URL VARCHAR2(1000) */
+     , A.PRTN_START_YMD/* 제휴시작일   VARCHAR2(10)   */
+     , A.PRTN_END_YMD  /* 제휴종료일   VARCHAR2(10)   */
+     , A.USE_YN        /* 사용여부     VARCHAR2(1)    */
+     , A.SORT_NO       /* 정렬순서     NUMBER(22)     */
+  FROM TBCM_INSCO A
+WHERE A.MB_ID = #{MB_ID}
+   AND A.USE_YN = 'Y' /* 사용여부 */
+   AND A.HOME_URL IS NOT NULL
+ ORDER BY A.MB_ID, A.SORT_NO
+</select>
+
+</mapper>

@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="CustomerActivity">
+<!-- 활동이력 리스트 -->
+<sql id="selectCustActivityList_SQL">
+/* customerActivity-mapper.xml id="selectCustActivityList" 활동이력 리스트 */
+SELECT ACT.MB_ID
+	 , ACT.SEQ
+     , ACT.ACTIVITY_DTM
+     , ACT.ACTIVITY_GBN
+     , CM1.CD_VL_NM AS ACTIVITY_GBN_NM
+     , ACT.MEPIBS_GBN
+     , CM2.CD_VL_NM AS MEPIBS_GBN_NM
+     , ACT.CUST_ID
+     , CS1.CUST_NM
+     , ACT.GEAJA
+     , ACT.CONT_DATE
+     , ACT.INSCO_CD
+     , INS.INSCO_NM
+     , ACT.INSPOL_NO
+     , ACT.PROD_IDX
+     , PROD.PROD_NM
+     , ACT.MEMO
+     , SCD.SNM
+     , EMP.EMP_NM
+     , CM3.CD_VL_NM AS JIKCHK_NM
+  FROM TBCS_ACTIVITY_MNG ACT
+ INNER JOIN TBCS_CUSTOMER CS1
+    ON ACT.MB_ID = CS1.MB_ID
+   AND ACT.CUST_ID = CS1.CUST_ID
+ INNER JOIN TBCS_CUSTOMER_RELATION RL
+    ON ACT.MB_ID = RL.MB_ID
+   AND ACT.CUST_ID = RL.CUST_ID
+  LEFT JOIN TBCM_INSCO INS
+    ON ACT.MB_ID = INS.MB_ID
+   AND ACT.INSCO_CD = INS.INSCO_CD
+  LEFT JOIN TBCN_PRODUCT PROD
+    ON ACT.MB_ID = PROD.MB_ID
+   AND ACT.PROD_IDX = PROD.SEQ
+ INNER JOIN TBIN_EMPMST EMP
+    ON RL.MB_ID = EMP.MB_ID
+   AND RL.MNG_EMP_CD = EMP.EMP_CD
+ INNER JOIN TBIN_SCD SCD
+    ON EMP.MB_ID = SCD.MB_ID
+   AND EMP.SCD = SCD.SCD
+  LEFT OUTER JOIN (SELECT * FROM TBCM_COMMON_CODE WHERE GRP_CMM_CD = 'ACTIVITY_GBN') CM1
+    ON ACT.MB_ID = CM1.MB_ID
+   AND ACT.ACTIVITY_GBN = CM1.CD_VL
+  LEFT OUTER JOIN (SELECT * FROM TBCM_COMMON_CODE WHERE GRP_CMM_CD = 'MEPIBS_GBN') CM2
+    ON ACT.MB_ID = CM2.MB_ID
+   AND ACT.MEPIBS_GBN = CM2.CD_VL
+  LEFT OUTER JOIN (SELECT * FROM TBCM_COMMON_CODE WHERE GRP_CMM_CD = 'JIKCHK') CM3
+    ON EMP.MB_ID = CM3.MB_ID
+   AND EMP.JIKCHK = CM3.CD_VL
+ WHERE ACT.MB_ID = #{MB_ID}
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(CUST_ID)">
+   AND ACT.CUST_ID = #{CUST_ID}
+</if>
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_SCD)">
+   AND EMP.SCD IN (SELECT SCD
+   					 FROM (SELECT * FROM TBIN_SCD WHERE MB_ID = #{MB_ID})
+   					START WITH SCD = #{SRCH_SCD}
+   				  CONNECT BY PRIOR SCD = PSCD)
+</if>
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_JIKCHK)">
+   AND EMP.JIKCHK = #{SRCH_JIKCHK}	--직책검색
+</if>
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_MNG_EMP)">
+   AND (RL.MNG_EMP_CD LIKE '%'||#{SRCH_MNG_EMP}||'%' OR EMP.EMP_NM LIKE  '%'||#{SRCH_MNG_EMP}||'%')	--담당자 검색
+</if>
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_ACTIVITY_DTM_GBN)">
+   AND ${SRCH_ACTIVITY_DTM_GBN} BETWEEN NVL(#{SRCH_START_DATE}, '1900-01-01') AND NVL(#{SRCH_END_DATE}, '9999-12-31')
+</if>
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_ACTIVITY_GBN)">
+   AND ACT.ACTIVITY_GBN = #{SRCH_ACTIVITY_GBN}		--활동구분 검색
+</if>
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_MEPIBS_GBN)">
+   AND ACT.MEPIBS_GBN = #{SRCH_MEPIBS_GBN}			--메핍스 구분 검색
+</if>
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_INSCO_CD)">
+   AND ACT.INSCO_CD = #{SRCH_INSCO_CD}				--원수사 코드 검색
+</if>
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_CASE_GBN)">
+   AND ${SRCH_CASE_GBN} LIKE '%'||#{SRCH_WORD}||'%'	--조건별 검색
+</if>
+ORDER BY ACT.SEQ DESC
+</sql>
+
+<select id="selectCustActivityList" parameterType="kr.co.fw.customer.customerActivity.CustomerActivityVO" resultType="Hmap">
+<include refid="selectCustActivityList_SQL"/>
+</select>
+
+<!-- 보유계약 리스트 -->
+<select id="selectHoldContractList" parameterType="kr.co.fw.customer.customerActivity.CustomerActivityVO" resultType="Hmap">
+/* customerActivity-mapper.xml id="selectHoldContractList" 보유계약 리스트 */
+SELECT A.MB_ID
+     , A.GEAJA
+     , A.CONT_DATE
+     , A.INSCO_CD
+     , C.INSCO_NM
+     , A.INSPOL_NO
+     , A.PROD_SEQ
+     , B.PROD_NM
+  FROM TBCN_CONTRACT A
+ INNER JOIN TBCN_PRODUCT B
+    ON A.MB_ID = B.MB_ID
+   AND A.PROD_SEQ = B.SEQ
+ INNER JOIN TBCM_INSCO C
+    ON A.MB_ID = C.MB_ID
+   AND A.INSCO_CD = C.INSCO_CD
+ WHERE A.MB_ID = #{MB_ID}
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(GEAJA)">
+   AND A.GEAJA = #{GEAJA}
+</if>
+<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_INSPOL_NO)">
+   AND A.INSPOL_NO = #{SRCH_INSPOL_NO}
+</if>
+</select>
+
+<!-- 활동이력 등록 -->
+<insert id="insertCustActivity" parameterType="kr.co.fw.customer.customerActivity.CustomerActivityVO">
+/* customerActivity-mapper.xml id="insertCustomerActivity" 활동이력 등록 */
+<selectKey keyProperty="SEQ" resultType="String" order="BEFORE">
+SELECT TBCS_ACTIVITY_MNG_SEQ.NEXTVAL AS SEQ
+  FROM DUAL
+</selectKey>
+
+INSERT
+  INTO TBCS_ACTIVITY_MNG
+  	 ( MB_ID         /* 회사코드 VARCHAR2(10) */
+	 , SEQ           /* 시퀀스 NUMBER(22) */
+	 , CUST_ID       /* 고객ID VARCHAR2(30) */
+	 , ACTIVITY_DTM  /* 활동일자 VARCHAR2(10) */
+	 , ACTIVITY_GBN  /* 활동구분코드 VARCHAR2(10) */
+	 , MEPIBS_GBN    /* 메핍스 구분 코드 VARCHAR2(10) */
+	 , GEAJA         /* 계약자 VARCHAR2(100) */
+	 , CONT_DATE     /* 계약일자 VARCHAR2(10) */
+	 , INSCO_CD      /* 원수사 VARCHAR2(20) */
+	 , INSPOL_NO     /* 증권번호 VARCHAR2(40) */
+	 , PROD_IDX      /* 상품 인덱스 NUMBER(22) */
+	 , MEMO          /* 메모 VARCHAR2(200) */
+	 , IN_EMP_CD     /* 입력자 사번 VARCHAR2(20) */
+	 , IN_DTM        /* 입력일자 TIMESTAMP(6)(11) */
+  	 )
+VALUES
+	 ( #{MB_ID}
+	 , #{SEQ}
+	 , #{CUST_ID}
+	 , #{ACTIVITY_DTM}
+	 , #{ACTIVITY_GBN}
+	 , #{MEPIBS_GBN}
+	 , #{GEAJA}
+	 , #{CONT_DATE}
+	 , #{INSCO_CD}
+	 , #{INSPOL_NO}
+	 , #{PROD_IDX}
+	 , #{MEMO}
+	 , #{IN_EMP_CD}
+	 , SYSDATE
+	 )
+</insert>
+
+<update id="updateCustActivity" parameterType="kr.co.fw.customer.customerActivity.CustomerActivityVO">
+/* customerActivity-mapper.xml id="updateCustActivity" 활동내역 수정 */
+UPDATE TBCS_ACTIVITY_MNG
+   SET ACTIVITY_DTM = #{ACTIVITY_DTM}
+     , ACTIVITY_GBN = #{ACTIVITY_GBN}
+     , MEPIBS_GBN = #{MEPIBS_GBN}
+     , CONT_DATE = #{CONT_DATE}
+     , INSCO_CD = #{INSCO_CD}
+     , MEMO = #{MEMO}
+ WHERE MB_ID = #{MB_ID}
+   AND SEQ = #{SEQ}
+</update>
+
+<delete id="deleteCustActivity" parameterType="kr.co.fw.customer.customerActivity.CustomerActivityVO">
+/* customerActivity-mapper.xml id="deleteCustActivity" 활동내역 수정 */
+DELETE TBCS_ACTIVITY_MNG
+ WHERE MB_ID = #{MB_ID}
+   AND SEQ = #{SEQ}
+</delete>
+
+<select id="getCustActivity" parameterType="kr.co.fw.customer.customerActivity.CustomerActivityVO" resultType="Hmap">
+/* customerActivity-mapper.xml id="getCustActivity" 활동이력 상세조회 */
+SELECT ACT.MB_ID
+	 , ACT.SEQ
+     , ACT.ACTIVITY_DTM
+     , ACT.ACTIVITY_GBN
+     , CM1.CD_VL_NM AS ACTIVITY_GBN_NM
+     , ACT.MEPIBS_GBN
+     , CM2.CD_VL_NM AS MEPIBS_GBN_NM
+     , ACT.CUST_ID
+     , CS1.CUST_NM
+     , ACT.GEAJA
+     , ACT.CONT_DATE
+     , ACT.INSCO_CD
+     , INS.INSCO_NM
+     , ACT.INSPOL_NO
+     , ACT.PROD_IDX
+     , PROD.PROD_NM
+     , ACT.MEMO
+     , SCD.SNM
+     , EMP.EMP_NM
+     , CM3.CD_VL_NM AS JIKCHK_NM
+  FROM TBCS_ACTIVITY_MNG ACT
+ INNER JOIN TBCS_CUSTOMER CS1
+    ON ACT.MB_ID = CS1.MB_ID
+   AND ACT.CUST_ID = CS1.CUST_ID
+ INNER JOIN TBCS_CUSTOMER_RELATION RL
+    ON ACT.MB_ID = RL.MB_ID
+   AND ACT.CUST_ID = RL.CUST_ID
+  LEFT JOIN TBCM_INSCO INS
+    ON ACT.MB_ID = INS.MB_ID
+   AND ACT.INSCO_CD = INS.INSCO_CD
+  LEFT JOIN TBCN_PRODUCT PROD
+    ON ACT.MB_ID = PROD.MB_ID
+   AND ACT.PROD_IDX = PROD.SEQ
+ INNER JOIN TBIN_EMPMST EMP
+    ON RL.MB_ID = EMP.MB_ID
+   AND RL.MNG_EMP_CD = EMP.EMP_CD
+ INNER JOIN TBIN_SCD SCD
+    ON EMP.MB_ID = SCD.MB_ID
+   AND EMP.SCD = SCD.SCD
+  LEFT OUTER JOIN (SELECT * FROM TBCM_COMMON_CODE WHERE GRP_CMM_CD = 'ACTIVITY_GBN') CM1
+    ON ACT.MB_ID = CM1.MB_ID
+   AND ACT.ACTIVITY_GBN = CM1.CD_VL
+  LEFT OUTER JOIN (SELECT * FROM TBCM_COMMON_CODE WHERE GRP_CMM_CD = 'MEPIBS_GBN') CM2
+    ON ACT.MB_ID = CM2.MB_ID
+   AND ACT.MEPIBS_GBN = CM2.CD_VL
+  LEFT OUTER JOIN (SELECT * FROM TBCM_COMMON_CODE WHERE GRP_CMM_CD = 'JIKCHK') CM3
+    ON EMP.MB_ID = CM3.MB_ID
+   AND EMP.JIKCHK = CM3.CD_VL
+ WHERE ACT.MB_ID = #{MB_ID}
+   AND ACT.CUST_ID = #{CUST_ID}
+   AND ACT.SEQ = #{SEQ}
+</select>
+</mapper>

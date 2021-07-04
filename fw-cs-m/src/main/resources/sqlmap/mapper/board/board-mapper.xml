@@ -1,0 +1,1802 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Board">
+
+<!-- 게시판 리스트 조회 -->
+<select id="selectBoardList" parameterType="kr.co.fw.board.BoardVO" resultType="Hmap" >
+/* board-mapper.xml selectBoardList 게시판리스트 */
+ SELECT LEVEL AS LV          /* 레벨 */ 
+	  , CONNECT_BY_ISLEAF AS ISLEAF  /* 자식이 있으면 0 없으면 1 */
+	  , A.BD_NO              /* 게시판번호            NUMBER        */
+	  , A.BD_NM 			 /* 게시판명 VARCHAR2(150) */
+	  , SUBSTR(SYS_CONNECT_BY_PATH(A.BD_NM,' > '),3) AS BDNMPATH /* 게시판 경로 */
+	  , A.BD_DESC            /* 게시판설명            VARCHAR2(300) */
+	  , A.PBD_NO             /* 부모게시판번호        NUMBER        */
+	  , A.SORT_NO            /* 게시판 정렬순서       NUMBER        */
+	  , A.FOLDER_YN          /* 그룹(폴더)여부        VARCHAR2(1)   */
+	  , B.CD_VL_NM AS FOLDER_YN_NM  /* 그룹폴더여부 */
+      , A.USE_YN             /* 게시판 사용유무       VARCHAR2(1)   */
+      , (SELECT COUNT(BD_NO)
+           FROM TBBD_ITEM
+          WHERE MB_ID = A.MB_ID 
+            AND BD_NO = A.BD_NO
+        )    AS ITEM_CNT     /* 글 등록수 NUMBER */
+ 	  , (SELECT COUNT(BD_NO)
+           FROM TBBD_COMMENT
+          WHERE MB_ID = A.MB_ID
+            AND BD_NO = A.BD_NO
+        )    AS COMMENT_CNT  /* 댓글 등록수 NUMBER */
+      , A.IN_EMP_CD
+      , A.IN_DTM
+      , A.UP_EMP_CD
+      , A.UP_DTM
+      , A.MB_ID
+      , TO_CHAR(A.IN_DTM, 'YYYY-MM-DD') AS IN_YMD /* 게시판생성일 */
+   FROM (SELECT * FROM TBBD_BOARD WHERE MB_ID = #{MB_ID} ) A
+        LEFT OUTER JOIN 
+        (SELECT * FROM TBCM_COMMON_CODE WHERE GRP_CMM_CD = 'BD_FOLDER_YN' ) B
+        ON  A.MB_ID     = B.MB_ID
+        AND A.FOLDER_YN = B.CD_VL
+<where>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(MB_ID)'>    
+   AND A.MB_ID = #{MB_ID}
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(BD_NO)'>    
+   AND A.BD_NO = #{BD_NO}
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(FOLDER_YN)'>    
+   AND A.FOLDER_YN = #{FOLDER_YN}
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(USE_YN)'>    
+   AND A.USE_YN = #{USE_YN}
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SEARCH_WORD)'>    
+   AND A.BD_NM LIKE '%'||#{SEARCH_WORD}||'%'
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(EXCLUDE_REPORT, "Y")'>    
+   AND A.BD_NM != '리포트'
+</if>
+</where>
+  START WITH PBD_NO IS NULL
+CONNECT BY PRIOR BD_NO = PBD_NO
+  ORDER SIBLINGS BY SORT_NO
+</select>
+ 
+<!-- 게시판 권한조회 -->
+<select id="getBoardAuth" resultType="kr.co.fw.board.BoardAuthVO" parameterType="kr.co.fw.board.BoardItemMngVO">
+/* board-mapper.xml getBoardAuth 게시판 권한조회 */
+WITH TEMP_TABLE AS (
+SELECT DISTINCT *
+  FROM TBBD_AUTH_SET A 
+ WHERE MB_ID = #{MB_ID} 
+   AND AUTH_GRP_CD IN 
+       (SELECT BOARD_ROLE_ID 
+          FROM TBIN_EMPMST 
+         WHERE MB_ID  = #{MB_ID}
+           AND EMP_CD = #{IN_EMP_CD} )
+)
+SELECT *
+  FROM TEMP_TABLE 
+  PIVOT(COUNT(BD_AUTH_GRP_CD) FOR BD_AUTH_GRP_CD IN ('01' AS AUTH_WRITE,
+       												 '02' AS AUTH_UPDATE,
+       												 '03' AS AUTH_READ,
+       												 '04' AS AUTH_DELETE))
+</select>
+ 
+<!-- 게시판 트리뷰 조회 -->
+<select id="selectBoardList4TreeView" resultType="kr.co.fw.board.BoardVO" parameterType="kr.co.fw.board.BoardVO">
+/* board-mapper.xml selectBoardList4TreeView 게시판리스트 */
+ SELECT LEVEL AS LV  /* 레벨 */ 
+  	  , CONNECT_BY_ISLEAF AS ISLEAF /* 자식이 있으면 0 없으면 1 */
+  	  , A.BD_NO        /* 게시판번호            NUMBER        */
+   	  , A.BD_NM        /* 게시판명              VARCHAR2(150) */
+   	  , A.PBD_NO       /* 부모게시판번호        NUMBER        */
+   	  , A.SORT_NO      /* 게시판 정렬순서       NUMBER        */
+   	  , A.FOLDER_YN    /* 그룹(폴더)여부        VARCHAR2(1)   */
+      , B.CD_VL_NM AS FOLDER_YN_NM  /* 그룹폴더여부 */
+ 	  , A.USE_YN
+      , ( SELECT CONF_VAL FROM TBBD_BOARD_CONF 
+           WHERE CONF_CD = 'DESIG_RECEIVER_YN' AND MB_ID = #{MB_ID} AND BD_NO = A.BD_NO ) AS DESIG_RECEIVER_YN 	  
+   FROM (SELECT * FROM TBBD_BOARD WHERE MB_ID = #{MB_ID} AND BD_NO = '0'
+	      UNION
+	     SELECT TB2.*
+	       FROM (SELECT DISTINCT BD_NO 
+   				   FROM TBBD_AUTH_SET 
+   				  WHERE MB_ID = #{MB_ID}
+   				    AND BD_AUTH_GRP_CD = '03'
+   		    	    AND AUTH_GRP_CD IN 
+		                (SELECT BOARD_ROLE_ID 
+		   		    	   FROM TBIN_EMPMST 
+		   		      	  WHERE MB_ID = #{MB_ID} AND EMP_CD = #{EMP_CD})) TB1
+	          , (SELECT * FROM TBBD_BOARD WHERE MB_ID = #{MB_ID} AND USE_YN = 'Y') TB2 
+	      WHERE TB1.BD_NO = TB2.BD_NO) A
+        LEFT OUTER JOIN 
+        (SELECT * FROM TBCM_COMMON_CODE WHERE GRP_CMM_CD = 'BD_FOLDER_YN') B
+        ON  A.MB_ID        = B.MB_ID
+        AND A.FOLDER_YN    = B.CD_VL
+  WHERE 1 = 1
+ /* AND USE_YN = 'Y' */
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(BD_NO)'>
+	AND A.PBD_NO     = #{BD_NO}
+  START WITH A.BD_NO = #{BD_NO}
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEmpty(BD_NO)'>
+    AND A.PBD_NO IS NULL /* 이렇게 해야 최상위 폴더가 나옴. */
+  START WITH A.BD_NO = '0' 
+</if>
+CONNECT BY PRIOR A.BD_NO = A.PBD_NO
+  ORDER SIBLINGS BY A.SORT_NO
+</select>
+ 
+ <!-- 게시판 트리뷰 조회2 -->
+ <select id="selectBoardList4TreeViewAll" resultType="kr.co.fw.board.BoardVO" parameterType="kr.co.fw.board.BoardVO">
+ /* board-mapper.xml selectBoardList4TreeViewAll 게시판리스트 */
+ SELECT LEVEL AS LV  /* 레벨 */ 
+      , CONNECT_BY_ISLEAF AS ISLEAF /* 자식이 있으면 0 없으면 1 */
+      , A.BD_NO        /* 게시판번호            NUMBER        */
+      , A.BD_NM        /* 게시판명              VARCHAR2(150) */
+      , A.PBD_NO       /* 부모게시판번호        NUMBER        */
+      , A.SORT_NO      /* 게시판 정렬순서       NUMBER        */
+      , A.FOLDER_YN    /* 그룹(폴더)여부        VARCHAR2(1)   */
+      , B.CD_VL_NM AS FOLDER_YN_NM  /* 그룹폴더여부 */
+      , A.USE_YN
+      , ( SELECT CONF_VAL FROM TBBD_BOARD_CONF 
+           WHERE CONF_CD = 'DESIG_RECEIVER_YN' AND MB_ID = #{MB_ID} AND BD_NO = A.BD_NO ) AS DESIG_RECEIVER_YN
+   FROM (SELECT * FROM TBBD_BOARD WHERE MB_ID = #{MB_ID} ) A
+        LEFT OUTER JOIN 
+        (SELECT * FROM TBCM_COMMON_CODE WHERE GRP_CMM_CD = 'BD_FOLDER_YN') B
+        ON  A.MB_ID        = B.MB_ID
+        AND A.FOLDER_YN    = B.CD_VL
+  WHERE 1 = 1
+ /* AND USE_YN = 'Y' */
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(BD_NO)'>
+    AND A.PBD_NO     = #{BD_NO}
+  START WITH A.BD_NO = #{BD_NO}
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isEmpty(BD_NO)'>
+	<if test='@kr.co.fw.common.util.CommUtil@isEquals(MENU_GBN,"0")'>
+	    AND A.PBD_NO IS NULL /* 이렇게 해야 최상위 폴더가 나옴.(게시판) */
+	  START WITH A.BD_NO = '0' 
+	</if>
+	<if test='@kr.co.fw.common.util.CommUtil@isEquals(MENU_GBN,"1")'>
+	    AND A.PBD_NO IS NULL /* 이렇게 해야 최상위 폴더가 나옴.(자료실) */
+	  START WITH A.BD_NO = '2' 
+	</if>
+</if>
+CONNECT BY PRIOR A.BD_NO = A.PBD_NO
+  ORDER SIBLINGS BY A.SORT_NO
+</select>
+ 
+<!-- SRCH_TGT_BOARD, 게시글이동 대상 게시판 목록 조회 -->
+<select id="selectTargetBoardList4Srch" parameterType="kr.co.fw.board.BoardVO" resultType="Hmap">
+/* board-mapper.xml selectTargetBoardList4Srch 게시글이동 대상 게시판 목록 조회 */
+ SELECT BD_NO AS VALUE
+      , LPAD(' ', 3 * ( LEVEL - 1 ),'-')||BD_NM AS TEXT
+   FROM (SELECT * FROM TBBD_BOARD WHERE MB_ID = #{MB_ID} )
+  WHERE 1 = 1
+    AND FOLDER_YN != 'Y'
+  START WITH PBD_NO IS NULL
+CONNECT BY PRIOR BD_NO = PBD_NO
+  ORDER SIBLINGS BY SORT_NO
+</select>
+
+<!-- 게시판 정보 조회(한 건) -->
+<select id="selectBoardByBulbdNO" resultType="kr.co.fw.board.BoardVO" parameterType="kr.co.fw.board.BoardVO">
+/* board-mapper.xml selectBoardByBulbdNO 게시판리스트 */
+ SELECT LEVEL AS LV        /* 레벨 */ 
+      , CONNECT_BY_ISLEAF AS ISLEAF  /* 자식이 있으면 0 없으면 1 */
+      , A.BD_NO              /* 게시판번호            NUMBER        */
+      , LPAD(' ', 3 * ( LEVEL - 1 ),'-')||A.BD_NM AS BD_NM /* 게시판명 VARCHAR2(150) */
+      , SUBSTR(SYS_CONNECT_BY_PATH(A.BD_NM,' > '),3) AS BDNMPATH /* 게시판 경로 */
+      , A.BD_DESC            /* 게시판설명            VARCHAR2(300) */
+      , A.PBD_NO             /* 부모게시판번호        NUMBER        */
+      , A.SORT_NO            /* 게시판 정렬순서       NUMBER        */
+      , A.FOLDER_YN          /* 그룹(폴더)여부        VARCHAR2(1)   */
+      , B.CD_VL_NM AS FOLDER_YN_NM  /* 그룹폴더여부 */
+      , A.USE_YN             /* 게시판 사용유무       VARCHAR2(1)   */
+      
+      , ( SELECT CONF_VAL FROM TBBD_BOARD_CONF WHERE MB_ID = #{MB_ID} AND BD_NO = #{BD_NO} AND CONF_CD = 'OPEN_EN' ) OPEN_EN           -- 오픈관리 사용유무     VARCHAR2(1)
+      , ( SELECT CONF_VAL FROM TBBD_BOARD_CONF WHERE MB_ID = #{MB_ID} AND BD_NO = #{BD_NO} AND CONF_CD = 'DESIG_RECEIVER_YN') DESIG_RECEIVER_YN -- 수신자지정여부
+      , ( SELECT CONF_VAL FROM TBBD_BOARD_CONF WHERE MB_ID = #{MB_ID} AND BD_NO = #{BD_NO} AND CONF_CD = 'PLAYER_USE_EN') PLAYER_USE_EN     -- 동영상 사용유무       VARCHAR2(1)
+      , ( SELECT CONF_VAL FROM TBBD_BOARD_CONF WHERE MB_ID = #{MB_ID} AND BD_NO = #{BD_NO} AND CONF_CD = 'ATCH_FILE_USE_EN') ATCH_FILE_USE_EN  -- 첨부파일 사용 유무    VARCHAR2(1)
+
+      /*
+      , RPL_USE_EN        -- 답급사용여부          VARCHAR2(1)
+      , APND_USE_EN       -- 덧글사용여부          VARCHAR2(1) 
+      , BULT_DEL_USE_EN   -- 게시글 삭제 사용 유무 VARCHAR2(1)
+      , NW_BULT_APPT_PRID -- 신규 게시글 적용기간  NUMBER
+      , SRCH_USE_EN       -- 검색기능 사용유무     VARCHAR2(1)
+      , KNOWLEDGE_EN      -- 지식공유 사용유무     VARCHAR2(1)
+      , DATA_DCD          -- 데이터구분코드        VARCHAR2(1)
+      , USE_YN            -- 게시판 사용유무       VARCHAR2(1)
+      , CATEGORY          -- 카테고리
+      */
+      
+      , (SELECT COUNT(BD_NO)
+           FROM TBBD_ITEM
+          WHERE MB_ID = A.MB_ID 
+            AND BD_NO = A.BD_NO
+        )    AS ITEM_CNT     /* 글 등록수 NUMBER */
+     , (SELECT COUNT(BD_NO)
+           FROM TBBD_COMMENT
+          WHERE MB_ID = A.MB_ID
+            AND BD_NO = A.BD_NO
+        )    AS COMMENT_CNT  /* 댓글 등록수 NUMBER */
+      , A.IN_EMP_CD
+      , A.IN_DTM
+      , A.UP_EMP_CD
+      , A.UP_DTM
+      , A.MB_ID
+   FROM (SELECT * FROM TBBD_BOARD WHERE MB_ID = #{MB_ID} ) A
+        LEFT OUTER JOIN 
+        (SELECT * FROM TBCM_COMMON_CODE WHERE GRP_CMM_CD = 'BD_FOLDER_YN' ) B
+        ON  A.MB_ID     = B.MB_ID
+        AND A.FOLDER_YN = B.CD_VL
+  WHERE A.MB_ID = #{MB_ID}
+    AND A.BD_NO = #{BD_NO}
+  START WITH PBD_NO IS NULL
+CONNECT BY PRIOR BD_NO = PBD_NO
+  ORDER SIBLINGS BY SORT_NO
+</select>
+
+
+<!-- 게시판 정보 입력 -->
+<insert id="insertBoard" parameterType="kr.co.fw.board.BoardVO">
+<selectKey keyProperty="BD_NO" resultType="String" order="BEFORE">
+ SELECT TBBD_BOARD_SEQ.NEXTVAL FROM DUAL
+</selectKey>
+/* board-mapper.xml insertBoard 게시판 입력(생성) */	
+INSERT INTO TBBD_BOARD (
+	   BD_NO         /* 게시판번호            NUMBER        */
+ 	 , BD_NM         /* 게시판명              VARCHAR2(150) */
+ 	 , BD_DESC       /* 게시판설명            VARCHAR2(300) */
+ 	 , PBD_NO        /* 부모게시판번호        NUMBER        */
+ 	 , SORT_NO       /* 게시판 정렬순서       NUMBER        */
+ 	 , FOLDER_YN     /* 그룹(폴더)여부        VARCHAR2(1)   */
+ 	 , USE_YN        /* 게시판 사용유무       VARCHAR2(1)   */
+     , IN_EMP_CD     /* 입력자                VARCHAR2(20)  */
+     , IN_DTM        /* 입력일시              DATE          */
+     , UP_EMP_CD     /* 수정자                VARCHAR2(20)  */
+     , UP_DTM        /* 수정일시              DATE          */     
+  	 , MB_ID         /* 회원사ID */
+) VALUES (
+  	   TBBD_BOARD_SEQ.CURRVAL /* 게시판번호      NUMBER        */
+ 	 , #{BD_NM}         /* 게시판명              VARCHAR2(150) */
+ 	 , #{BD_DESC}       /* 게시판설명            VARCHAR2(300) */
+ 	 , #{PBD_NO}        /* 부모게시판번호        NUMBER        */
+ 	 , #{SORT_NO}       /* 게시판 정렬순서       NUMBER        */
+ 	 , #{FOLDER_YN}     /* 그룹(폴더)여부        VARCHAR2(1)   */
+ 	 , #{USE_YN}        /* 게시판 사용유무       VARCHAR2(1)   */
+     , #{IN_EMP_CD}     /* 입력자                VARCHAR2(20)  */
+     , SYSDATE          /* 입력일시              DATE          */
+     , #{UP_EMP_CD}     /* 입력자                VARCHAR2(20)  */
+     , SYSDATE          /* 입력일시              DATE          */     
+  	 , #{MB_ID}         /* 회원사ID */
+)
+</insert>
+
+<!-- 게시판 메뉴 저장 -->
+<insert id="insertMenuBrd" parameterType="kr.co.fw.board.BoardVO" >
+/* board-mapper.xml insertMenuBrd 메뉴 저장 */
+<![CDATA[
+MERGE INTO TBSY_RESOURCES /* [SY][시스템] 리소스마스터(메뉴) */
+    USING DUAL
+    ON (MB_ID = #{MB_ID} AND RESOURCE_ID = ('BD_'||${BD_NO} ) )
+WHEN MATCHED THEN
+    UPDATE SET         
+       RESOURCE_NAME       = #{BD_NM}     /* 리소스명     VARCHAR2(50)     */            
+     , PRNT_RESOURCE_ID    = 'BD_000'     /* 부모리소스ID VARCHAR2(20)     */
+     , USE_YN              = 'Y'          /* 사용여부     VARCHAR2(1)      */
+     , SORT_NO             = #{SORT_NO}   /* 정렬순서     NUMBER(3,0)      */
+     , IN_EMP_CD           = #{IN_EMP_CD} /* 입력자사번   VARCHAR2(20)     */
+     , IN_DTM              = SYSDATE      /* 입력일시     TIMESTAMP(6)(11) */
+     , UP_EMP_CD           = #{UP_EMP_CD} /* 수정자사번   VARCHAR2(20)     */
+     , UP_DTM              = SYSDATE      /* 수정일시     TIMESTAMP(6)(11) */ 
+     , SYSTEM_GUBUN        = 'ERP'        /* 시스템구분 */
+
+WHEN NOT MATCHED THEN
+
+INSERT /* [SY][시스템] 리소스마스터(메뉴) */
+     ( RESOURCE_ID            /* 리소스ID     VARCHAR2(20)     */
+     , RESOURCE_NAME          /* 리소스명     VARCHAR2(50)     */
+     , RESOURCE_URL           /* 리소스URL    VARCHAR2(100)    */
+     , RESOURCE_PATTERN       /* 리소스패턴   VARCHAR2(100)    */
+     , CLS_RESOURCE_ID        /* 마감 리소스 아이디 */
+     , MENU_GBN_CD            /* 메뉴 구분코드 */
+     , RESOURCE_TYPE          /* 리소스타입   VARCHAR2(10)     */
+     , PRNT_RESOURCE_ID       /* 부모리소스ID VARCHAR2(20)     */
+     , USE_YN                 /* 사용여부     VARCHAR2(1)      */
+     , SORT_NO                /* 정렬순서     NUMBER(3,0)      */
+     , IN_EMP_CD              /* 입력자사번   VARCHAR2(20)     */
+     , IN_DTM                 /* 입력일시     TIMESTAMP(6)(11) */
+     , UP_EMP_CD              /* 수정자사번   VARCHAR2(20)     */
+     , UP_DTM                 /* 수정일시     TIMESTAMP(6)(11) */
+     , MB_ID                  /* 회사ID */
+     , SYSTEM_GUBUN           /* 시스템구분 */
+     )
+VALUES
+     ( 'BD_'||(${BD_NO}) 		/* 리소스ID     VARCHAR2(20)     */
+     , #{BD_NM}                 /* 리소스명     VARCHAR2(50)     */
+     , '/board/itemMng.go'      /* 리소스URL    VARCHAR2(100)    */
+     , '/board/**/*'            /* 리소스패턴   VARCHAR2(100)    */
+     , ''                       /* 마감 리소스 아이디 */
+     , 'MENU'                   /* 메뉴 구분코드 */     
+     , 'URL'                    /* 리소스타입   VARCHAR2(10)     */
+     , 'BD_000'                 /* 부모리소스ID VARCHAR2(20)     */
+     , 'Y'                      /* 사용여부     VARCHAR2(1)      */
+     , #{SORT_NO}               /* 정렬순서     NUMBER(3,0)      */
+     , #{IN_EMP_CD}             /* 입력자사번   VARCHAR2(20)     */
+     , SYSDATE                  /* 입력일시     TIMESTAMP(6)(11) */
+     , #{UP_EMP_CD}             /* 입력자사번   VARCHAR2(20)     */
+     , SYSDATE                  /* 입력일시     TIMESTAMP(6)(11) */ 
+     , #{MB_ID}                 /* 회사ID */
+     , 'ERP'                    /* 시스템구분 */
+     )
+]]>
+</insert>
+
+<!--  게시판 수정 -->
+<update id="updateBoard" parameterType="kr.co.fw.board.BoardVO">
+/* board-mapper.xml updateBoard 게시판 수정 */
+UPDATE TBBD_BOARD
+   SET UP_EMP_CD    = #{UP_EMP_CD}   /* 수정자                VARCHAR2(20)  */
+     , UP_DTM       = SYSDATE        /* 수정일시              DATE          */  
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(BD_NM)'>     
+ 	 , BD_NM        = #{BD_NM}       /* 게시판명              VARCHAR2(150) */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(BD_DESC)'>     
+ 	 , BD_DESC      = #{BD_DESC}     /* 게시판설명            VARCHAR2(300) */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(PBD_NO)'>     
+  	 , PBD_NO       = #{PBD_NO}      /* 부모게시판번호        NUMBER        */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SORT_NO)'>     
+  	 , SORT_NO      = #{SORT_NO}     /* 게시판 정렬순서       NUMBER        */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(FOLDER_YN)'>     
+  	 , FOLDER_YN    = #{FOLDER_YN}   /* 그룹(폴더)여부        VARCHAR2(1)   */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(USE_YN)'>     
+  	 , USE_YN       = #{USE_YN}      /* 게시판 사용유무       VARCHAR2(1)   */
+</if>     
+ WHERE MB_ID = #{MB_ID}
+   AND BD_NO = #{BD_NO}
+ </update>
+ 
+<!-- 게시판 삭제 -->
+<delete id="deleteBoard" parameterType="kr.co.fw.board.BoardVO">
+/* board-mapper.xml deleteBoard 게시판 삭제 */
+DELETE TBBD_BOARD
+ WHERE MB_ID = #{MB_ID} AND BD_NO = #{BD_NO}
+</delete>
+
+<!-- 게시판 메뉴 삭제 -->
+<delete id="deleteMenuBrd" parameterType="kr.co.fw.board.BoardVO" >
+/* board-mapper.xml deleteMenuBrd 메뉴 삭제 */
+DELETE TBSY_RESOURCES /* [SY][시스템] 리소스마스터(메뉴) */
+ WHERE MB_ID       = #{MB_ID}
+   AND RESOURCE_ID = 'BD_'||(${BD_NO})
+</delete>
+
+<!-- ***** 게시판 설정 ***** -->
+
+<!-- 게시판 설정 목록 조회 -->
+<select id="selectBoardConfList" parameterType="kr.co.fw.board.BoardVO"  resultType="Hmap" >
+SELECT A.SEQ
+	 , A.BD_NO
+	 , A.CONF_CD
+	 , B.CONF_CD_NM
+	 , B.CONF_CD_DESC
+	 , A.CONF_VAL
+	 , A.USE_YN
+	 , A.SORT_NO
+	 , A.IN_EMP_CD
+	 , A.IN_DTM
+	 , A.UP_EMP_CD
+	 , A.UP_DTM
+	 , A.MB_ID
+  FROM TBBD_BOARD_CONF A
+  	   LEFT OUTER JOIN 
+  	   ( SELECT * FROM TBSY_CONF_CD_MST WHERE CATEGORY = 'BOARD_CONF' ) B
+  	   ON A.CONF_CD = B.CONF_CD
+<where>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(MB_ID)'>
+   AND A.MB_ID = #{MB_ID}
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(BD_NO)'>
+   AND A.BD_NO = #{BD_NO}
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(USE_YN)'>
+   AND A.USE_YN = #{USE_YN}
+</if>   
+</where>
+ ORDER BY A.MB_ID, A.SORT_NO, A.CONF_CD
+</select>
+
+<!-- 게시판 설정 입력 -->
+<insert id="insertBoardConf" parameterType="kr.co.fw.board.BoardVO" >
+INSERT INTO TBBD_BOARD_CONF (
+       SEQ
+     , BD_NO
+     , CONF_CD
+     , CONF_VAL
+     , USE_YN
+     , SORT_NO
+     , IN_EMP_CD
+     , IN_DTM
+     , MB_ID
+)
+SELECT TBBD_BOARD_CONF_SEQ.NEXTVAL AS SEQ, A.*
+  FROM (SELECT #{BD_NO} AS BD_NO
+             , CONF_CD
+             , DEFAULT_VAL AS CONF_VAL 
+             , USE_YN
+             , SORT_NO
+             , #{IN_EMP_CD} AS IN_EMP_CD
+             , SYSDATE 		AS IN_DTM
+             , #{MB_ID} 	AS MB_ID
+          FROM TBSY_CONF_CD_MST 
+         WHERE CATEGORY = 'BOARD_CONF' 
+         ORDER BY SORT_NO) A
+</insert>
+
+<!-- 게시판 설정 수정 -->
+<update id="updateBoardConf" parameterType="kr.co.fw.board.BoardVO" >
+UPDATE TBBD_BOARD_CONF
+   SET UP_EMP_CD = #{UP_EMP_CD}
+     , UP_DTM    = SYSDATE
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(CONF_VAL)'>     
+     , CONF_VAL  = #{CONF_VAL}
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(USE_YN)'>     
+     , USE_YN    = #{USE_YN}
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SORT_NO)'>     
+     , SORT_NO   = #{SORT_NO}
+</if>   
+ WHERE MB_ID     = #{MB_ID}
+   AND BD_NO     = #{BD_NO}
+   AND CONF_CD   = #{CONF_CD}
+</update>
+
+<!-- 게시판 설정 삭제 -->
+<delete id="deleteBoardConf" parameterType="kr.co.fw.board.BoardVO" >
+DELETE TBBD_BOARD_CONF
+ WHERE MB_ID     = #{MB_ID}
+   AND BD_NO     = #{BD_NO}
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(CONF_CD)'>     
+   AND CONF_CD   = #{CONF_CD}
+</if>   
+</delete>
+
+<!-- 권한그룹List 조회 -->
+<select id="selectAuthorityGroupList" resultType="kr.co.fw.board.BoardAuthVO" parameterType="kr.co.fw.board.BoardVO">
+/* board-mapper.xml selectAuthorityGroupList 권한그룹 list 조회 */
+SELECT AUTH_GRP_CD
+     , AUTH_GRP_NM
+     , AUTH_GRP_DESC
+  FROM TBBD_USER_AUTHORITY_GROUP
+ WHERE MB_ID = #{MB_ID} AND AUTH_GRP_CD != '000'
+ ORDER BY AUTH_GRP_CD
+</select>
+ 
+ <!-- 권한그룹List 조회2 -->
+ <select id="selectAuthorityGroupList2" resultType="kr.co.fw.board.AuthorityGroupVO" parameterType="kr.co.fw.board.AuthorityGroupVO">
+ /* board-mapper.xml selectAuthorityGroupList 권한그룹 list 조회 */
+SELECT AUTH_GRP_CD
+     , AUTH_GRP_NM
+     , AUTH_GRP_DESC
+  FROM TBBD_USER_AUTHORITY_GROUP
+ WHERE MB_ID = #{MB_ID} AND AUTH_GRP_CD != '0'
+ ORDER BY AUTH_GRP_CD
+ </select>
+  
+ <!-- 메뉴권한 저장 -->
+<insert id="insertAuthGrp" parameterType="kr.co.fw.board.AuthorityGroupVO" >
+/* board-mapper.xml insertAuthGrp 메뉴권한 저장 */
+<![CDATA[
+INSERT
+  INTO TBBD_USER_AUTHORITY_GROUP /* 메뉴권한그룹 */
+     ( AUTH_GRP_CD      /* 메뉴권한 코드     VARCHAR2(50)     */
+     , AUTH_GRP_NM    	/* 메뉴권한 코드명   VARCHAR2(50)     */
+     , AUTH_GRP_DESC  	/* 메뉴권한 코드설명 VARCHAR2(50)     */
+     , IN_EMP_CD    	/* 입력자사번 VARCHAR2(20)     */
+     , IN_DTM       	/* 입력일시   TIMESTAMP(6)(11) */
+     , UP_EMP_CD    	/* 수정자사번 VARCHAR2(20)     */
+     , UP_DTM       	/* 수정일시   TIMESTAMP(6)(11) */
+     , MB_ID      		/* 회원사 */
+     )
+VALUES
+     ( #{AUTH_GRP_CD}
+     , #{AUTH_GRP_NM}  
+     , #{AUTH_GRP_DESC} /* 메뉴권한 코드설명 VARCHAR2(50)     */
+     , #{IN_EMP_CD}     /* 입력자사번 VARCHAR2(20)     */
+     , SYSDATE        	/* 입력일시   TIMESTAMP(6)	 */
+     , #{UP_EMP_CD}     /* 입력자사번 VARCHAR2(20)     */
+     , SYSDATE    		/* 수정일시 */
+     , #{MB_ID}			/* 회원사   */
+     )
+]]>
+</insert>
+ 
+<insert id="insertAUTHUserAdmin" parameterType="kr.co.fw.board.AuthorityGroupVO">
+/* board-mapper.xml  insertAUTHUserAdmin */
+INSERT INTO TBBD_USER_AUTH_GRP_MAP
+	 ( AUTH_GRP_CD
+	 , EMP_CD
+	 , MB_ID
+	 )
+SELECT (SELECT LPAD(NVL(MAX(AUTH_GRP_CD),0), 3, '0') FROM TBBD_USER_AUTHORITY_GROUP WHERE MB_ID = #{MB_ID}), 'SADMIN', #{MB_ID} FROM DUAL UNION ALL
+SELECT (SELECT LPAD(NVL(MAX(AUTH_GRP_CD),0), 3, '0') FROM TBBD_USER_AUTHORITY_GROUP WHERE MB_ID = #{MB_ID}), 'ADMIN', #{MB_ID} FROM DUAL
+</insert>
+
+<!-- 메뉴권한 수정 -->
+<update id="updateAuthGrp" parameterType="kr.co.fw.board.AuthorityGroupVO">
+/* board-mapper.xml updateAuthGrp 메뉴권한 수정 */
+<![CDATA[
+UPDATE TBBD_USER_AUTHORITY_GROUP /* 메뉴권한그룹 */
+   SET UP_EMP_CD     = #{UP_EMP_CD}       /* 수정자사번 VARCHAR2(20)     */
+     , UP_DTM        = SYSDATE            /* 수정일시   TIMESTAMP(6)(11) */
+]]>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(AUTH_GRP_NM)'>      
+     , AUTH_GRP_NM   = #{AUTH_GRP_NM}     /* 메뉴권한 코드명       VARCHAR2(50)     */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(AUTH_GRP_DESC)'>      
+     , AUTH_GRP_DESC = #{AUTH_GRP_DESC}   /* 메뉴권한 코드설명       VARCHAR2(50)     */
+</if>
+ WHERE MB_ID         = #{MB_ID}
+   AND AUTH_GRP_CD   = #{AUTH_GRP_CD} /* 메뉴권한 코드 VARCHAR2(50) */
+</update>
+
+<!-- 메뉴권한 삭제 -->
+<delete id="deleteAuthGrp" parameterType="kr.co.fw.board.AuthorityGroupVO">
+/* board-mapper.xml deleteAuthGrp 메뉴권한 삭제 */
+<![CDATA[
+DELETE TBBD_USER_AUTHORITY_GROUP
+ WHERE MB_ID       = #{MB_ID}
+   AND AUTH_GRP_CD = #{AUTH_GRP_CD} /* 메뉴권한 코드코드 VARCHAR2(50) */
+]]>
+</delete>
+
+<!-- 게시판 권한 정보 등록 -->
+<insert id="insertBoardAuthSet" parameterType="kr.co.fw.board.BoardAuthVO" >
+/* board-mapper.xml insertBoardSet 게시판 권한 정보 등록 */
+INSERT INTO TBBD_AUTH_SET (AUTH_GRP_CD, BD_AUTH_GRP_CD, BD_NO, MB_ID)
+VALUES (#{AUTH_GRP_CD}, #{BD_AUTH_GRP_CD}, #{BD_NO}, #{MB_ID})
+</insert>
+
+<!-- 게시판 권한 정보를 조회한다 -->
+<select id="selectBoardAuthList" resultType="kr.co.fw.board.BoardAuthVO" parameterType="kr.co.fw.board.BoardAuthVO" >
+/* board-mapper.xml selectBoardAuthList 게시판 권한 정보 */
+SELECT AUTH_GRP_CD
+     , BD_AUTH_GRP_CD
+     , BD_NO
+  FROM TBBD_AUTH_SET
+ WHERE MB_ID = #{MB_ID}
+   AND BD_NO = #{BD_NO}
+   AND AUTH_GRP_CD != '000'
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(BD_AUTH_GRP_CD)'>
+   AND BD_AUTH_GRP_CD = #{BD_AUTH_GRP_CD}
+</if>
+</select>
+
+<!-- 게시판 권한 삭제 -->
+<delete id="deleteBoardAuthByBulbdNo" parameterType="kr.co.fw.board.BoardAuthVO" >
+/* board-mapper.xml deleteBoardAUTHByBulbdNo 게시판 권한 정보 삭제 */
+DELETE FROM TBBD_AUTH_SET
+ WHERE MB_ID = #{MB_ID} AND BD_NO = #{BD_NO}
+</delete>
+
+<!-- 게시판 권한 삭제 -->
+<delete id="deleteBoardAuth" parameterType="kr.co.fw.board.BoardAuthVO" >
+/* board-mapper.xml deleteBoardAUTH 게시판 권한 삭제 */
+DELETE FROM TBBD_AUTH_SET
+  <trim prefix="WHERE" prefixOverrides="AND | OR ">
+   		BD_NO IN
+   	<foreach collection="removeBoards" item="BD_NO" index="index" open="(" close=")" separator=",">
+   		 #{BD_NO}
+   	</foreach>
+    <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(MB_ID)'>
+    	AND  MB_ID = #{MB_ID}
+    </if>
+  </trim>
+</delete>
+
+<!-- 게시판 공개 조직 선택대상목록 조회 -->
+<select id="selectBoardOpenSCDList" parameterType="Hmap" resultType="Hmap">
+/* board-mapper.xml selectBoardOpenSCDList */
+SELECT SCD
+	 , SNM
+  FROM TBIN_SCD
+ WHERE MB_ID = #{MB_ID} 
+   AND ORG_UNIT_GBN = #{ORG_UNIT_GBN}
+ ORDER BY SORT_NO
+</select>
+
+<!-- 게시판 공개 조직 목록 조회 -->
+<select id="selectBoardOpenList" parameterType="kr.co.fw.board.BoardVO" resultType="Hmap">
+/* board-mapper.xml selectBoardOpenList */
+SELECT A.BD_NO
+ 	 , A.SCD
+	 , B.SNM SNM
+  FROM TBBD_OPEN A
+       LEFT OUTER JOIN 
+       TBIN_SCD B
+       ON  A.MB_ID = B.MB_ID
+       AND A.SCD   = B.SCD 
+ WHERE A.MB_ID = #{MB_ID} 
+   AND A.BD_NO = #{BD_NO}
+</select>
+  
+<!-- 게시판 공개 조직 입력 -->
+<insert id="insertBoardOpen" parameterType="kr.co.fw.board.BoardOpenVO">
+/* board-mapper.xml insertBoardOpen */
+INSERT INTO TBBD_OPEN (
+	   MB_ID
+	 , BD_NO
+	 , SCD
+) VALUES (
+	  #{MB_ID}
+	, #{BD_NO}
+	, #{SCD}
+)
+</insert>
+  
+<!-- 게시판 공개 조직 삭제 -->
+<delete id="deleteBoardOpen" parameterType="kr.co.fw.board.BoardOpenVO">
+/* board-mapper.xml deleteBoard */
+DELETE TBBD_OPEN
+ WHERE MB_ID = #{MB_ID}
+<if test="BULBD_NO != null">
+   AND BD_NO = #{BD_NO}
+</if>
+<if test="SCD != null">
+   AND SCD = #{SCD}
+</if>
+</delete>
+ 
+<!-- ********** 게시글 ********** -->
+ 
+<!-- 게시글 목록 조회 -->
+<select id="selectBoardItemList" parameterType = "kr.co.fw.board.BoardItemMngVO" resultType="kr.co.fw.board.BoardItemVO">
+/* board-mapper.xml selectBoardItemList 아이템 목록    */
+SELECT A.BD_NO          /* 게시판번호     NUMBER(15)    */
+     , A.ITEM_NO        /* 게시글번호     NUMBER(15)    */
+     , B.BD_NM AS BD_NM /* 게시판이름 */
+     , A.TITL           /* 제목           VARCHAR2(300) */
+     , A.CONT           /* 내용           CLOB          */
+     , A.ORGN_WRTN_NO   /* 원글번호       NUMBER(15)    */
+     , A.PRNT_WRTN_NO   /* 부모글번호     NUMBER(15)    */
+     , A.SORT_NO        /* 정렬순서       NUMBER(7)     */
+     , A.ORGN_WRTN_DCD  /* 원글답글구분코드 VARCHAR2(4) */
+     , A.DEPTH          /* DEPTH          NUMBER(3)     */
+     , A.INQ_CNT        /* 조회수         NUMBER(5)     */
+     , A.HGRK_FIX_YN    /* 상위고정여부   NUMBER(1)     */ 
+     , A.POPUP_YN       /* 팝업여부       NUMBER(1)     */
+     , (SELECT COUNT(FILE_NO) 
+          FROM TBSY_FILE_INFO 
+         WHERE REF_IDX = TO_NUMBER(A.ITEM_NO) 
+           AND ATTACH_GBN = '3' 
+           AND MB_ID = #{MB_ID} ) AS ATCH_FILE_CNT  /* 첨부파일개수   NUMBER(3)     */
+     , A.PLAYER_FILE_NM /* 동영상파일경로 VARCHAR2(100) */
+     , A.HIGHLIGHT_YN   /* 강조여부       VARCHAR2(3)   */
+     , A.ANNC_YN        /* 공지여부       VARCHAR2(3)   */
+     , A.ANNC_DAYS      /* 공지일수       NUMBER        */
+     , A.MAIN_YN        /* 메인공지여부   VARCHAR2(3)   */
+     , A.MAIN_DAYS      /* 메인공지일수   NUMBER        */
+     , A.NTC_YN         /* 알리미여부     VARCHAR2(3)   */
+     , A.NTC_FRYMD      /* 알리미시작일   VARCHAR2(10)  */
+     , A.NTC_TOYMD      /* 알리미종료일   VARCHAR2(10)  */
+     , A.OPEN_YN        /* 오픈여부       VARCHAR2(3)   */
+     , A.SIDELINK       /* 사이드링크     VARCHAR2(100) */
+     , A.IN_EMP_CD AS AUTHOR      /* 작성자 이름 */
+     , C.EMP_NM AS AUTHOR_NM      /* 작성자 이름 */
+     , A.CATEGORY AS CATEGORY_NM  /* 카테고리 */
+     , CASE WHEN (SELECT COUNT(FILE_NO) 
+            			  FROM TBSY_FILE_INFO 
+            			 WHERE REF_IDX = TO_NUMBER(A.ITEM_NO) 
+            			   AND ATTACH_GBN = '3' 
+            			   AND MB_ID = #{MB_ID} ) > 0 THEN 'Y'
+            ELSE 'N'
+       END  AS ATCH_YN
+     , A.START_DATE
+     , A.END_DATE
+     , A.SCHEDULE_YN
+  FROM (SELECT TB2.*
+      	  FROM (SELECT DISTINCT BD_NO 
+      			  FROM TBBD_AUTH_SET 
+      			 WHERE MB_ID = #{MB_ID} 
+      			   AND BD_AUTH_GRP_CD = '03'
+      		       AND AUTH_GRP_CD IN 
+      		       	   (SELECT BOARD_ROLE_ID 
+      		    		  FROM TBIN_EMPMST 
+      		    	 	 WHERE MB_ID = #{MB_ID} AND EMP_CD = #{EMP_CD})) TB1
+      		 , (SELECT * FROM TBBD_ITEM WHERE MB_ID = #{MB_ID}) TB2 
+      	 WHERE TB1.BD_NO = TB2.BD_NO 
+       ) A
+       LEFT OUTER JOIN 
+       TBBD_BOARD B
+       ON  A.MB_ID = B.MB_ID
+       AND A.BD_NO = B.BD_NO
+       LEFT OUTER JOIN 
+       TBIN_EMPMST C
+       ON  A.MB_ID     = C.MB_ID
+       AND A.IN_EMP_CD = C.EMP_CD
+ WHERE 1=1
+   AND A.BD_NO IN 
+       (SELECT BD_NO 
+		  FROM TBBD_BOARD 
+		 START WITH BD_NO = #{BD_NO} 
+	   CONNECT BY PRIOR BD_NO = PBD_NO )
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_CTGR)'>    
+   AND ( A.CATEGORY = #{SRCH_CTGR} OR CATEGORY IS NULL )
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_WORD)'>
+<if test= 'SRCH_TYPE == 1'>
+<![CDATA[   AND A.TITL LIKE '%'||#{SRCH_WORD}||'%']]>
+</if>
+<if test= 'SRCH_TYPE == 2'>
+<![CDATA[   AND ( A.TITL LIKE '%'||#{SRCH_WORD}||'%' OR DBMS_LOB.INSTR(A.CONT, #{SRCH_WORD}) > 0]]>
+</if>
+<if test= 'SRCH_TYPE == 3'>
+<![CDATA[   DBMS_LOB.INSTR(A.CONT, #{SRCH_WORD}) > 0 ]]>
+</if>
+<if test= 'SRCH_TYPE == 4'>
+<![CDATA[   AND A.AUTHOR IN (SELECT EMP_CD FROM TBIN_EMPMST WHERE EMP_NM LIKE '%'||#{SRCH_WORD}||'%') ]]>
+</if>
+</if> 	
+ ORDER BY A.IN_DTM DESC
+</select>
+
+<!-- 게시글 목록 -->
+
+<select id="selectItemList" parameterType = "kr.co.fw.board.BoardItemVO" resultType="Hmap">
+<include refid="Common.PagingStart"/>
+<include refid="selectItemList_SQL"/>
+<include refid="Common.PagingEnd"/>
+</select>
+<sql id="selectItemList_SQL">
+/* board-mapper.xml selectItemList 아이템 목록    */
+<![CDATA[
+SELECT TB.* 
+    FROM (SELECT A.BD_NO          /* 게시판번호     NUMBER(15)    */
+			     , A.ITEM_NO        /* 게시글번호     NUMBER(15)    */
+			     , B.BD_NM AS BD_NM /* 게시판이름 */
+			     , A.TITL           /* 제목           VARCHAR2(300) */
+			     /* , A.CONT           내용           CLOB          *//* CLOB 형식이 그리드리스트에 포함되면 그리드에 내용이 나오지 않음 */
+			     , A.ORGN_WRTN_NO   /* 원글번호       NUMBER(15)    */
+			     , A.PRNT_WRTN_NO   /* 부모글번호     NUMBER(15)    */
+			     , A.SORT_NO        /* 정렬순서       NUMBER(7)     */
+			     , A.ORGN_WRTN_DCD  /* 원글답글구분코드 VARCHAR2(4) */
+			     , A.DEPTH          /* DEPTH          NUMBER(3)     */
+			     , A.INQ_CNT        /* 조회수         NUMBER(5)     */
+			     , A.HGRK_FIX_YN    /* 상위고정여부   NUMBER(1)     */ 
+			     , A.POPUP_YN       /* 팝업여부       NUMBER(1)     */
+			     , (SELECT COUNT(FILE_NO) 
+			          FROM TBSY_FILE_INFO 
+			         WHERE REF_IDX = TO_NUMBER(A.ITEM_NO) 
+			           AND ATTACH_GBN = '3' 
+			           AND MB_ID = #{MB_ID}
+			           AND NVL(DATA_DCD,'I')!='D' ) AS ATCH_FILE_CNT  /* 첨부파일개수   NUMBER(3)     */
+			     , A.PLAYER_FILE_NM /* 동영상파일경로 VARCHAR2(100) */
+			     , A.HIGHLIGHT_YN   /* 강조여부       VARCHAR2(3)   */
+			     , A.ANNC_YN        /* 공지여부       VARCHAR2(3)   */
+			     , A.ANNC_DAYS      /* 공지일수       NUMBER        */
+			     , A.MAIN_YN        /* 메인공지여부   VARCHAR2(3)   */
+			     , A.MAIN_DAYS      /* 메인공지일수   NUMBER        */
+			     ,  CASE WHEN A.IN_DTM > SYSDATE - A.ANNC_DAYS
+			            THEN 'true'
+			            ELSE 'false'
+			        END AS ANNC_DAYS_CHECK
+			     , A.NTC_YN         /* 알리미여부     VARCHAR2(3)   */
+			     , A.NTC_FRYMD      /* 알리미시작일   VARCHAR2(10)  */
+			     , A.NTC_TOYMD      /* 알리미종료일   VARCHAR2(10)  */
+			     , A.OPEN_YN        /* 오픈여부       VARCHAR2(3)   */
+			     , A.SIDELINK       /* 사이드링크     VARCHAR2(100) */
+			     , C.EMP_NM AS AUTHOR_NM      /* 작성자 이름 */
+			     , A.CATEGORY AS CATEGORY_NM /* 카테고리 */
+			     , CASE WHEN (SELECT COUNT(FILE_NO) 
+			                    FROM TBSY_FILE_INFO 
+			                   WHERE REF_IDX = TO_NUMBER(A.ITEM_NO) 
+			                     AND ATTACH_GBN = '3' 
+			                     AND MB_ID = #{MB_ID} 
+			           			 AND NVL(DATA_DCD,'I')!='D' ) > 0 THEN 'Y'
+			            ELSE 'N'
+			       END  AS ATCH_YN
+			     , A.MB_ID
+			     , TO_CHAR(A.IN_DTM, 'YYYY-MM-DD HH24:MI:SS') AS WRT_DTM
+			     , A.START_DATE
+			     , A.END_DATE
+			     , A.SCHEDULE_YN
+			     , CASE WHEN((SELECT COUNT(seq)
+			          FROM TBBD_READ_USER RU
+			         WHERE A.BD_NO = RU.BD_NO
+			           AND A.ITEM_NO = RU.ITEM_NO
+			           AND RU.EMP_CD = #{IN_EMP_CD}
+			       )) > 0 THEN 'N'
+			       ELSE 'Y' END NEW_YN
+			  FROM (SELECT TB2.*
+			          FROM
+			            (SELECT DISTINCT BD_NO 
+			              FROM TBBD_AUTH_SET 
+			              WHERE MB_ID = #{MB_ID} 
+			              	AND BD_AUTH_GRP_CD = '03' ]]>
+			             	<if test='!USER_ROLE_LIST.contains("ROLE_ADMIN")'>
+			                AND AUTH_GRP_CD IN (SELECT BOARD_ROLE_ID 
+			                            		  FROM TBIN_EMPMST 
+			                            	 	 WHERE MB_ID = #{MB_ID} AND EMP_CD = #{IN_EMP_CD})
+			                </if>) TB1
+					<![CDATA[
+			              ,(SELECT * FROM TBBD_ITEM WHERE MB_ID = #{MB_ID}) TB2 
+			          WHERE TB1.BD_NO = TB2.BD_NO ) A
+			       LEFT OUTER JOIN 
+			       TBBD_BOARD B
+			       ON  A.MB_ID = B.MB_ID
+			       AND A.BD_NO = B.BD_NO
+			       LEFT OUTER JOIN 
+			       TBIN_EMPMST C
+			       ON  A.MB_ID     = C.MB_ID
+			       AND A.IN_EMP_CD = C.EMP_CD
+			WHERE 1=1
+			  AND A.BD_NO IN 
+			       (SELECT BD_NO 
+			          FROM TBBD_BOARD 
+			         START WITH BD_NO = #{BD_NO} 
+			       CONNECT BY PRIOR BD_NO = PBD_NO )
+			]]>
+			<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SEARCH_WORD)'>
+			  AND (  UPPER(B.BD_NM)    LIKE '%'||UPPER(TRIM(#{SEARCH_WORD}))||'%'
+			  	  OR UPPER(A.TITL)     LIKE '%'||UPPER(TRIM(#{SEARCH_WORD}))||'%'
+			      OR UPPER(A.CATEGORY) LIKE '%'||UPPER(TRIM(#{SEARCH_WORD}))||'%'
+			      OR UPPER(C.EMP_NM)   LIKE '%'||UPPER(TRIM(#{SEARCH_WORD}))||'%'
+			      OR UPPER(A.ITEM_NO)   LIKE '%'||UPPER(TRIM(#{SEARCH_WORD}))||'%'
+			   	  )
+			</if>
+			<if test='@kr.co.fw.common.util.CommUtil@isEquals(EXCLUDE_REPORT, "Y")'>
+			 AND B.BD_NM != '리포트'
+			</if>
+			) TB
+ORDER BY TB.ANNC_DAYS_CHECK DESC, TB.ITEM_NO DESC 
+</sql>
+ 
+<!-- 게시글 조회수 올리기 -->
+<select id="updateItemInqCnt" parameterType="kr.co.fw.board.BoardItemVO" >
+UPDATE TBBD_ITEM 
+   SET INQ_CNT = (NVL(INQ_CNT, 0) + 1 ) 
+ WHERE MB_ID = #{MB_ID} AND BD_NO = #{BD_NO} AND ITEM_NO = #{ITEM_NO}
+</select>
+
+<!-- 게시글 위치 이동 -->
+<update id="updateItemParentBoard" parameterType="kr.co.fw.board.BoardItemVO" >
+UPDATE TBBD_ITEM 
+   SET BD_NO = #{BD_NO}
+ WHERE MB_ID = #{MB_ID} AND ITEM_NO = #{ITEM_NO}
+</update>
+
+<!--  게시글 위치 복사 -->
+<insert id="insertItemParentBoard" parameterType = "kr.co.fw.board.BoardItemVO">
+/* board-mapper.xml insertItemParentBoard 게시글 복사  */
+<selectKey keyProperty="ITEM_KEY" resultType="String" order="BEFORE">
+ SELECT MAX(ITEM_NO)+1 AS ITEM_KEY FROM TBBD_ITEM
+</selectKey>
+INSERT INTO TBBD_ITEM (
+	   BD_NO          /* 게시판번호     NUMBER(15)    */
+     , ITEM_NO        /* 게시글번호     NUMBER(15)    */
+     , TITL           /* 제목           VARCHAR2(300) */
+     , CONT           /* 내용           CLOB          */
+     , ORGN_WRTN_NO   /* 원글번호       NUMBER(15)    */
+     , PRNT_WRTN_NO   /* 부모글번호     NUMBER(15)    */
+     , SORT_NO        /* 정렬순서       NUMBER(7)     */
+     , ORGN_WRTN_DCD  /* 원글구분코드   VARCHAR2(4)   */
+     , DEPTH          /* DEPTH          NUMBER(3)     */
+     , INQ_CNT        /* 조회수         NUMBER(5)     */
+     , HGRK_FIX_YN    /* 상위고정여부   NUMBER(1)     */ 
+     , POPUP_YN       /* 팝업여부       NUMBER(1)     */
+     , AUTHOR_NM      /* 입력자 이름    VARCHAR2(30)  */
+     , ATCH_FILE_CNT  /* 첨부파일개수   NUMBER(3)     */
+     , IN_DTM         /* 입력일시       DATE          */ 
+     , IN_EMP_CD      /* 입력자         VARCHAR2(20)  */
+     , IN_IP          /* 입력 IP        VARCHAR2(15)  */
+     , PLAYER_FILE_NM /* 동영상파일경로 VARCHAR2(100) */
+     , HIGHLIGHT_YN   /* 강조여부       VARCHAR2(3)   */
+     , ANNC_YN        /* 공지여부       VARCHAR2(3)   */
+     , ANNC_DAYS      /* 공지일수       NUMBER        */
+     , MAIN_YN        /* 메인공지여부   VARCHAR2(3)   */
+     , MAIN_DAYS      /* 메인공지일수   NUMBER        */
+     , NTC_YN         /* 알리미여부     VARCHAR2(3)   */
+     , NTC_FRYMD      /* 알리미시작일   VARCHAR2(10)  */
+     , NTC_TOYMD      /* 알리미종료일   VARCHAR2(10)  */
+     , OPEN_YN        /* 오픈여부       VARCHAR2(3)   */
+     , SIDELINK       /* 사이드링크     VARCHAR2(100) */
+     , CATEGORY       /* 카테고리       VARCHAR2(50)  */
+     , MB_ID          /* 회사ID */
+) 
+SELECT #{BD_NO}           /* 게시판번호     NUMBER(15)    */
+     	 , #{ITEM_KEY} 	  /* 게시글번호     NUMBER(15)    */
+	     , TITL           /* 제목           VARCHAR2(300) */
+	     , CONT           /* 내용           CLOB          */
+	     , ORGN_WRTN_NO   /* 원글번호       NUMBER(15)    */
+	     , PRNT_WRTN_NO   /* 부모글번호     NUMBER(15)    */
+	     , SORT_NO        /* 정렬순서       NUMBER(7)     */
+	     , ORGN_WRTN_DCD  /* 원글구분코드   VARCHAR2(4)   */
+	     , DEPTH          /* DEPTH          NUMBER(3)     */
+	     , INQ_CNT        /* 조회수         NUMBER(5)     */
+	     , HGRK_FIX_YN    /* 상위고정여부   NUMBER(1)     */ 
+	     , POPUP_YN       /* 팝업여부       NUMBER(1)     */
+	     , AUTHOR_NM      /* 입력자 이름    VARCHAR2(30)  */
+	     , ATCH_FILE_CNT  /* 첨부파일개수   NUMBER(3)     */
+	     , SYSDATE        /* 입력일시       DATE          */ 
+	     , #{IN_EMP_CD }  /* 입력자         VARCHAR2(20)  */
+	     , #{IN_IP }      /* 입력 IP        VARCHAR2(15)  */
+	     , PLAYER_FILE_NM /* 동영상파일경로 VARCHAR2(100) */
+	     , HIGHLIGHT_YN   /* 강조여부       VARCHAR2(3)   */
+	     , ANNC_YN        /* 공지여부       VARCHAR2(3)   */
+	     , ANNC_DAYS      /* 공지일수       NUMBER        */
+	     , MAIN_YN        /* 메인공지여부   VARCHAR2(3)   */
+	     , MAIN_DAYS      /* 메인공지일수   NUMBER        */
+	     , NTC_YN         /* 알리미여부     VARCHAR2(3)   */
+	     , NTC_FRYMD      /* 알리미시작일   VARCHAR2(10)  */
+	     , NTC_TOYMD      /* 알리미종료일   VARCHAR2(10)  */
+	     , OPEN_YN        /* 오픈여부       VARCHAR2(3)   */
+	     , SIDELINK       /* 사이드링크     VARCHAR2(100) */
+	     , CATEGORY       /* 카테고리       VARCHAR2(50)  */
+	     , MB_ID          /* 회사ID */
+     FROM TBBD_ITEM
+  WHERE MB_ID = #{MB_ID} AND ITEM_NO = #{ITEM_NO}
+</insert>
+
+<!-- 게시글 중복 조회 -->
+<select id="selectBoardItemCnt" parameterType="kr.co.fw.board.BoardItemVO" resultType="int">
+SELECT COUNT(ITEM_NO) 
+  FROM TBBD_ITEM
+ WHERE MB_ID = #{MB_ID}
+   AND ITEM_NO = #{ITEM_NO}
+</select>
+
+<!-- 게시판 내 게시글번호 목록 조회 -->
+<select id="selectBultNoList" parameterType="kr.co.fw.board.BoardItemVO" resultType="Hmap">
+/* board-mapper.xml selectBultNoList 게시판 내 게시글번호 목록 조회 */
+SELECT ITEM_NO 
+  FROM TBBD_ITEM
+ WHERE MB_ID = #{MB_ID}
+   AND BD_NO = #{BD_NO}
+ ORDER BY ITEM_NO
+</select>
+
+<!-- 게시글 조회 -->
+<select id="selectBoardItem" parameterType = "kr.co.fw.board.BoardItemVO" resultType="kr.co.fw.board.BoardItemVO">
+/* board-mapper.xml selectBoardItem 아이템 조회    */
+SELECT A.BD_NO          /* 게시판번호     NUMBER(15)    */
+     , A.ITEM_NO        /* 게시글번호     NUMBER(15)    */
+     , B.BD_NM AS BD_NM /* 게시판이름 */
+     , A.TITL           /* 제목           VARCHAR2(300) */
+     , A.CONT           /* 내용           CLOB          */
+     , A.ORGN_WRTN_NO   /* 원글번호       NUMBER(15)    */
+     , A.PRNT_WRTN_NO   /* 부모글번호     NUMBER(15)    */
+     , A.SORT_NO        /* 정렬순서       NUMBER(7)     */
+     , A.ORGN_WRTN_DCD  /* 원글답글구분코드   VARCHAR2(4)   */
+     , A.DEPTH          /* DEPTH          NUMBER(3)     */
+     , A.INQ_CNT        /* 조회수         NUMBER(5)     */
+     , A.HGRK_FIX_YN    /* 상위고정여부   NUMBER(1)     */ 
+     , A.POPUP_YN       /* 팝업여부       NUMBER(1)     */
+     , A.PLAYER_FILE_NM /* 동영상파일경로 VARCHAR2(100) */
+     , A.HIGHLIGHT_YN   /* 강조여부       VARCHAR2(3)   */
+     , A.ANNC_YN        /* 공지여부       VARCHAR2(3)   */
+     , A.ANNC_DAYS      /* 공지일수       NUMBER        */
+     , A.MAIN_YN        /* 메인공지여부   VARCHAR2(3)   */
+     , A.MAIN_DAYS      /* 메인공지일수   NUMBER        */
+     , A.NTC_YN         /* 알리미여부     VARCHAR2(3)   */
+     , A.NTC_FRYMD      /* 알리미시작일   VARCHAR2(10)  */
+     , A.NTC_TOYMD      /* 알리미종료일   VARCHAR2(10)  */
+     , A.OPEN_YN        /* 오픈여부       VARCHAR2(3)   */
+     , A.SIDELINK       /* 사이드링크     VARCHAR2(100) */
+     , A.IN_EMP_CD AS AUTHOR      /* 작성자  */
+     , C.EMP_NM AS AUTHOR_NM      /* 작성자 이름 */
+     , SUBSTR(TO_CHAR(A.IN_DTM, 'YYYY-MM-DD'), 1,10) AS WRT_YMD /* 작성일 VARCHAR2(10) */
+     , A.CATEGORY AS CATEGORY_NM /* 카테고리 */
+     , A.START_DATE
+     , A.END_DATE
+     , A.SCHEDULE_YN
+  FROM TBBD_ITEM A
+       LEFT OUTER JOIN 
+       TBBD_BOARD B
+       ON  A.MB_ID = B.MB_ID
+       AND A.BD_NO = B.BD_NO
+       LEFT OUTER JOIN 
+       TBIN_EMPMST C
+       ON  A.MB_ID     = C.MB_ID
+       AND A.IN_EMP_CD = C.EMP_CD
+ WHERE A.MB_ID    = #{MB_ID} 
+   AND A.BD_NO    = #{BD_NO}
+   AND A.ITEM_NO  = #{ITEM_NO}
+</select>
+ 
+<!--  게시글 입력 -->
+<insert id="insertBoardItem" parameterType = "kr.co.fw.board.BoardItemVO">
+/* board-mapper.xml insertBoardItem 게시글 입력    */
+<selectKey keyProperty="ITEM_KEY" resultType="String" order="BEFORE">
+ SELECT MAX(ITEM_NO)+1 AS ITEM_KEY FROM TBBD_ITEM
+</selectKey>
+INSERT INTO TBBD_ITEM (
+	   BD_NO          /* 게시판번호     NUMBER(15)    */
+     , ITEM_NO        /* 게시글번호     NUMBER(15)    */
+     , TITL           /* 제목           VARCHAR2(300) */
+     , CONT           /* 내용           CLOB          */
+     , ORGN_WRTN_NO   /* 원글번호       NUMBER(15)    */
+     , PRNT_WRTN_NO   /* 부모글번호     NUMBER(15)    */
+     , SORT_NO        /* 정렬순서       NUMBER(7)     */
+     , ORGN_WRTN_DCD  /* 원글구분코드   VARCHAR2(4)   */
+     , DEPTH          /* DEPTH          NUMBER(3)     */
+     , INQ_CNT        /* 조회수         NUMBER(5)     */
+     , HGRK_FIX_YN    /* 상위고정여부   NUMBER(1)     */ 
+     , POPUP_YN       /* 팝업여부       NUMBER(1)     */
+     , AUTHOR_NM      /* 입력자 이름    VARCHAR2(30)  */
+     , ATCH_FILE_CNT  /* 첨부파일개수   NUMBER(3)     */
+     , IN_DTM         /* 입력일시       DATE          */ 
+     , IN_EMP_CD      /* 입력자         VARCHAR2(20)  */
+     , IN_IP          /* 입력 IP        VARCHAR2(15)  */
+     , PLAYER_FILE_NM /* 동영상파일경로 VARCHAR2(100) */
+     , HIGHLIGHT_YN   /* 강조여부       VARCHAR2(3)   */
+     , ANNC_YN        /* 공지여부       VARCHAR2(3)   */
+     , ANNC_DAYS      /* 공지일수       NUMBER        */
+     , MAIN_YN        /* 메인공지여부   VARCHAR2(3)   */
+     , MAIN_DAYS      /* 메인공지일수   NUMBER        */
+     , NTC_YN         /* 알리미여부     VARCHAR2(3)   */
+     , NTC_FRYMD      /* 알리미시작일   VARCHAR2(10)  */
+     , NTC_TOYMD      /* 알리미종료일   VARCHAR2(10)  */
+     , OPEN_YN        /* 오픈여부       VARCHAR2(3)   */
+     , SIDELINK       /* 사이드링크     VARCHAR2(100) */
+     , CATEGORY       /* 카테고리       VARCHAR2(50)  */
+     , MB_ID          /* 회사ID 					  */
+     , START_DATE     /* 시작날짜 					  */
+	 , END_DATE  	  /* 종료날짜 					  */
+	 , SCHEDULE_YN    /* 스케줄사용유무 			  */
+) VALUES (
+	   #{BD_NO}          /* 게시판번호     NUMBER(15)    */
+     , #{ITEM_KEY} 		 /* 게시글번호     NUMBER(15)    */
+     , #{TITL}           /* 제목           VARCHAR2(300) */
+     , #{CONT}           /* 내용           CLOB          */
+     , #{ORGN_WRTN_NO}   /* 원글번호       NUMBER(15)    */
+     , #{PRNT_WRTN_NO}   /* 부모글번호     NUMBER(15)    */
+     , #{SORT_NO}        /* 정렬순서       NUMBER(7)     */
+     , #{ORGN_WRTN_DCD}  /* 원글구분코드   VARCHAR2(4)   */
+     , #{DEPTH}          /* DEPTH          NUMBER(3)     */
+     , #{INQ_CNT}        /* 조회수         NUMBER(5)     */
+     , #{HGRK_FIX_YN}    /* 상위고정여부   NUMBER(1)     */ 
+     , #{POPUP_YN}       /* 팝업여부       NUMBER(1)     */
+     , (SELECT EMP_NM FROM TBIN_EMPMST WHERE MB_ID = #{MB_ID} AND EMP_CD = #{IN_EMP_CD} )/* 입력자 이름    VARCHAR2(30)  */
+     , #{ATCH_FILE_CNT}  /* 첨부파일개수   NUMBER(3)     */
+     , SYSDATE           /* 입력일시       DATE          */ 
+     , #{IN_EMP_CD}      /* 입력자         VARCHAR2(20)  */
+     , #{IN_IP}          /* 입력 IP        VARCHAR2(15)  */
+     , #{PLAYER_FILE_NM} /* 동영상파일경로 VARCHAR2(100) */
+     , #{HIGHLIGHT_YN}   /* 강조여부       VARCHAR2(3)   */
+     , #{ANNC_YN}        /* 공지여부       VARCHAR2(3)   */
+     , #{ANNC_DAYS}      /* 공지일수       NUMBER        */
+     , #{MAIN_YN}        /* 메인공지여부   VARCHAR2(3)   */
+     , #{MAIN_DAYS}      /* 메인공지일수   NUMBER        */
+     , #{NTC_YN}         /* 알리미여부     VARCHAR2(3)   */
+     , #{NTC_FRYMD}      /* 알리미시작일   VARCHAR2(10)  */
+     , #{NTC_TOYMD}      /* 알리미종료일   VARCHAR2(10)  */
+     , #{OPEN_YN}        /* 오픈여부       VARCHAR2(3)   */
+     , #{SIDELINK}       /* 사이드링크     VARCHAR2(100) */
+     , #{CATEGORY}       /* 카테고리       VARCHAR2(50)  */
+     , #{MB_ID}          /* 회사ID 					     */
+     , #{START_DATE } 	 /* 시작날짜' 					 */
+	 , #{END_DATE }  	 /* 종료날짜' 					 */
+	 , #{SCHEDULE_YN } 	 /* 스케줄사용유무' 			 */
+)
+</insert>
+
+<!-- 게시글 수정 -->
+<update id="updateBoardItem" parameterType = "kr.co.fw.board.BoardItemVO">
+/* board-mapper.xml updateBoardItem 게시글 입력    */
+UPDATE TBBD_ITEM
+   SET UP_EMP_CD      = #{UP_EMP_CD}       /* 수정자         VARCHAR2(20)  */
+     , UP_DTM         = SYSDATE            /* 수정일시       DATE          */
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(TITL)'>     
+     , TITL           = #{TITL}            /* 제목           VARCHAR2(300) */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(CONT)'>     
+     , CONT           = #{CONT}            /* 내용           CLOB          */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(ORGN_WRTN_NO)'>     
+     , ORGN_WRTN_NO   = #{ORGN_WRTN_NO}    /* 원글번호       NUMBER(15)    */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(PRNT_WRTN_NO)'>     
+     , PRNT_WRTN_NO   = #{PRNT_WRTN_NO}    /* 부모글번호     NUMBER(15)    */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SORT_NO)'>     
+     , SORT_NO        = #{SORT_NO}         /* 정렬순서       NUMBER(7)     */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(ORGN_WRTN_DCD)'>     
+     , ORGN_WRTN_DCD  = #{ORGN_WRTN_DCD}   /* 원글구분코드   VARCHAR2(4)   */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(DEPTH)'>     
+     , DEPTH          = #{DEPTH}           /* DEPTH          NUMBER(3)     */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(INQ_CNT)'>     
+     , INQ_CNT        = #{INQ_CNT}         /* 조회수         NUMBER(5)     */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(AUTHOR_NM)'>     
+     , AUTHOR_NM      = #{AUTHOR_NM}       /* 입력자 이름    VARCHAR2(30)  */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(ATCH_FILE_CNT)'>     
+     , ATCH_FILE_CNT  = #{ATCH_FILE_CNT}   /* 첨부파일개수   NUMBER(3)     */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(IN_IP)'>     
+     , IN_IP          = #{IN_IP}           /* 입력 IP        VARCHAR2(15)  */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(PLAYER_FILE_NM)'>     
+     , PLAYER_FILE_NM = #{PLAYER_FILE_NM}  /* 동영상파일경로 VARCHAR2(100) */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(HIGHLIGHT_YN)'>     
+     , HIGHLIGHT_YN   = #{HIGHLIGHT_YN}    /* 강조여부       VARCHAR2(3)   */
+</if>  
+<if test='@kr.co.fw.common.util.CommUtil@isEmpty(HIGHLIGHT_YN)'>     
+     , HIGHLIGHT_YN   = 'N'   			   /* 강조여부       VARCHAR2(3)   */
+</if>   
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(ANNC_YN)'>     
+     , ANNC_YN        = #{ANNC_YN}         /* 공지여부       VARCHAR2(3)   */
+     , ANNC_DAYS      = #{ANNC_DAYS}       /* 공지일수       NUMBER        */
+</if> 
+<if test='@kr.co.fw.common.util.CommUtil@isEmpty(ANNC_YN)'>     
+     , ANNC_YN        = 'N'         	   /* 공지여부       VARCHAR2(3)   */
+     , ANNC_DAYS      = ''       		   /* 공지일수       NUMBER        */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(MAIN_YN)'>     
+     , MAIN_YN        = #{MAIN_YN}         /* 메인공지여부   VARCHAR2(3)   */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isEmpty(MAIN_YN)'>     
+     , MAIN_YN        = 'N'         	   /* 메인공지여부   VARCHAR2(3)   */
+</if>  
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(MAIN_DAYS)'>     
+     , MAIN_DAYS      = #{MAIN_DAYS}       /* 메인공지일수   NUMBER        */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(NTC_YN)'>     
+     , NTC_YN         = #{NTC_YN}          /* 알리미여부     VARCHAR2(3)   */
+</if>   
+<if test='@kr.co.fw.common.util.CommUtil@isEmpty(NTC_YN)'>     
+     , NTC_YN         = 'N'          	   /* 알리미여부     VARCHAR2(3)   */
+</if>    
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(NTC_FRYMD)'>     
+     , NTC_FRYMD      = #{NTC_FRYMD}       /* 알리미시작일   VARCHAR2(10)  */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(NTC_TOYMD)'>     
+     , NTC_TOYMD      = #{NTC_TOYMD}       /* 알리미종료일   VARCHAR2(10)  */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(OPEN_YN)'>     
+     , OPEN_YN        = #{OPEN_YN}         /* 오픈여부       VARCHAR2(3)   */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SIDELINK)'>     
+     , SIDELINK       = #{SIDELINK}        /* 사이드링크     VARCHAR2(100) */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(CATEGORY)'>     
+     , CATEGORY       = #{CATEGORY}		   /* 카테고리 */
+</if>         
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(START_DATE)'>     
+     , START_DATE     = #{START_DATE}      /* 시작날짜 */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(END_DATE)'>     
+     , END_DATE       = #{END_DATE}        /* 종료날짜 */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SCHEDULE_YN)'>     
+     , SCHEDULE_YN    = #{SCHEDULE_YN}	   /* 일정사용유무 */
+</if>   
+ WHERE MB_ID   = #{MB_ID} 
+   AND BD_NO   = #{BD_NO}
+   AND ITEM_NO = #{ITEM_NO}
+</update>
+
+<!-- 아이템 지우기 -->
+<delete id="deleteBoardItem" parameterType = "kr.co.fw.board.BoardItemVO">
+ /* board-mapper.xml deleteBoardItem 게시글 삭제 */
+DELETE TBBD_ITEM
+ WHERE MB_ID   = #{MB_ID} 
+   AND BD_NO   = #{BD_NO}
+   AND ITEM_NO = #{ITEM_NO}
+</delete>
+
+<!-- ********** 덧글(Comment) *********** -->
+
+<!-- 덧글 목록 -->
+<select id="selectCommentList" parameterType="kr.co.fw.board.CommentVO" resultType="kr.co.fw.board.CommentVO">
+/* board-mapper.xml selectCommentList 덧글 목록 조회 */
+<![CDATA[
+SELECT A.BD_NO        /* 게시판번호     NUMBER(15)   */
+     , A.ITEM_NO      /* 게시글 번호    NUMBER(15)   */
+     , A.COMMENT_NO   /* 덧글 번호      NUMBER(15)   */
+     , A.CONT         /* 내용           VARCHAR2(600)*/
+     , A.IN_DTM       /* 입력일시       DATE         */
+     , A.IN_EMP_CD    /* 입력자         VARCHAR2(20) */
+     , B.EMP_NM AS COMMENTOR /* 입력자이름 */
+     , A.UP_DTM       /* 수정일시       DATE         */
+     , A.UP_EMP_CD    /* 수정자         VARCHAR2(20) */
+     , A.IN_IP        /* 입력 IP        VARCHAR2(15) */
+ FROM TBBD_COMMENT A
+      LEFT OUTER JOIN 
+      TBIN_EMPMST B
+      ON  A.MB_ID     = B.MB_ID
+      AND A.IN_EMP_CD = B.EMP_CD
+WHERE A.MB_ID   = #{MB_ID} 
+  AND A.BD_NO   = #{BD_NO}
+  AND A.ITEM_NO = #{ITEM_NO}
+ORDER BY A.IN_DTM DESC
+]]>
+</select>
+
+<!-- 단일 해당 덧글 조회 -->
+<select id="selectComment" parameterType="kr.co.fw.board.CommentVO" resultType="kr.co.fw.board.CommentVO">
+/* board-mapper.xml selectComment */
+SELECT BD_NO      /* 게시판번호     NUMBER(15)   */
+     , ITEM_NO    /* 게시글 번호    NUMBER(15)   */
+     , COMMENT_NO /* 덧글 번호      NUMBER(15)   */
+     , CONT       /* 내용           VARCHAR2(600)*/
+     , IN_DTM     /* 입력일시       DATE         */
+     , IN_EMP_CD  /* 입력자         VARCHAR2(20) */
+     , UP_DTM     /* 수정일시       DATE         */
+     , UP_EMP_CD  /* 수정자         VARCHAR2(20) */
+     , IN_IP      /* 입력 IP        VARCHAR2(15) */
+  FROM TBBD_COMMENT
+ WHERE MB_ID = #{MB_ID} AND COMMENT_NO = #{COMMENT_NO}
+</select>
+
+<!-- 덧글 입력 -->
+<insert id="insertComment" parameterType="kr.co.fw.board.CommentVO">
+/* board-mapper.xml insertComment */
+ INSERT INTO TBBD_COMMENT(
+       	BD_NO	    /* 게시판 번호    NUMBER   */
+      , ITEM_NO	    /* 게시글 번호    NUMBER   */
+      , COMMENT_NO	/* 덧글 번호      NUMBER   */
+      , CONT	    /* 내용           VARCHAR2 */
+      , IN_DTM	    /* 입력일시       DATE     */
+      , IN_EMP_CD	/* 입력자         VARCHAR2 */
+      , IN_IP	    /* 입력 IP        VARCHAR2 */
+      , MB_ID       /* 회사ID 				   */
+ ) VALUES(
+        #{BD_NO}	  /* 게시판 번호    NUMBER   */
+      , #{ITEM_NO}	  /* 게시글 번호    NUMBER   */
+      , TBBD_COMMENT_SEQ.NEXTVAL /* 덧글 번호 NUMBER */
+      , #{CONT}	      /* 내용           VARCHAR2 */
+      , SYSDATE	      /* 입력일시       DATE     */
+      , #{IN_EMP_CD}  /* 입력자         VARCHAR2 */
+      , #{IN_IP}	  /* 입력 IP        VARCHAR2 */
+      , #{MB_ID}      /* 회사ID 				 */
+)
+</insert>
+ 
+ <!--  덧글 수정 -->
+<update id="updateComment" parameterType="kr.co.fw.board.CommentVO" >
+/* board-mapper.xml updateComment */
+UPDATE TBBD_COMMENT
+   SET UP_EMP_CD = #{UP_EMP_CD} /* 수정자         VARCHAR2(20) */
+     , UP_DTM    = SYSDATE      /* 수정일시       DATE         */
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(BD_NO)'>       
+     , BD_NO     = #{BD_NO}     /* 게시판번호     NUMBER(15)   */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(ITEM_NO)'>       
+     , ITEM_NO   = #{ITEM_NO}   /* 게시글 번호    NUMBER(15)   */
+</if>     
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(CONT)'>       
+     , CONT      = #{CONT}      /* 내용           VARCHAR2(600)*/
+</if>     
+ WHERE MB_ID = #{MB_ID} AND COMMENT_NO = #{COMMENT_NO}
+</update>
+
+<!-- 덧글 삭제 -->
+<delete id="deleteComment" parameterType="kr.co.fw.board.CommentVO">
+/* board-mapper.xml deleteComment */
+DELETE TBBD_COMMENT
+ WHERE MB_ID = #{MB_ID} AND COMMENT_NO = #{COMMENT_NO}
+</delete>
+
+<!-- 게시판 삭제시 댓글도 같이 삭제 -->
+<delete id="deleteCommentItemNo" parameterType="kr.co.fw.board.BoardItemVO">
+/* board-mapper.xml deleteCommentItemNo */
+DELETE TBBD_COMMENT
+ WHERE MB_ID 	= #{MB_ID} 
+   AND ITEM_NO 	= #{ITEM_NO}
+   AND BD_NO 	= #{BD_NO}
+</delete>
+
+<!-- 게시물을 읽은 사용자 목록가져오기 -->
+<select id= "selectReadUserList" parameterType="kr.co.fw.board.ReadUserVO" resultType="kr.co.fw.board.ReadUserVO">
+/* board-mapper.xml selectReadUserList */
+SELECT A.BD_NO      	  /* 게시판 번호 NUMBER(15)   */
+     , A.ITEM_NO          /* 게시글 번호 NUMBER(15)   */
+     , A.EMP_CD     	  /* 사번        VARCHAR2(10) */
+     , B.EMP_NM AS EMPNM  /* 사원이름 */
+     , B.SCD AS SCD       /* 읽은사람 소속 */
+     , C.SNM AS SNM       /* 읽은사람 소속명 */
+     , A.SEQ        	  /* 일련번호    NUMBER(15)   */
+     , A.READ_DTM   	  /* 읽음시간    DATE         */
+     , A.MB_ID
+  FROM TBBD_READ_USER A
+       LEFT OUTER JOIN TBIN_EMPMST B
+       ON  A.MB_ID  = B.MB_ID
+       AND A.EMP_CD = B.EMP_CD
+       LEFT OUTER JOIN TBIS_SCD C
+       ON  B.MB_ID = C.MB_ID
+       AND B.SCD   = C.SCD
+ WHERE MB_ID    = #{MB_ID} 
+   AND ITEM_NO  = #{ITEM_NO}
+ ORDER BY SEQ_NO DESC
+</select>
+
+<!-- 사용자 목록 입력 -->
+<insert id="insertReadUser" parameterType="kr.co.fw.board.ReadUserVO">
+/* board-mapper.xml selectReadUserList */
+INSERT INTO TBBD_READ_USER (
+	   BD_NO        /* 게시판 번호 NUMBER(15)   */
+  	 , ITEM_NO      /* 게시글 번호 NUMBER(15)   */
+     , EMP_CD       /* 사번        VARCHAR2(10) */
+  	 , SEQ_NO       /* 일련번호    NUMBER(15)   */
+  	 , READ_DTM     /* 읽음시간    DATE         */
+  	 , MB_ID
+) VALUES (
+	   #{BD_NO}     /* 게시판 번호 NUMBER(15)   */
+  	 , #{ITEM_NO}   /* 게시글 번호 NUMBER(15)   */
+     , #{EMP_CD}    /* 사번        VARCHAR2(10) */
+  	 , TBBD_READ_USER_SEQ.NEXTVAL /* 일련번호    NUMBER(15)   */
+  	 , SYSDATE      /* 읽음시간    DATE         */  
+  	 , #{MB_ID}	
+)
+</insert>
+
+<!-- 읽은 사용자는 삭제와 업데이트가 불필요할 것으로 판단 -->
+
+<!-- ********** 게시판 권한그룹 ********** -->
+
+<!-- 게시판 권한그룹 목록 읽어오기 -->
+<select id="selectBoardAuthGrpList" parameterType="kr.co.fw.board.BoardAuthVO" resultType="kr.co.fw.board.BoardAuthVO">
+/* board-mapper.xml selectBoardAuthGrpList */
+SELECT BD_NO          /* 게시판번호     NUMBER   */
+	 , AUTH_GRP_CD	  /* 권한그룹코드   VARCHAR2 */
+	 , BD_AUTH_GRP_CD /* 게시판권한코드 VARCHAR2 */
+     , MB_ID
+     , IN_EMP_CD
+     , IN_DTM
+     , UP_EMP_CD
+     , UP_DTM
+  FROM TBBD_AUTH_SET
+ WHERE MB_ID = #{MB_ID}
+   AND BD_NO = #{BD_NO}
+</select>
+ 
+<!-- 게시판 권한그룹 입력 --> 
+<insert id="insertBoardAuthGrp" parameterType="kr.co.fw.board.BoardAuthVO">
+/* board-mapper.xml selectBoardAuthGrpList */
+INSERT INTO TBBD_AUTH_SET (
+ 	   BD_NO            /* 게시판번호     NUMBER   */
+	 , AUTH_GRP_CD	    /* 권한그룹코드   VARCHAR2 */
+	 , BD_AUTH_GRP_CD	/* 게시판권한코드 VARCHAR2 */
+	 , MB_ID
+     , IN_EMP_CD
+     , IN_DTM
+     , UP_EMP_CD
+     , UP_DTM
+) VALUES (
+	   #{BD_NO}          /* 게시판번호     NUMBER   */
+	 , #{AUTH_GRP_CD}	 /* 권한그룹코드   VARCHAR2 */
+	 , #{BD_AUTH_GRP_CD} /* 게시판권한코드 VARCHAR2 */
+	 , #{MB_ID}
+     , #{IN_EMP_CD}
+     , SYSDATE
+     , #{UP_EMP_CD}
+     , SYSDATE    
+)	
+</insert>
+ 
+<!-- 게시판 권한그룹 입력 --> 
+<update id="updateBoardAuthGrp" parameterType="kr.co.fw.board.BoardAuthVO">
+/* board-mapper.xml selectBoardAuthGrpList */
+UPDATE TBBD_AUTH_SET 
+   SET UP_EMP_CD      = #{UP_EMP_CD}
+     , UP_DTM         = SYSDATE
+     , BD_NO          = #{BD_NO}          /* 게시판번호     NUMBER   */
+	 , AUTH_GRP_CD    = #{AUTH_GRP_CD}	  /* 권한그룹코드   VARCHAR2 */
+	 , BD_AUTH_GRP_CD = #{BD_AUTH_GRP_CD} /* 게시판권한코드 VARCHAR2 */
+ WHERE MB_ID = #{MB_ID} 
+   AND BD_NO = #{BD_NO}	
+</update>
+ 
+<!-- 게시판 권한그룹 삭제 -->  
+<delete id="deleteBoardAuthGrp" parameterType="kr.co.fw.board.BoardAuthVO">
+/* board-mapper.xml deleteBoardAuthGrpList */
+DELETE TBBD_AUTH_SET
+ WHERE MB_ID          = #{MB_ID}
+   AND BD_NO          = #{BD_NO}          /* 게시판번호     NUMBER   */
+   AND AUTH_GRP_CD    = #{AUTH_GRP_CD}	  /* 권한그룹코드   VARCHAR2 */
+   AND BD_AUTH_GRP_CD = #{BD_AUTH_GRP_CD} /* 게시판권한코드 VARCHAR2 */
+</delete>
+
+<!-- LOGIN 화면의 공통 공지사항 -->
+<select id="selectCommonNotice" resultType="kr.co.fw.board.BoardItemVO" parameterType="kr.co.fw.board.BoardItemVO">
+SELECT AA.BD_NO
+     , AA.ITEM_NO
+     , AA.TITL
+     , AA.CONT
+     , AA.ORGN_WRTN_NO
+     , AA.PRNT_WRTN_NO
+     , AA.SORT_NO
+     , AA.ORGN_WRTN_DCD
+     , AA.DEPTH
+     , AA.INQ_CNT
+     , AA.HGRK_FIX_YN
+     , AA.POPUP_YN
+     , AA.AUTHOR_NM
+     , AA.ATCH_FILE_CNT
+     , AA.IN_DTM
+     , AA.IN_EMP_CD
+     , AA.UP_DTM
+     , AA.UP_EMP_CD
+     , AA.PLAYER_FILE_NM
+     , AA.IN_IP
+     , AA.HIGHLIGHT_YN
+     , AA.ANNC_YN
+     , AA.ANNC_DAYS
+     , AA.MAIN_YN
+     , AA.MAIN_DAYS
+     , AA.NTC_YN
+     , AA.NTC_FRYMD
+     , AA.NTC_TOYMD
+     , AA.OPEN_YN
+     , AA.SIDELINK
+     , TO_CHAR(AA.IN_DTM, 'YYYY.MM.DD') AS WRT_DTM
+     , AA.CATEGORY
+     , AA.MB_ID
+     , AA.RN
+  FROM (SELECT A.*
+             , ROW_NUMBER() OVER(ORDER BY A.IN_DTM DESC) AS RN
+          FROM TBBD_ITEM A
+         WHERE 1 = 1
+           AND A.MB_ID = #{MB_ID}
+           AND A.BD_NO = '27'
+           AND A.MAIN_YN = 'Y'
+		   AND A.IN_DTM > SYSDATE - A.MAIN_DAYS
+       ) AA
+ WHERE 1 = 1
+   AND AA.RN <![CDATA[<=]]> 5
+</select>
+
+<!-- 메인화면에 출력할 게시판 -->
+<select id="selectMainBoardItem" parameterType="kr.co.fw.board.BoardVO" resultType="kr.co.fw.board.BoardItemVO">
+/* board-mapper.xml selectMainBoardItem 메인화면에 출력할 게시판 */
+ SELECT AA.*
+  FROM (SELECT B.BD_NO             /* 게시판번호             NUMBER(15,0)  */
+             , A.BD_NM
+             , B.ITEM_NO           /* 게시글번호             NUMBER(15,0)  */
+             , CASE WHEN LENGTH(B.TITL)>40
+                    THEN SUBSTR(B.TITL, 1, 40)
+                    ELSE B.TITL
+               END AS TITL
+             , B.CONT              /* 내용                   CLOB(4000)    */
+             , B.ORGN_WRTN_NO      /* 원글번호               NUMBER(15,0)  */
+             , B.PRNT_WRTN_NO      /* 부모글번호             NUMBER(15,0)  */
+             , B.SORT_NO           /* 정렬번호               NUMBER(7,0)   */
+             , B.ORGN_WRTN_DCD     /* 원본글구분코드         VARCHAR2(4)   */
+             , B.DEPTH             /* depth                  NUMBER(3,0)   */
+             , B.INQ_CNT           /* 조회수                 NUMBER(5,0)   */
+             , B.HGRK_FIX_YN       /* 상위고정여부           VARCHAR2(1)   */
+             , B.POPUP_YN          /* 팝업여부               VARCHAR2(1)   */
+             , B.AUTHOR_NM         /* 작성자이름             VARCHAR2(30)  */
+             , B.ATCH_FILE_CNT     /* 첨부파일건수           NUMBER(3,0)   */
+             , B.IN_DTM            /* 입력일시               DATE(7)       */
+             , B.IN_EMP_CD         /* 입력자사번             VARCHAR2(20)  */
+             , B.UP_DTM            /* 수정일시               DATE(7)       */
+             , B.UP_EMP_CD         /* 수정자사번             VARCHAR2(20)  */
+             , B.PLAYER_FILE_NM    /* 동영상파일경로         VARCHAR2(100) */
+             , B.IN_IP             /* 입력 IP                VARCHAR2(15)  */
+             , B.HIGHLIGHT_YN      /* 강조여부               VARCHAR2(3)   */
+             , B.ANNC_YN           /* 공지여부(ANNOUNCE)     VARCHAR2(3)   */
+             , B.ANNC_DAYS         /* 공지일수(ANNOUNCE)     NUMBER(22)    */
+             , B.MAIN_YN           /* 메인공지여부           VARCHAR2(3)   */
+             , B.MAIN_DAYS         /* 메인공지일수           NUMBER(22)    */
+             , B.NTC_YN            /* 알리미사용여부(NOTICE) VARCHAR2(3)   */
+             , B.NTC_FRYMD         /* 알리미시작일(NOTICE)   VARCHAR2(10)  */
+             , B.NTC_TOYMD         /* 알리미종료일(NOTICE)   VARCHAR2(10)  */
+             , B.OPEN_YN           /* 오픈여부               VARCHAR2(3)   */
+             , B.SIDELINK          /* 사이드링크             VARCHAR2(100) */
+             , B.MB_ID             /* 회사코드               VARCHAR2(20)  */
+             , CATEGORY            /* 카테고리               VARCHAR2(256) */
+             , ROW_NUMBER() OVER(ORDER BY B.IN_DTM DESC) AS RN
+             , C.RESOURCE_URL
+             , C.RESOURCE_ID
+          FROM TBBD_BOARD A
+          INNER JOIN TBBD_ITEM B
+            ON A.MB_ID = B.MB_ID
+           AND A.BD_NO = B.BD_NO
+           AND (B.MAIN_YN = 'N' OR B.MAIN_YN IS NULL)
+          INNER JOIN TBSY_RESOURCES C
+            ON A.MB_ID = C.MB_ID
+           AND A.BD_NM = C.RESOURCE_NAME
+         WHERE 1 = 1
+           AND A.MB_ID = #{MB_ID}
+		   AND A.BD_NO = #{BD_NO}
+       ) AA
+ WHERE AA.RN <![CDATA[<=]]> 5
+ORDER BY IN_DTM DESC
+</select>
+
+<!-- 메인화면에 출력할 게시판들 -->
+<select id="selectMainBoardListItem" parameterType="kr.co.fw.board.BoardVO" resultType="kr.co.fw.board.BoardItemVO">
+/* board-mapper.xml selectMainBoardItem 메인화면에 출력할 게시판 */
+ SELECT AA.*
+  FROM (SELECT B.BD_NO             /* 게시판번호             NUMBER(15,0)  */
+             , A.BD_NM
+             , B.ITEM_NO           /* 게시글번호             NUMBER(15,0)  */
+             , CASE WHEN LENGTH(B.TITL)>40
+                    THEN '['|| A.BD_NM ||'] '|| SUBSTR(B.TITL, 1, 40) || '...'
+                    ELSE '['|| A.BD_NM ||'] '|| B.TITL
+               END AS TITL
+             , B.CONT              /* 내용                   CLOB(4000)    */
+             , B.ORGN_WRTN_NO      /* 원글번호               NUMBER(15,0)  */
+             , B.PRNT_WRTN_NO      /* 부모글번호             NUMBER(15,0)  */
+             , B.SORT_NO           /* 정렬번호               NUMBER(7,0)   */
+             , B.ORGN_WRTN_DCD     /* 원본글구분코드         VARCHAR2(4)   */
+             , B.DEPTH             /* depth                  NUMBER(3,0)   */
+             , B.INQ_CNT           /* 조회수                 NUMBER(5,0)   */
+             , B.HGRK_FIX_YN       /* 상위고정여부           VARCHAR2(1)   */
+             , B.POPUP_YN          /* 팝업여부               VARCHAR2(1)   */
+             , B.AUTHOR_NM         /* 작성자이름             VARCHAR2(30)  */
+             , B.ATCH_FILE_CNT     /* 첨부파일건수           NUMBER(3,0)   */
+             , B.IN_DTM            /* 입력일시               DATE(7)       */
+             , B.IN_EMP_CD         /* 입력자사번             VARCHAR2(20)  */
+             , B.UP_DTM            /* 수정일시               DATE(7)       */
+             , B.UP_EMP_CD         /* 수정자사번             VARCHAR2(20)  */
+             , B.PLAYER_FILE_NM    /* 동영상파일경로         VARCHAR2(100) */
+             , B.IN_IP             /* 입력 IP                VARCHAR2(15)  */
+             , B.HIGHLIGHT_YN      /* 강조여부               VARCHAR2(3)   */
+             , B.ANNC_YN           /* 공지여부(ANNOUNCE)     VARCHAR2(3)   */
+             , B.ANNC_DAYS         /* 공지일수(ANNOUNCE)     NUMBER(22)    */
+             , B.MAIN_YN           /* 메인공지여부           VARCHAR2(3)   */
+             , B.MAIN_DAYS         /* 메인공지일수           NUMBER(22)    */
+             , B.NTC_YN            /* 알리미사용여부(NOTICE) VARCHAR2(3)   */
+             , B.NTC_FRYMD         /* 알리미시작일(NOTICE)   VARCHAR2(10)  */
+             , B.NTC_TOYMD         /* 알리미종료일(NOTICE)   VARCHAR2(10)  */
+             , B.OPEN_YN           /* 오픈여부               VARCHAR2(3)   */
+             , B.SIDELINK          /* 사이드링크             VARCHAR2(100) */
+             , B.MB_ID             /* 회사코드               VARCHAR2(20)  */
+             , CATEGORY            /* 카테고리               VARCHAR2(256) */
+             , ROW_NUMBER() OVER(ORDER BY B.IN_DTM DESC) AS RN
+             , C.RESOURCE_URL
+             , C.RESOURCE_ID
+          FROM TBBD_BOARD A
+          INNER JOIN TBBD_ITEM B
+            ON A.MB_ID = B.MB_ID
+           AND A.BD_NO = B.BD_NO
+           AND (B.MAIN_YN = 'N' OR B.MAIN_YN IS NULL)
+          INNER JOIN TBSY_RESOURCES C
+            ON A.MB_ID = C.MB_ID
+           AND A.BD_NM = C.RESOURCE_NAME
+         WHERE 1 = 1
+           AND A.MB_ID = #{MB_ID}
+		   AND A.PBD_NO = #{BD_NO}
+       ) AA
+ WHERE AA.RN <![CDATA[<=]]> 5
+ORDER BY IN_DTM DESC
+</select>
+
+<!-- 메인게시판 헤더 -->
+<select id="mainHeaderInfo" parameterType="kr.co.fw.board.BoardVO" resultType="kr.co.fw.board.BoardVO">
+/* board-mapper.xml mainHeaderInfo 메인게시판 헤더 */
+	  SELECT A.BD_NM
+	 	   , A.BD_NO
+		   , A.MB_ID                     
+		   , B.RESOURCE_URL
+		   , B.RESOURCE_ID
+		FROM TBBD_BOARD A
+		LEFT OUTER JOIN TBSY_RESOURCES B
+		  ON A.MB_ID = B.MB_ID
+	   WHERE 1 = 1
+		 AND A.MB_ID = #{MB_ID}
+		 AND TO_CHAR(TO_NUMBER(A.BD_NO)) = REPLACE(B.RESOURCE_ID,#{BD_RESOURCE_ID},'') /* 게시판 넘버를 메뉴테이블의 ID에서 앞에 문자를 지운 후 비교 */
+		 AND A.BD_NO = #{BD_NO}
+</select>
+
+<!-- 메인게시판 강조 게시글 -->
+<select id="getMainBoardStItem" parameterType="kr.co.fw.board.BoardVO" resultType="kr.co.fw.board.BoardItemVO">
+/* board-mapper.xml getMainBoardStItem 메인게시판 강조 게시글 */
+SELECT AA.*
+  FROM (SELECT B.BD_NO             /* 게시판번호             NUMBER(15,0)  */
+             , A.BD_NM
+             , B.ITEM_NO           /* 게시글번호             NUMBER(15,0)  */
+             , CASE WHEN LENGTH(B.TITL)>40
+                    THEN SUBSTR(B.TITL, 1, 40)
+                    ELSE B.TITL
+               END AS TITL
+             , B.CONT              /* 내용                   CLOB(4000)    */
+             , B.ORGN_WRTN_NO      /* 원글번호               NUMBER(15,0)  */
+             , B.PRNT_WRTN_NO      /* 부모글번호             NUMBER(15,0)  */
+             , B.SORT_NO           /* 정렬번호               NUMBER(7,0)   */
+             , B.ORGN_WRTN_DCD     /* 원본글구분코드         VARCHAR2(4)   */
+             , B.DEPTH             /* depth                  NUMBER(3,0)   */
+             , B.INQ_CNT           /* 조회수                 NUMBER(5,0)   */
+             , B.HGRK_FIX_YN       /* 상위고정여부           VARCHAR2(1)   */
+             , B.POPUP_YN          /* 팝업여부               VARCHAR2(1)   */
+             , B.AUTHOR_NM         /* 작성자이름             VARCHAR2(30)  */
+             , B.ATCH_FILE_CNT     /* 첨부파일건수           NUMBER(3,0)   */
+             , B.IN_DTM            /* 입력일시               DATE(7)       */
+             , B.IN_EMP_CD         /* 입력자사번             VARCHAR2(20)  */
+             , B.UP_DTM            /* 수정일시               DATE(7)       */
+             , B.UP_EMP_CD         /* 수정자사번             VARCHAR2(20)  */
+             , B.PLAYER_FILE_NM    /* 동영상파일경로         VARCHAR2(100) */
+             , B.IN_IP             /* 입력 IP                VARCHAR2(15)  */
+             , B.HIGHLIGHT_YN      /* 강조여부               VARCHAR2(3)   */
+             , B.ANNC_YN           /* 공지여부(ANNOUNCE)     VARCHAR2(3)   */
+             , B.ANNC_DAYS         /* 공지일수(ANNOUNCE)     NUMBER(22)    */
+             , B.MAIN_YN           /* 메인공지여부           VARCHAR2(3)   */
+             , B.MAIN_DAYS         /* 메인공지일수           NUMBER(22)    */
+             , B.NTC_YN            /* 알리미사용여부(NOTICE) VARCHAR2(3)   */
+             , B.NTC_FRYMD         /* 알리미시작일(NOTICE)   VARCHAR2(10)  */
+             , B.NTC_TOYMD         /* 알리미종료일(NOTICE)   VARCHAR2(10)  */
+             , B.OPEN_YN           /* 오픈여부               VARCHAR2(3)   */
+             , B.SIDELINK          /* 사이드링크             VARCHAR2(100) */
+             , B.MB_ID             /* 회사코드               VARCHAR2(20)  */
+             , CATEGORY            /* 카테고리               VARCHAR2(256) */
+             , ROW_NUMBER() OVER(ORDER BY B.IN_DTM DESC) AS RN
+             , C.RESOURCE_URL
+             , C.RESOURCE_ID
+          FROM TBBD_BOARD A
+          INNER JOIN TBBD_ITEM B
+            ON A.MB_ID = B.MB_ID
+           AND A.BD_NO = B.BD_NO
+          INNER JOIN TBSY_RESOURCES C
+            ON A.MB_ID = C.MB_ID
+           AND A.BD_NM = C.RESOURCE_NAME
+         WHERE 1 = 1
+           AND A.MB_ID = #{MB_ID}
+		   AND A.BD_NO = #{BD_NO}
+       ) AA
+ WHERE AA.RN <![CDATA[<=]]> #{BD_CNT} 
+ORDER BY IN_DTM DESC
+</select>
+
+<!-- 메인게시판 강조 게시글들 -->
+<select id="getMainBoardStListItem" parameterType="kr.co.fw.board.BoardVO" resultType="kr.co.fw.board.BoardItemVO">
+/* board-mapper.xml getMainBoardStItem 메인게시판 강조 게시글 */
+SELECT AA.*
+  FROM (SELECT B.BD_NO             /* 게시판번호             NUMBER(15,0)  */
+             , A.BD_NM
+             , B.ITEM_NO           /* 게시글번호             NUMBER(15,0)  */
+              , '['|| A.BD_NM ||'] '||B.TITL AS TITL /* 제목 VARCHAR2(300) */
+             , B.CONT              /* 내용                   CLOB(4000)    */
+             , B.ORGN_WRTN_NO      /* 원글번호               NUMBER(15,0)  */
+             , B.PRNT_WRTN_NO      /* 부모글번호             NUMBER(15,0)  */
+             , B.SORT_NO           /* 정렬번호               NUMBER(7,0)   */
+             , B.ORGN_WRTN_DCD     /* 원본글구분코드         VARCHAR2(4)   */
+             , B.DEPTH             /* depth                  NUMBER(3,0)   */
+             , B.INQ_CNT           /* 조회수                 NUMBER(5,0)   */
+             , B.HGRK_FIX_YN       /* 상위고정여부           VARCHAR2(1)   */
+             , B.POPUP_YN          /* 팝업여부               VARCHAR2(1)   */
+             , B.AUTHOR_NM         /* 작성자이름             VARCHAR2(30)  */
+             , B.ATCH_FILE_CNT     /* 첨부파일건수           NUMBER(3,0)   */
+             , B.IN_DTM            /* 입력일시               DATE(7)       */
+             , B.IN_EMP_CD         /* 입력자사번             VARCHAR2(20)  */
+             , B.UP_DTM            /* 수정일시               DATE(7)       */
+             , B.UP_EMP_CD         /* 수정자사번             VARCHAR2(20)  */
+             , B.PLAYER_FILE_NM    /* 동영상파일경로         VARCHAR2(100) */
+             , B.IN_IP             /* 입력 IP                VARCHAR2(15)  */
+             , B.HIGHLIGHT_YN      /* 강조여부               VARCHAR2(3)   */
+             , B.ANNC_YN           /* 공지여부(ANNOUNCE)     VARCHAR2(3)   */
+             , B.ANNC_DAYS         /* 공지일수(ANNOUNCE)     NUMBER(22)    */
+             , B.MAIN_YN           /* 메인공지여부           VARCHAR2(3)   */
+             , B.MAIN_DAYS         /* 메인공지일수           NUMBER(22)    */
+             , B.NTC_YN            /* 알리미사용여부(NOTICE) VARCHAR2(3)   */
+             , B.NTC_FRYMD         /* 알리미시작일(NOTICE)   VARCHAR2(10)  */
+             , B.NTC_TOYMD         /* 알리미종료일(NOTICE)   VARCHAR2(10)  */
+             , B.OPEN_YN           /* 오픈여부               VARCHAR2(3)   */
+             , B.SIDELINK          /* 사이드링크             VARCHAR2(100) */
+             , B.MB_ID             /* 회사코드               VARCHAR2(20)  */
+             , CATEGORY            /* 카테고리               VARCHAR2(256) */
+             , ROW_NUMBER() OVER(ORDER BY B.IN_DTM DESC) AS RN
+             , C.RESOURCE_URL
+             , C.RESOURCE_ID
+          FROM TBBD_BOARD A
+          INNER JOIN TBBD_ITEM B
+            ON A.MB_ID = B.MB_ID
+           AND A.BD_NO = B.BD_NO
+          INNER JOIN TBSY_RESOURCES C
+            ON A.MB_ID = C.MB_ID
+           AND A.BD_NM = C.RESOURCE_NAME
+         WHERE 1 = 1
+           AND A.MB_ID = #{MB_ID}
+		   AND A.PBD_NO = #{BD_NO}
+       ) AA
+ WHERE AA.RN <![CDATA[<=]]> 5
+ORDER BY IN_DTM DESC
+</select>
+
+<!-- 메뉴권한을 부여받은 사원들 -->
+<select id="authEmpGrpList" parameterType="kr.co.fw.board.AuthorityGroupVO" resultType="Hmap" >
+/* board-mapper.xml  authEmpGrpList */
+SELECT DISTINCT 
+	   A.EMP_CD
+	 , A.EMP_NM
+	 , A.BOARD_ROLE_ID
+     , C.SNM
+     , A.JIKGUB
+     , A.JIKCHK
+     , A.EMPSTA
+  FROM (SELECT * FROM TBIN_EMPMST WHERE MB_ID = #{MB_ID}) A
+       LEFT OUTER JOIN (SELECT * FROM TBIN_SCD WHERE MB_ID = #{MB_ID} ) C
+       ON A.SCD = C.SCD
+WHERE 1=1
+  AND A.EMP_CD NOT IN ('SADMIN','ADMIN','INSCOM','INSCOMNVL')
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(AUTH_GRP_CD)'>
+  AND A.BOARD_ROLE_ID = #{AUTH_GRP_CD}
+</if>
+</select>
+  
+<!-- 메뉴권한을 부여받지 않은 사원들 -->
+<select id="authNoneEmpGrpList" parameterType="kr.co.fw.board.AuthorityGroupVO" resultType="Hmap" >
+/* board-mapper.xml  autrNoneEmpGrpList */
+SELECT A.EMP_CD
+	 , A.EMP_NM
+     , B.SNM
+     , A.JIKGUB
+     , A.JIKCHK
+     , A.EMPSTA
+     , #{AUTH_GRP_CD} AS AUTH_GRP_CD
+  FROM (SELECT * FROM TBIN_EMPMST WHERE MB_ID = #{MB_ID} ) A
+       LEFT OUTER JOIN (SELECT * FROM TBIN_SCD WHERE MB_ID = #{MB_ID} ) B
+       ON A.SCD = B.SCD
+ WHERE A.EMP_CD NOT IN ('INSCOM', 'INSCOMNVL', 'ADMIN', 'SADMIN')
+ MINUS
+SELECT A.EMP_CD
+	 , A.EMP_NM
+     , C.SNM
+     , A.JIKGUB
+     , A.JIKCHK
+     , A.EMPSTA
+     , A.BOARD_ROLE_ID
+  FROM (SELECT * FROM TBIN_EMPMST WHERE MB_ID = #{MB_ID}) A
+       LEFT OUTER JOIN (SELECT * FROM TBIN_SCD WHERE MB_ID = #{MB_ID} ) C
+       ON A.SCD = C.SCD
+ WHERE 1=1
+   AND A.EMP_CD = A.EMP_CD
+   AND B.BOARD_ROLE_ID = #{AUTH_GRP_CD}
+ </select>
+  
+<!-- 게시판권한 사용자 입력 -->  
+<insert id="insertAuthUser" parameterType="kr.co.fw.board.AuthorityGroupVO">
+/* board-mapper.xml  insertAutrUser */
+INSERT INTO TBBD_USER_AUTH_GRP_MAP (
+	   AUTH_GRP_CD
+	 , EMP_CD
+	 , MB_ID
+	 , IN_EMP_CD
+	 , IN_DTM
+	 , UP_EMP_CD
+	 , UP_DTM
+) VALUES (
+	   #{AUTH_GRP_CD}
+	 , #{EMP_CD}
+	 , #{MB_ID}
+	 , #{IN_EMP_CD}
+	 , SYSDATE
+	 , #{UP_EMP_CD}
+	 , SYSDATE 
+)
+</insert>
+ 
+<!-- 게시판권한 사용자 삭제 --> 
+<delete id="deleteAuthUser" parameterType="kr.co.fw.board.AuthorityGroupVO">
+/* board-mapper.xml  deleteAutrUser */
+DELETE FROM TBBD_USER_AUTH_GRP_MAP
+ WHERE AUTH_GRP_CD = #{AUTH_GRP_CD}
+   AND MB_ID  = #{MB_ID}
+   AND EMP_CD = #{EMP_CD}
+</delete>
+
+<select id="boardAuthCdList" parameterType="kr.co.fw.board.AuthorityGroupVO" resultType="Hmap">
+/* board-mapper.xml id="boardAuthCdList" ddcode : 게시판권한 리스트 조회 */
+SELECT AUTH_GRP_CD
+     , AUTH_GRP_NM
+  FROM TBBD_USER_AUTHORITY_GROUP
+ WHERE MB_ID = #{MB_ID}
+ ORDER BY AUTH_GRP_CD
+</select>
+
+</mapper>

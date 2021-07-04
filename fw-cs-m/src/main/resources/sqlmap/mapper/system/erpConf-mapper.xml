@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Erp.Conf">
+
+<select id="selectErpComYmList" parameterType="kr.co.fw.erp.conf.CloseMonVO" resultType="Hmap">
+/* erpConf-mapper.xml selectComYmList ddcode COM_YM(마감년월) 조회 */
+SELECT COM_YM AS VALUE        
+     , SUBSTR(COM_YM, 1, 4)||'년'||SUBSTR(COM_YM, 5)||'월' AS TEXT
+  FROM TBSY_CLOSE_MONTH /* [SY][시스템] 마감월관리 마스터 */
+ WHERE MB_ID = #{MB_ID}
+ GROUP BY COM_YM
+ ORDER BY COM_YM DESC
+</select>
+
+<select id="selectErpCloseMonList" parameterType="kr.co.fw.erp.conf.CloseMonVO" resultType="Hmap">
+/* erpConf-mapper.xml getCloseMon 마감관리 리스트 조회 */
+SELECT SU.COM_YM			 /* 기준년월     VARCHAR2(6)      */
+     , SU.CL_STEP_CD		 /* 마감단계코드 VARCHAR2(2)      */
+     , SU.CL_STATE_CD		 /* 마감상태코드 VARCHAR2(2)      */
+     , CM1.CD_VL_NM AS CL_STATE_NM /* 계약상태 */
+     , CM2.CD_VL_NM AS CL_STEP_NM  /* 마감단계 */	
+     , SU.MB_ID				 /* 회원사코드 */
+     , TO_CHAR(SU.IN_DTM, 'YYYY-MM-DD HH24:MI:SS') AS IN_DTM /* 생성일시 */
+     , TO_CHAR(SU.UP_DTM, 'YYYY-MM-DD HH24:MI:SS') AS UP_DTM /* 최종마감일시 */
+  FROM TBSY_CLOSE_MONTH SU	 /* [ICOM][수수료]마감월관리 마스터 */
+  	 , TBCM_COMMON_CODE CM1	 /* [CM]공통코드 관리 - 마감 상태명을 가져오기 위함 */
+  	 , TBCM_COMMON_CODE CM2	 /* [CM]공통코드 관리 - 마감 단계명을 가져오기 위함 */
+ WHERE SU.COM_YM = #{COM_YM} /* 기준년월     VARCHAR2(6) */
+   AND SU.MB_ID = #{MB_ID}
+   AND SU.MB_ID = CM1.MB_ID(+)
+   AND SU.MB_ID = CM2.MB_ID(+)
+   AND CM1.GRP_CMM_CD = 'CL_STATE_CD'
+   AND CM2.GRP_CMM_CD = 'ERP_CL_STEP_CD'
+   AND SU.CL_STATE_CD = CM1.CD_VL(+)
+   AND SU.CL_STEP_CD  = CM2.CD_VL(+)
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(CL_STEP_CD)'>
+   AND SU.CL_STEP_CD = #{CL_STEP_CD}			/* 마감단계코드 VARCHAR2(2)      */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(CL_STATE_CD)'>
+   AND SU.CL_STATE_CD = #{CL_STATE_CD}			/* 마감상태코드 VARCHAR2(2)      */
+</if>
+ORDER BY COM_YM DESC , CL_STEP_CD
+</select>
+
+
+<update id="updateErpCloseMon" parameterType="Hmap">
+/* TBSY_CLOSE_MONTH[[수수료]마감월관리 마스터] UPDATE */
+UPDATE TBSY_CLOSE_MONTH /* [ICOM][수수료]마감월관리 마스터 */
+   SET CL_STATE_CD = #{CL_STATE_CD}		/* 마감상태코드 VARCHAR2(3)      */
+     , UP_EMP_CD   = #{UP_EMP_CD  }		/* 수정자사번   VARCHAR2(20)     */
+<if test='@kr.co.fw.common.util.CommUtil@isEquals(CL_STATE_CD, "CLS")'>    
+     , UP_DTM      = SYSDATE			/* 수정일시     TIMESTAMP(6)(11) */
+</if>     
+ WHERE MB_ID	   = #{MB_ID}
+   AND COM_YM      = #{COM_YM    }		/* 기준년월     VARCHAR2(6)  */
+   AND CL_STEP_CD  = #{CL_STEP_CD}		/* 마감단계코드 VARCHAR2(20) */
+</update>
+
+<select id="selectErpSubCloseMonList" parameterType="kr.co.fw.erp.conf.CloseMonVO" resultType="Hmap">
+/* erpConf-mapper.xml getSubCloseMon 마감관리 리스트 조회Sub */
+SELECT SU.COM_YM         /* 기준년월     VARCHAR2(6)      */
+     , SU.CL_STEP_CD     /* 마감단계코드 VARCHAR2(2)      */
+     , SU.CL_STATE_CD    /* 마감상태코드 VARCHAR2(2)      */
+     , SY.RESOURCE_NAME
+     , CM1.CD_VL_NM AS CL_STATE_NM
+     , CM2.CD_VL_NM AS CL_STEP_NM
+     , SU.IN_EMP_CD      /* 입력자사번   VARCHAR2(20)     */
+     , SU.IN_DTM         /* 입력일시     TIMESTAMP(6)(11) */
+     , SU.UP_EMP_CD      /* 수정자사번   VARCHAR2(20)     */
+     , SU.UP_DTM         /* 수정일시     TIMESTAMP(6)(11) */
+  FROM TBSY_CLOSE_MONTH SU    /* [ICOM][수수료]마감월관리 마스터 */
+     , TBSY_RESOURCES SY
+     , TBCM_COMMON_CODE CM1
+     , TBCM_COMMON_CODE CM2
+ WHERE SU.MB_ID = #{MB_ID}
+   AND SU.MB_ID = SY.MB_ID
+   AND SU.MB_ID = CM1.MB_ID(+)
+   AND SU.MB_ID = CM2.MB_ID(+)
+   AND SU.COM_YM = #{COM_YM} /* 기준년월     VARCHAR2(6) */
+   AND SY.SYSTEM_GUBUN IN ('COMMON', 'ERP')
+   AND SU.CL_STEP_CD = SY.CLS_RESOURCE_ID
+   AND SY.USE_YN = 'Y'
+   AND CM1.GRP_CMM_CD = 'CL_STATE_CD'
+   AND CM2.GRP_CMM_CD = 'CL_STEP_CD'
+   AND SU.CL_STATE_CD = CM1.CD_VL(+)
+   AND SU.CL_STEP_CD  = CM2.CD_VL(+)
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(CL_STEP_CD)'>
+   AND SU.CL_STEP_CD = <![CDATA[#{CL_STEP_CD}]]>  /* 마감단계코드 VARCHAR2(2)      */
+</if>
+ORDER BY SU.COM_YM DESC, SU.SORT_NO
+</select>
+
+<!-- 마감월 생성 --> 
+<insert id="execST010_CreateMonthErp" parameterType="kr.co.fw.erp.conf.CloseMonVO" statementType="CALLABLE" flushCache="true">
+	call PKG_COMMON.PRC_ST010_CREATEMONTH(#{COM_YM},#{IN_EMP_CD},#{MB_ID})
+</insert>
+
+<!-- 월별 데이터 마감 --> 
+<insert id="execPRC_ST020_CLOSEMONTH" parameterType="kr.co.fw.erp.conf.CloseMonVO" statementType="CALLABLE" flushCache="true">
+	call PKG_COMMON.PRC_ST020_CLOSEMONTH(#{COM_YM},#{TABLE_ID},#{IN_EMP_CD},#{MB_ID})
+</insert>
+
+</mapper>

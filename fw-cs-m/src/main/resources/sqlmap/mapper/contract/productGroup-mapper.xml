@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ProductGroup">
+
+<!-- 상품군관리 목록조회 -->
+<select id="selectProductGroupList" resultType="Hmap" parameterType="ProductGroupVO">
+/* productGroup-mapper.xml selectProductGroupList 상품군관리 목록조회 */
+SELECT MB_ID         /* 회원사ID                           VARCHAR2(20) */
+     , SEQ           /* 일련번호(TBCN_PRODUCT_GROUP_SEQ)     NUMBER(22)   */
+     , PROD_KIND1    /* 상품구분1(GRP_CMM_CD = PROD_KIND1) VARCHAR2(30) */
+     , PROD_KIND2    /* 상품구분2                          VARCHAR2(30) */
+     , USE_YN        /* 사용유무                           VARCHAR2(1)  */
+     , IN_EMP_CD     /* 입력자사번                         VARCHAR2(20) */
+     , IN_DTM        /* 입력일시                           DATE(7)      */
+     , UP_EMP_CD     /* 수정자사번                         VARCHAR2(20) */
+     , UP_DTM        /* 수정일시                           DATE(7)      */
+  FROM TBCN_PRODUCT_GROUP
+ WHERE MB_ID = #{MB_ID}
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_USE_YN)'>
+    AND USE_YN = #{SRCH_USE_YN} /* 사용여부 */
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_PROD_WORD)'>
+    AND PROD_KIND2 LIKE '%'||#{SRCH_PROD_WORD}||'%'  /* 상품구분2 */
+</if>
+ORDER BY SEQ
+</select>
+
+<!-- 하나의 상품군조회 -->
+<select id="selectProductGroup" resultType="Hmap" parameterType="ProductGroupVO">
+/* productGroup-mapper.xml selectProductGroup 상품군 조회 */
+SELECT MB_ID         /* 회원사ID                           VARCHAR2(20) */
+     , SEQ           /* 일련번호(TBCN_PRODUCT_GROUP_SEQ)     NUMBER(22)   */
+     , PROD_KIND1    /* 상품구분1(GRP_CMM_CD = PROD_KIND1) VARCHAR2(30) */
+     , PROD_KIND2    /* 상품구분2                          VARCHAR2(30) */
+     , USE_YN        /* 사용유무                           VARCHAR2(1)  */
+     , IN_EMP_CD     /* 입력자사번                         VARCHAR2(20) */
+     , IN_DTM        /* 입력일시                           DATE(7)      */
+     , UP_EMP_CD     /* 수정자사번                         VARCHAR2(20) */
+     , UP_DTM        /* 수정일시                           DATE(7)      */
+  FROM TBCN_PRODUCT_GROUP
+ WHERE MB_ID = #{MB_ID}
+   AND SEQ = #{SEQ}
+</select>
+
+<!-- 상품군 등록 -->
+<insert id="insertProductGroup" parameterType="ProductGroupVO">
+/* productGroup-mapper.xml insertProductGroup 상품군 등록 */
+INSERT
+  INTO TBCN_PRODUCT_GROUP /* [CN][계약] 상품군관리 */
+     ( MB_ID         /* 회원사ID                           VARCHAR2(20) */
+     , SEQ           /* 일련번호(TBCN_PRODUCT_GROUP_SEQ)     NUMBER(22)   */
+     , PROD_KIND1    /* 상품구분1(GRP_CMM_CD = PROD_KIND1) VARCHAR2(30) */
+     , PROD_KIND2    /* 상품구분2                          VARCHAR2(30) */
+     , USE_YN        /* 사용유무                           VARCHAR2(1)  */
+     , IN_EMP_CD     /* 입력자사번                         VARCHAR2(20) */
+     , IN_DTM        /* 입력일시                           DATE(7)      */
+     )
+VALUES
+     ( #{MB_ID     }   /* 회원사ID                           VARCHAR2(20) */
+     , TBCN_PRODUCT_GROUP_SEQ.NEXTVAL   /* 일련번호(TBCN_PRODUCT_GROUP_SEQ)     NUMBER(22)   */
+     , #{PROD_KIND1}   /* 상품구분1(GRP_CMM_CD = PROD_KIND1) VARCHAR2(30) */
+     , #{PROD_KIND2}   /* 상품구분2                          VARCHAR2(30) */
+     , #{USE_YN    }   /* 사용유무                           VARCHAR2(1)  */
+     , #{IN_EMP_CD }   /* 입력자사번                         VARCHAR2(20) */
+     , SYSDATE         /* 입력일시                           DATE(7)      */
+     )
+</insert>
+
+<!-- 상품군 수정 -->
+<update id="updateProductGroup" parameterType="ProductGroupVO">
+/* productGroup-mapper.xml updateProductGroup 상품군 수정 */
+UPDATE TBCN_PRODUCT_GROUP /* [CN][계약] 상품군관리 */
+   SET PROD_KIND1 = #{PROD_KIND1}    /* 상품구분1(GRP_CMM_CD = PROD_KIND1) VARCHAR2(30) */
+     , PROD_KIND2 = #{PROD_KIND2}    /* 상품구분2                          VARCHAR2(30) */
+     , USE_YN     = #{USE_YN    }    /* 사용유무                           VARCHAR2(1)  */
+     , UP_EMP_CD  = #{UP_EMP_CD }    /* 수정자사번                         VARCHAR2(20) */
+     , UP_DTM     = SYSDATE          /* 수정일시                           DATE(7)      */
+ WHERE MB_ID = #{MB_ID}
+   AND SEQ = #{SEQ}
+</update>
+
+<!-- 상품군 삭제 -->
+<delete id="deleteProductGroup" parameterType="ProductGroupVO">
+/* productGroup-mapper.xml deleteProductGroup 상품군 삭제 */
+DELETE TBCN_PRODUCT_GROUP /* [CN][계약] 상품군관리 */
+ WHERE MB_ID = #{MB_ID}
+   AND SEQ = #{SEQ}
+</delete>
+
+</mapper>

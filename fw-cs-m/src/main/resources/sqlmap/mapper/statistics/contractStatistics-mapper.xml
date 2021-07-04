@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="ContractStatistics">
+
+<sql id="companyContStatList_SQL">
+/* contractStatistics-mapper.xml id="companyContStatList_SQL" 회사전체업적 쿼리 */
+<![CDATA[
+SELECT *
+  FROM (
+        SELECT XX.SCD
+             , LPAD(' ', 2 * (XX.DEPTH - 1), ' ')||XX.SNM AS SNM
+             , XX.LV_1_CD
+             , XX.LV_2_CD
+             , XX.LV_3_CD
+             , XX.LV_4_CD
+             , XX.LV_1_PSCD
+             , XX.LV_2_PSCD
+             , XX.LV_3_PSCD
+             , XX.LV_4_PSCD
+             , XX.DEPTH
+             , TO_CHAR(NVL(TEMP.EMP_C, 0)) AS EMP_CNT               /* 엑셀 다운로드를 위해 CHAR로 변환 */                    /* 재적인원 */
+             , TO_CHAR(NVL(UHYO.EMP_1, 0)) AS UHYO_CNT              /* 엑셀 다운로드 시 형식을 위해 CHAR로 변환 */                /* 가동인원 */
+             , TRUNC(NVL(MON.TSUM, 0)/1000, 0)  AS MONTH_TOTAL      /* 당월 누적 업적(월납보험료) */
+             , TRUNC(NVL(MON.LSUM, 0)/1000, 0)  AS L_MONTH_PREM_AMT /* 월납보험료(생보) */
+             , TRUNC(NVL(MON.LONE, 0)/1000, 0)  AS L_MONTH_ILSINAP  /* 일시납보험료(생보) */
+             , TRUNC(NVL(MON.NSUM, 0)/1000, 0)  AS N_MONTH_JANGI    /* 당월 손보 장기 */
+             , TRUNC(NVL(MON.NCAR, 0)/1000, 0)  AS N_MONTH_CAR      /* 당월 손보 자동차 */
+             , TRUNC(NVL(MON.NOL, 0)/1000, 0)   AS N_MONTH_ILBAN    /* 당월 손보 일반 */
+             , TRUNC(NVL(DAY.BTSUM, 0)/1000, 0) AS DAILY_TOTAL      /* 당일 업적 현황 */
+             , TRUNC(NVL(DAY.BLSUM, 0)/1000, 0) AS L_DAILY_PREM_AMT /* 당일 월납보험료 */
+             , TRUNC(NVL(DAY.BLONE, 0)/1000, 0) AS L_DAILY_ILSINAP  /* 당일 일시납보험료 */
+             , TRUNC(NVL(DAY.BNSUM, 0)/1000, 0) AS N_DAILY_JANGI    /* 당일 손보 장기 */
+             , TRUNC(NVL(DAY.BNCAR, 0)/1000, 0) AS N_DAILY_CAR      /* 당일 손보 자동차 */
+             , TRUNC(NVL(DAY.BNOL, 0)/1000, 0)  AS N_DAILY_ILBAN    /* 당일 손보 일반 */
+          FROM (SELECT SCD
+                     , SNM
+                     , LV_1_CD
+                     , LV_2_CD
+                     , LV_3_CD
+                     , LV_4_CD
+                     , LV_1
+                     , LV_2
+                     , LV_3
+                     , LV_4
+                     , LV_1_PSCD
+                     , LV_2_PSCD
+                     , LV_3_PSCD
+                     , LV_4_PSCD
+                     , DEPTH
+                  FROM V_TBIN_SCD
+                 WHERE LV_5_CD IS NULL
+                   AND USE_YN = 'Y') XX
+          LEFT OUTER JOIN                   --당월 누적 업적 현황
+             ( SELECT LV_1_CD
+                    , LV_2_CD
+                    , LV_3_CD
+                    , LV_4_CD
+                    , MAX(TSUM) AS TSUM
+                    , MAX(LSUM) AS LSUM
+                    , MAX(LONE) AS LONE
+                    , MAX(NSUM) AS NSUM
+                    , MAX(NCAR) AS NCAR
+                    , MAX(NOL) AS NOL
+                FROM (SELECT '0000' AS LV_1_CD
+                            , LV_2_CD
+                            , LV_3_CD
+                            , LV_4_CD
+                            , SUM(CASE WHEN A.NAPMETHOD != '일시납' THEN MON_PREM_AMT ELSE 0 END) AS TSUM
+                            , SUM(CASE WHEN A.INSCO_CD LIKE 'L%' AND A.NAPMETHOD !='일시납' THEN MON_PREM_AMT ELSE 0 END) AS LSUM
+                            , SUM(CASE WHEN A.INSCO_CD LIKE 'L%' AND A.NAPMETHOD = '일시납' THEN MON_PREM_AMT ELSE 0 END) AS LONE
+                            , SUM(CASE WHEN A.INSCO_CD LIKE 'N%' AND A.NAPMETHOD !='일시납' THEN MON_PREM_AMT ELSE 0 END) AS NSUM
+                            , SUM(CASE WHEN A.INSCO_CD LIKE 'N%' AND A.NAPMETHOD = '일시납' AND A.PROD_KIND1 ='자동차' THEN MON_PREM_AMT ELSE 0 END) AS NCAR
+                            , SUM(CASE WHEN A.INSCO_CD LIKE 'N%' AND A.NAPMETHOD = '일시납' AND A.PROD_KIND1 ='일반' THEN MON_PREM_AMT ELSE 0 END) AS NOL
+                         FROM V_TBCN_CONTRACT A
+                        WHERE SUBSTR(REPLACE(A.CONT_DATE, '-', ''), 0, 6) = SUBSTR(REPLACE(#{SRCH_DATE}, '-', ''), 0 ,6)
+                        GROUP BY ROLLUP(LV_2_CD, LV_3_CD, LV_4_CD))
+               GROUP BY LV_1_CD, LV_2_CD, LV_3_CD, LV_4_CD
+             ) MON
+            ON XX.LV_1_CD = MON.LV_1_CD
+           AND NVL(XX.LV_2_CD, 0) = NVL(MON.LV_2_CD, 0)
+           AND NVL(XX.LV_3_CD, 0) = NVL(MON.LV_3_CD, 0)
+           AND NVL(XX.LV_4_CD, 0) = NVL(MON.LV_4_CD, 0)
+          LEFT OUTER JOIN                   --당일 업적 현황
+             ( SELECT LV_1_CD
+                    , LV_2_CD
+                    , LV_3_CD
+                    , LV_4_CD
+                    , MAX(BTsum) AS BTsum
+                    , MAX(BLSUM) AS BLSUM
+                    , MAX(BLONE) AS BLONE
+                    , MAX(BNSUM) AS BNSUM
+                    , MAX(BNCAR) AS BNCAR
+                    , MAX(BNOL) AS BNOL
+                 FROM (SELECT '0000' AS LV_1_CD
+                            , LV_2_CD
+                            , LV_3_CD
+                            , LV_4_CD
+                            , SUM(CASE WHEN A.NAPMETHOD != '일시납' THEN MON_PREM_AMT ELSE 0 END) AS BTsum
+                            , SUM(CASE WHEN A.INSCO_CD LIKE 'L%' AND A.NAPMETHOD != '일시납' THEN MON_PREM_AMT ELSE 0 END) AS BLSUM
+                            , SUM(CASE WHEN A.INSCO_CD LIKE 'L%' AND A.NAPMETHOD = '일시납' THEN MON_PREM_AMT ELSE 0 END) AS BLONE
+                            , SUM(CASE WHEN A.INSCO_CD LIKE 'N%' AND A.NAPMETHOD != '일시납' THEN MON_PREM_AMT ELSE 0 END) AS BNSUM
+                            , SUM(CASE WHEN A.INSCO_CD LIKE 'N%' AND A.NAPMETHOD = '일시납' AND A.PROD_KIND1 ='자동차' THEN MON_PREM_AMT ELSE 0 END) AS BNCAR
+                            , SUM(CASE WHEN A.INSCO_CD LIKE 'N%' AND A.NAPMETHOD = '일시납' AND A.PROD_KIND1 ='일시납' THEN MON_PREM_AMT ELSE 0 END) AS BNOL
+                         FROM V_TBCN_CONTRACT A
+                        WHERE REPLACE(A.CONT_DATE, '-', '') = REPLACE(#{SRCH_DATE}, '-', '')
+                        GROUP BY ROLLUP(LV_2_CD, LV_3_CD, LV_4_CD))
+               GROUP BY LV_1_CD, LV_2_CD, LV_3_CD, LV_4_CD
+             ) DAY 
+            ON XX.LV_1_CD = DAY.LV_1_CD
+           AND NVL(XX.LV_2_CD, 0) = NVL(DAY.LV_2_CD, 0)
+           AND NVL(XX.LV_3_CD, 0) = NVL(DAY.LV_3_CD, 0)
+           AND NVL(XX.LV_4_CD, 0) = NVL(DAY.LV_4_CD, 0)
+          LEFT OUTER JOIN
+             ( SELECT LV_1_CD
+                    , LV_2_CD
+                    , LV_3_CD
+                    , LV_4_CD
+                    , MAX(EMP_C) AS EMP_C
+                 FROM (SELECT '0000' AS LV_1_CD
+                            , A.LV_2_CD
+                            , A.LV_3_CD
+                            , A.LV_4_CD
+                            , COUNT(A.EMP_CD) AS EMP_C
+                         FROM V_TBIN_EMPMST A
+                        WHERE A.EMPSTA = '재직'
+                        GROUP BY ROLLUP(A.LV_2_CD, A.LV_3_CD, A.LV_4_CD)
+                      )
+                 GROUP BY LV_1_CD, LV_2_CD, LV_3_CD, LV_4_CD
+             ) TEMP
+            ON XX.LV_1_CD = TEMP.LV_1_CD
+           AND NVL(XX.LV_2_CD, 0) = NVL(TEMP.LV_2_CD, 0)
+           AND NVL(XX.LV_3_CD, 0) = NVL(TEMP.LV_3_CD, 0)
+           AND NVL(XX.LV_4_CD, 0) = NVL(TEMP.LV_4_CD, 0)
+          LEFT OUTER JOIN                   --가동인원
+             ( SELECT LV_1_CD
+                     , LV_2_CD
+                     , LV_3_CD
+                     , LV_4_CD
+                     , MAX(EMP_1) AS EMP_1
+                  FROM (SELECT '0000' AS LV_1_CD
+                            , LV_2_CD
+                            , LV_3_CD
+                            , LV_4_CD
+                            , COUNT(EMP_CD) AS EMP_1
+                         FROM (SELECT AA.LV_2_CD
+                                    , AA.LV_3_CD
+                                    , AA.LV_4_CD
+                                    , AA.EMP_CD
+                                 FROM V_TBCN_CONTRACT A
+                                    , V_TBIN_EMPMST AA
+                                WHERE SUBSTR(REPLACE(A.CONT_DATE, '-', ''), 0, 6) = SUBSTR(REPLACE(#{SRCH_DATE}, '-', ''), 0, 6)
+                                  AND A.NAPMETHOD != '일시납'
+                                  AND A.EMP_CD = AA.EMP_CD
+                               GROUP BY AA.LV_2_CD, AA.LV_3_CD, AA.LV_4_CD, AA.EMP_CD)
+                        GROUP BY ROLLUP(LV_2_CD, LV_3_CD, LV_4_CD))
+                GROUP BY LV_1_CD, LV_2_CD, LV_3_CD, LV_4_CD
+             ) UHYO
+            ON XX.LV_1_CD = UHYO.LV_1_CD
+           AND NVL(XX.LV_2_CD, 0) = NVL(UHYO.LV_2_CD, 0)
+           AND NVL(XX.LV_3_CD, 0) = NVL(UHYO.LV_3_CD, 0)
+           AND NVL(XX.LV_4_CD, 0) = NVL(UHYO.LV_4_CD, 0)
+       )
+    ORDER BY LV_1_CD, TO_NUMBER(NVL(LV_2_CD, 0)), TO_NUMBER(NVL(LV_3_CD, 0)), TO_NUMBER(NVL(LV_4_CD, 0))
+]]>
+</sql>
+
+<select id="companyContStatList" parameterType="kr.co.fw.statistics.contractStatistics.ContractStatisticsVO" resultType="bmap">
+/* contractStatistics-mapper.xml id="companyContStatList_SQL" 회사전체업적 리스트 */
+<include refid="companyContStatList_SQL" />
+</select>
+
+<sql id="inscoContStatList_SQL">
+SELECT * 
+  FROM (
+        SELECT XX.SCD
+             , LPAD(' ', 2 * (XX.DEPTH - 1), ' ')||XX.SNM AS SNM
+             , XX.LV_1_CD
+             , XX.LV_2_CD
+             , XX.LV_3_CD
+             , XX.LV_4_CD
+             , XX.LV_1_PSCD
+             , XX.LV_2_PSCD
+             , XX.LV_3_PSCD
+             , XX.LV_4_PSCD
+             , XX.DEPTH
+             
+             , TRUNC(NVL(
+             <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(inscoList_L)">
+	             <foreach item="INSCO_CD_L" collection="inscoList_L" separator="+"> 
+	               ${INSCO_CD_L.INSCO_CD}
+	             </foreach>
+             </if>
+             <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(inscoList_N)">
+	             <foreach item="INSCO_CD_N" collection="inscoList_N" open="+" separator="+"> 
+	               ${INSCO_CD_N.INSCO_CD}
+	             </foreach>
+             </if>
+             , 0), 0) AS LN_TOTAL          /* 생손보 합계(무조건 나와야 하는 값) */
+                 
+             , TRUNC(NVL(
+             <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(inscoList_L)">
+	             <foreach item="INSCO_CD_L" collection="inscoList_L" separator="+" >
+	               ${INSCO_CD_L.INSCO_CD}
+	             </foreach>
+	         </if>
+	         <if test="@kr.co.fw.common.util.CommUtil@isEmpty(inscoList_L)">
+	         	0
+	         </if>
+             , 0), 0) AS L_TOTAL         /* 생보 월납 합계(무조건 나와야 하는 값) */
+                 
+             , TRUNC(NVL(
+             <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(inscoList_N)">
+	             <foreach item="INSCO_CD_N" collection="inscoList_N" separator="+">
+	               ${INSCO_CD_N.INSCO_CD}
+	             </foreach>
+			 </if>
+			 <if test="@kr.co.fw.common.util.CommUtil@isEmpty(inscoList_N)">
+				 0
+			 </if>
+             , 0), 0) AS N_TOTAL        /* 손보 월납 합계(무조건 나와야 하는 값) */
+			 
+             <foreach item="INSCO_CD_L" collection="inscoList_L">
+             , TRUNC(NVL(${INSCO_CD_L.INSCO_CD}, 0), 0) AS ${INSCO_CD_L.INSCO_CD}
+             </foreach>                            /* 생보 월납 리스트 */
+			 
+             <foreach item="INSCO_CD_N" collection="inscoList_N">
+             , TRUNC(NVL(${INSCO_CD_N.INSCO_CD}, 0), 0) AS ${INSCO_CD_N.INSCO_CD}
+             </foreach>                            /* 손보 월납 리스트 */
+          FROM (SELECT SCD
+                     , SNM
+                     , LV_1_CD
+                     , LV_2_CD
+                     , LV_3_CD
+                     , LV_4_CD
+                     , LV_1
+                     , LV_2
+                     , LV_3
+                     , LV_4
+                     , LV_1_PSCD
+                     , LV_2_PSCD
+                     , LV_3_PSCD
+                     , LV_4_PSCD
+                     , DEPTH
+                  FROM V_TBIN_SCD
+                 WHERE LV_5_CD IS NULL
+                   AND USE_YN = 'Y') XX
+               LEFT OUTER JOIN
+                  ( SELECT LV_1_CD
+                         , LV_2_CD
+                         , LV_3_CD
+                         , LV_4_CD
+                         <foreach item="INSCO_CD_L" collection="inscoList_L">
+						 , MAX(${INSCO_CD_L.INSCO_CD}) AS ${INSCO_CD_L.INSCO_CD}
+						 </foreach>
+                         <foreach item="INSCO_CD_N" collection="inscoList_N">
+						 , MAX(${INSCO_CD_N.INSCO_CD}) AS ${INSCO_CD_N.INSCO_CD}
+						 </foreach>
+                      FROM (SELECT '0000' AS LV_1_CD
+                                 , LV_2_CD
+                                 , LV_3_CD
+                                 , LV_4_CD
+                                 <foreach item="INSCO_CD_L" collection="inscoList_L">
+                                 , SUM(CASE WHEN A.INSCO_CD LIKE #{INSCO_CD_L.INSCO_CD} AND A.NAPMETHOD != '일시납' THEN MON_PREM_AMT ELSE 0 END) / 1000 AS ${INSCO_CD_L.INSCO_CD}
+                                 </foreach>
+                                 <foreach item="INSCO_CD_N" collection="inscoList_N">
+                                 , SUM(CASE WHEN A.INSCO_CD LIKE #{INSCO_CD_N.INSCO_CD} AND A.NAPMETHOD != '일시납' THEN MON_PREM_AMT ELSE 0 END) / 1000 AS ${INSCO_CD_N.INSCO_CD}
+                                 </foreach>
+                              FROM V_TBCN_CONTRACT A
+                             WHERE SUBSTR(REPLACE(A.CONT_DATE, '-', ''),0, 6) = SUBSTR(REPLACE(#{SRCH_DATE},'-', ''), 0, 6)
+                             GROUP BY ROLLUP(LV_2_CD, LV_3_CD, LV_4_CD))
+                     GROUP BY LV_1_CD, LV_2_CD, LV_3_CD, LV_4_CD
+                   ) AA 
+                  ON XX.LV_1_CD = AA.LV_1_CD
+                 AND NVL(XX.LV_2_CD, 0) = NVL(AA.LV_2_CD, 0)
+                 AND NVL(XX.LV_3_CD, 0) = NVL(AA.LV_3_CD, 0)
+                 AND NVL(XX.LV_4_CD, 0) = NVL(AA.LV_4_CD, 0)
+       )
+ORDER BY LV_1_CD, TO_NUMBER(NVL(LV_2_CD, 0)), TO_NUMBER(NVL(LV_3_CD, 0)), TO_NUMBER(NVL(LV_4_CD, 0))
+</sql>
+
+<select id="inscoContStatList" parameterType="kr.co.fw.statistics.contractStatistics.ContractStatisticsVO" resultType="bmap">
+<include refid="inscoContStatList_SQL"/>
+</select>
+
+</mapper>
