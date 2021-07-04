@@ -7,14 +7,19 @@ import java.util.List;
 
 import kr.co.fw.base.BaseVO;
 import kr.co.fw.common.file.FileVO;
+import lombok.Getter;
+import lombok.Setter;
 
 /**
  * 인사정보 VO TBIN_EMPMST
  */
+@Getter
+@Setter
 public class InSaVO extends BaseVO implements Serializable {
 	
 	private static final long serialVersionUID = 5552939733840697694L;
 	
+	private String MB_ID;
 	private String COM_YM;
     private List<HashMap<String,String>> COM_YM_ARR = null;
 	private String SEQ             ;  /* 일련번호(TBIN_EMPMST_FSB_SEQ)                NUMBER(22)     */

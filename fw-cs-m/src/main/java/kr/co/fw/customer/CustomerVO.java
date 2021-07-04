@@ -1,5 +1,6 @@
 package kr.co.fw.customer;
 
+import kr.co.fw.base.BaseVO;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -7,7 +8,7 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString
-public class CustomerVO {
+public class CustomerVO extends BaseVO{
 	
 	private String cust_id;			/* VARCHAR(32)  PK 	'고객 ID' */
 	private String cust_nm;			/* VARCHAR(100) NN	'고객 명' */

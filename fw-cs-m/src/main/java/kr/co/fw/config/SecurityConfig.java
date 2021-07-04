@@ -82,6 +82,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers("/files/**").permitAll()
 				.antMatchers("/system/**").hasRole("SUPER")
 				.antMatchers("/login").permitAll()
+				.antMatchers("/mobile/**").permitAll()
+				.antMatchers("/m/**").permitAll()
 				.antMatchers("/boards/**").access("request.method == 'GET' ? permitAll : hasRole('USER')")
 				.antMatchers("/items/**").access("request.method == 'GET' ? permitAll : hasRole('USER')")
 				.anyRequest().authenticated();

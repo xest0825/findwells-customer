@@ -3,7 +3,11 @@ package kr.co.fw.board;
 import java.util.ArrayList;
 
 import kr.co.fw.base.BaseVO;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class BoardVO extends BaseVO {
 	
     /**
@@ -70,6 +74,8 @@ public class BoardVO extends BaseVO {
     private String GUBUN;
     
     private String EXCLUDE_REPORT;
+    
+    private String ACTIONGUBUN;
     
     
 	public String getBD_CNT() {
@@ -216,151 +222,7 @@ public class BoardVO extends BaseVO {
     		return false;
 	}
     
-	public String getDESIG_RECEIVER_YN() {
-		return DESIG_RECEIVER_YN;
-	}
-	public void setDESIG_RECEIVER_YN(String dESIG_RECEIVER_YN) {
-		DESIG_RECEIVER_YN = dESIG_RECEIVER_YN;
-	}
-	
-	public ArrayList<?> getOpenSCDList() {
-		return OpenSCDList;
-	}
-	public void setOpenSCDList(ArrayList<?> openSCDList) {
-		OpenSCDList = openSCDList;
-	}
-	public String[] getOpenSCD() {
-		return OpenSCD;
-	}
-	public void setOpenSCD(String[] openSCD) {
-		OpenSCD = openSCD;
-	}
-	public String getCATEGORY() {
-		return CATEGORY;
-	}
-	public void setCATEGORY(String cATEGORY) {
-		CATEGORY = cATEGORY;
-	}
-	public String getNW_BULT_APPT_PRID() {
-		return NW_BULT_APPT_PRID;
-	}
-	public void setNW_BULT_APPT_PRID(String nW_BULT_APPT_PRID) {
-		NW_BULT_APPT_PRID = nW_BULT_APPT_PRID;
-	}
-	public String getABL_ATCH_CNT() {
-		return ABL_ATCH_CNT;
-	}
-	public void setABL_ATCH_CNT(String aBL_ATCH_CNT) {
-		ABL_ATCH_CNT = aBL_ATCH_CNT;
-	}
-	public String getDSP_MAIN_YN() {
-		return DSP_MAIN_YN;
-	}
-	public void setDSP_MAIN_YN(String dSP_MAIN_YN) {
-		DSP_MAIN_YN = dSP_MAIN_YN;
-	}
-	public String getDSP_MAIN_POSITION() {
-		return DSP_MAIN_POSITION;
-	}
-	public void setDSP_MAIN_POSITION(String dSP_MAIN_POSITION) {
-		DSP_MAIN_POSITION = dSP_MAIN_POSITION;
-	}
-	public String getBD_NO() {
-		return BD_NO;
-	}
-	public void setBD_NO(String bD_NO) {
-		BD_NO = bD_NO;
-	}
-	public String getBD_NM() {
-		return BD_NM;
-	}
-	public void setBD_NM(String bD_NM) {
-		BD_NM = bD_NM;
-	}
-	public String getBDNMPATH() {
-		return BDNMPATH;
-	}
-	public void setBDNMPATH(String bDNMPATH) {
-		BDNMPATH = bDNMPATH;
-	}
-	public String getBD_DESC() {
-		return BD_DESC;
-	}
-	public void setBD_DESC(String bD_DESC) {
-		BD_DESC = bD_DESC;
-	}
-	public String getPBD_NO() {
-		return PBD_NO;
-	}
-	public void setPBD_NO(String pBD_NO) {
-		PBD_NO = pBD_NO;
-	}
-	public String getEMP_CD() {
-		return EMP_CD;
-	}
-	public void setEMP_CD(String eMP_CD) {
-		EMP_CD = eMP_CD;
-	}
-	public String getCONF_CD() {
-		return CONF_CD;
-	}
-	public void setCONF_CD(String cONF_CD) {
-		CONF_CD = cONF_CD;
-	}
-	public String getCONF_VAL() {
-		return CONF_VAL;
-	}
-	public void setCONF_VAL(String cONF_VAL) {
-		CONF_VAL = cONF_VAL;
-	}
-	public String getCONF_CD_NM() {
-		return CONF_CD_NM;
-	}
-	public void setCONF_CD_NM(String cONF_CD_NM) {
-		CONF_CD_NM = cONF_CD_NM;
-	}
-	public String getCONF_CD_DESC() {
-		return CONF_CD_DESC;
-	}
-	public void setCONF_CD_DESC(String cONF_CD_DESC) {
-		CONF_CD_DESC = cONF_CD_DESC;
-	}
-	public String getDEFAULT_VAL() {
-		return DEFAULT_VAL;
-	}
-	public void setDEFAULT_VAL(String dEFAULT_VAL) {
-		DEFAULT_VAL = dEFAULT_VAL;
-	}
-	public String getBD_RESOURCE_ID() {
-		return BD_RESOURCE_ID;
-	}
-	public void setBD_RESOURCE_ID(String bD_RESOURCE_ID) {
-		BD_RESOURCE_ID = bD_RESOURCE_ID;
-	}
-	public String getITEM_NO() {
-		return ITEM_NO;
-	}
-	public void setITEM_NO(String iTEM_NO) {
-		ITEM_NO = iTEM_NO;
-	}
-	public String getFILE_NM() {
-		return FILE_NM;
-	}
-	public void setFILE_NM(String fILE_NM) {
-		FILE_NM = fILE_NM;
-	}
-	public String getGUBUN() {
-		return GUBUN;
-	}
-	public void setGUBUN(String gUBUN) {
-		GUBUN = gUBUN;
-	}
-	public String getEXCLUDE_REPORT() {
-		return EXCLUDE_REPORT;
-	}
-	public void setEXCLUDE_REPORT(String eXCLUDE_REPORT) {
-		EXCLUDE_REPORT = eXCLUDE_REPORT;
-	}
+
     
 	
 }

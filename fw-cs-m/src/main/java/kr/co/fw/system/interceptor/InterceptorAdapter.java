@@ -83,7 +83,7 @@ public class InterceptorAdapter extends HandlerInterceptorAdapter {
 			map.put("conn_env", ua);
 			map.put("param", params);
 
-			sqlSession.insert("Log." + "insertActionLog", map);
+			// sqlSession.insert("Log." + "insertActionLog", map);
 		}
 
 		return true;
