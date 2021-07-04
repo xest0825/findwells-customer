@@ -1,0 +1,218 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, shrink-to-fit=no"">
+		<meta name="HandheldFriendly" content="true">
+		<title>FIND WELLS</title>
+		<!-- googlefont -->
+		<link href="https://fonts.googleapis.com/css?family=Noto+Sans+KR&display=swap" rel="stylesheet">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fullcalendar/core@4.4.0/main.min.css" />
+		<link rel="stylesheet" href="https://unpkg.com/@fullcalendar/daygrid@4.4.0/main.min.css" />
+		<link rel="stylesheet" href="./css/common.css"/>
+		<link rel="stylesheet" href="./css/style.css"/>
+		<script type="text/javascript" src="./js/jquery.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@fullcalendar/core@4.4.0/main.min.js"></script>
+		<script src="https://unpkg.com/@fullcalendar/interaction@4.4.0/main.min.js"></script>
+		<script src="https://unpkg.com/@fullcalendar/daygrid@4.4.0/main.min.js"></script>
+		<script type="text/javascript" src="./js/style.js"></script>
+	</head>
+	<body>	
+		<header>
+			<div class="menu_wrap">
+				<a href="javascript:;"><img src="./img/icons/menu.png" alt="메뉴 버튼"></a>
+			</div>
+			<p class="header_title">보유계약</p>
+			<div class="nav">
+				<div class="dim"></div>
+				<button type="button" class="close_btn"><img src="./img/icons/close_btn.png" alt="닫기버튼"></button>
+				<div class="nav_inner">
+					<div class="member_img clearfix">
+						<div class="img_box"><img src="./img/profile.png" alt="프로필사진"></div>
+						<div class="name">
+							<p class="font_16">홍길동</p>
+							<p class="font_14">VM150003</p>
+						</div>
+					</div>
+					<ul class="nav_list">
+						<li class="clearfix">
+							<a href="./notice.html" class="clearfix2">
+								<p class="font_16">게시판<span>99</span></p><img src="./img/icons/nav_arrow.png" alt="더보기버튼">
+							</a>
+						</li>
+						<li class="clearfix">
+							<a href="./data.html" class="clearfix2">
+								<p class="font_16">자료실<span>100</span></p><img src="./img/icons/nav_arrow.png" alt="더보기버튼">
+							</a>
+						</li>
+						<li class="clearfix">
+							<a href="./contract.html" class="clearfix2">
+								<p class="font_16">계약관리<span>9</span></p><img src="./img/icons/nav_arrow.png" alt="더보기버튼">
+							</a>
+						</li>
+						<li class="clearfix">
+							<a href="./member.html" class="clearfix2">
+								<p class="font_16">고객조회</p><img src="./img/icons/nav_arrow.png" alt="더보기버튼">
+							</a>
+						</li>
+						<li class="clearfix">
+							<a href="./schedule.html" class="clearfix2">
+								<p class="font_16">일정관리</p><img src="./img/icons/nav_arrow.png" alt="더보기버튼">
+							</a>
+						</li>
+						<li class="clearfix">
+							<a href="./personnel.html" class="clearfix2">
+								<p class="font_16">인사관리</p><img src="./img/icons/nav_arrow.png" alt="더보기버튼">
+							</a>
+						</li>
+						<li class="clearfix">
+							<a href="./achievement.html" class="clearfix2">
+								<p class="font_16">업적관리</p><img src="./img/icons/nav_arrow.png" alt="더보기버튼">
+							</a>
+						</li>
+						<li class="clearfix">
+							<a href="./investigation.html" class="clearfix2">
+								<p class="font_16">원수사</p><img src="./img/icons/nav_arrow.png" alt="더보기버튼">
+							</a>
+						</li>
+						<li class="clearfix">
+							<a href="javascript:;" class="clearfix2">
+								<p class="font_16">수수료</p><img src="./img/icons/nav_arrow.png" alt="더보기버튼">
+							</a>
+						</li>
+						<li class="clearfix">
+							<a href="javascript:;" class="clearfix2">
+								<p class="font_16">기타</p><img src="./img/icons/nav_arrow.png" alt="더보기버튼">
+							</a>
+						</li>
+						<li class="clearfix">
+							<a href="./help.html" class="clearfix2">
+								<p class="font_16">헬프데스크</p><img src="./img/icons/nav_arrow.png" alt="더보기버튼">
+							</a>
+						</li>
+					</ul>
+					<div class="bottom_wrap">
+						<ul class="address">
+							<li>FIND WELLS</li>
+							<li>서울 강남구 테헤란로 508 16층</li>
+							<li>와얏트 스페이스 A04 FIND WELL</li>
+							<li>Copyright (C) FIND WELLS Rights Reserved.</li>
+						</ul>
+						<ul class="btn_wrap clearfix">
+							<li>
+								<a href="./password_enter.html"><img src="./img/icons/logout_icon.png" alt="로그아웃 아이콘">로그아웃</a>
+							</li>
+							<li>
+								<a href="./password_set.html"><img src="./img/icons/password_icon.png" alt="비밀번호 아이콘">잠금비밀번호</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</header>
+		<section class="contract list_wrap">
+			<div class="search_bar point_bg">
+				<input type="text" class="search" placeholder="검색어를 입력하세요.">
+				<button type="button" class="search_icon"></button>
+			</div>
+			<div>
+				<ul class="list">
+					<li>
+						<a href="./contract_detail.html">
+							<div class="clearfix title_wrap">
+								<p class="ellipsis title">계약자1,계약자2 / 피보험자1, 피보험자2</p>
+							</div>
+							<div class="clearfix2 name_wrap">
+								<div class="left">
+									<p>Intelligence Pro Plan</p>
+								</div>
+								<p class="font_14 grey3_color">HKD : 58,500</p>
+							</div>
+						</a>
+					</li>
+					<li>
+						<a href="./contract_detail.html">
+							<div class="clearfix title_wrap">
+								<p class="ellipsis title">계약자1,계약자2 / 피보험자1, 피보험자2</p>
+							</div>
+							<div class="clearfix2 name_wrap">
+								<div class="left">
+									<p>Intelligence Pro Plan</p>
+								</div>
+								<p class="font_14 grey3_color">USD : 58,500</p>
+							</div>
+						</a>
+					</li>
+					<li>
+						<a href="./contract_detail.html">
+							<div class="clearfix title_wrap">
+								<p class="ellipsis title">계약자1,계약자2 / 피보험자1, 피보험자2</p>
+							</div>
+							<div class="clearfix2 name_wrap">
+								<div class="left">
+									<p>Intelligence Pro Plan</p>
+								</div>
+								<p class="font_14 grey3_color">HKD : 58,500</p>
+							</div>
+						</a>
+					</li>
+					<li>
+						<a href="./contract_detail.html">
+							<div class="clearfix title_wrap">
+								<p class="ellipsis title">계약자1,계약자2 / 피보험자1, 피보험자2</p>
+							</div>
+							<div class="clearfix2 name_wrap">
+								<div class="left">
+									<p>Intelligence Pro Plan</p>
+								</div>
+								<p class="font_14 grey3_color">HKD : 58,500</p>
+							</div>
+						</a>
+					</li>
+					<li>
+						<a href="./contract_detail.html">
+							<div class="clearfix title_wrap">
+								<p class="ellipsis title">계약자1,계약자2 / 피보험자1, 피보험자2</p>
+							</div>
+							<div class="clearfix2 name_wrap">
+								<div class="left">
+									<p>Intelligence Pro Plan</p>
+								</div>
+								<p class="font_14 grey3_color">HKD : 58,500</p>
+							</div>
+						</a>
+					</li>
+					<li>
+						<a href="./contract_detail.html">
+							<div class="clearfix title_wrap">
+								<p class="ellipsis title">계약자1,계약자2 / 피보험자1, 피보험자2</p>
+							</div>
+							<div class="clearfix2 name_wrap">
+								<div class="left">
+									<p>Intelligence Pro Plan</p>
+								</div>
+								<p class="font_14 grey3_color">HKD : 58,500</p>
+							</div>
+						</a>
+					</li>
+					<li>
+						<a href="./contract_detail.html">
+							<div class="clearfix title_wrap">
+								<p class="ellipsis title">계약자1,계약자2 / 피보험자1, 피보험자2</p>
+							</div>
+							<div class="clearfix2 name_wrap">
+								<div class="left">
+									<p>Intelligence Pro Plan</p>
+								</div>
+								<p class="font_14 grey3_color">HKD : 58,500</p>
+							</div>
+						</a>
+					</li>
+				</ul>
+				<div class="centerT">
+					<button type="button" class="more">더보기</button>
+				</div>
+			</div>
+		</section>
+	</body>
+</html>
