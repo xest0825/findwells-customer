@@ -1,14 +1,9 @@
 package kr.co.fw.base;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.sf.json.JSONObject;
 
 //import kr.co.fw.common.util.PageVO;
 //import kr.co.fw.common.util.PropertiesVO;

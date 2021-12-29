@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+	<head>
+	  <meta charset="utf-8" />
+	  <title>P03</title>
+	  <meta name="viewport"
+	    content="user-scalable=yes, initial-scale=1, width=device-width, target-densitydpi=medium-dpi" />
+	  <meta name="format-detection" content="telephone=no" />
+	  <link rel="stylesheet" href="../css/style.css" />
+	  <link href="../css/bootstrap.css" type="text/css" rel="stylesheet" />
+	
+	  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+	  <script type="text/javascript" src="../js/common_added.js"></script>
+	  <script type="text/javascript" src="../js/app.js"></script>
+	</head>
+	
+	<body>
+	  <div class="wrapper_lock">
+	    <div class="top_wrapper">
+	      <a href="javascript:goBack();" class="go_back">뒤로가기</a>
+	      <a href="#none" class="logo_findwell" >
+	        <img src="../images/logo_findwell.png" />
+	      </a>
+	    </div>
+	    <section class="self_certification">
+	      <h2>회원가입</h2>
+	      <p class="desc"></p>
+	
+	      <div class="input_text_wrap">
+	        <input type="text" class="text_box" id="emp_nm_hp" placeholder="소개인 이름" readOnly data-target="#search_person" onclick="clickBtnSearch();"/>
+	        <input type="hidden" id="emp_nm" >
+	        <input type="hidden" id="user_id" >
+	        <button id="btn_search" class="b_search btnLayer" data-target="#search_person" style="margin-left: 10px;" onclick="openPopup('search_person')">찾기</button>
+	      </div>
+	      <div class="input_text_wrap no_flex mt25">
+	        <input type="text" id="customer_nm" class="text_box" placeholder="이름" />
+	        <p id="err_msg_1" class="error_msg" style="display:none;">이름을 입력해주세요.</p>
+	      </div>
+	      <div class="input_text_wrap no_flex mt25" style="display:inline-block">
+	        <input type="tel" id="perno1" class="text_box" style="width:48%" placeholder="주민번호앞자리" maxlength="6"/>
+	        <input type="password" id="perno2" class="text_box" style="width:50%;letter-spacing:10px;" placeholder="주민번호뒷자리" maxlength="7"/>
+	        <p id="err_msg_2"  class="error_msg" style="display:none;">주민번호를 입력해주세요.</p>
+	      </div>
+	      <div class="input_text_wrap no_flex mt25">
+	        <input type="text" id="customer_hpno" class="text_box" placeholder="휴대전화" />
+	        <p id="err_msg_3" class="error_msg" style="display:none;">휴대전화번호를 입력해주세요.</p>
+	      </div>
+	      <div class="input_text_wrap mt25">
+	        <button class="b_search" style="margin-right: 10px;" onclick="sendAuthNum();">
+	          인증번호 받기
+	        </button>
+	        <input type="text" class="text_box t_c" placeholder="" />
+	        <span class="timer">03:00</span>
+	      </div>
+	    </section>
+	    <div class="btn_wrap">
+	      <button class="b_point" id="bt_join">가입하기</button>
+	    </div>
+	  </div>
+	
+	
+	
+	
+	  <!-- 모달팝업 -->
+	  <div class="layerPopup login_guide" id="search_person" style="display:none;">
+	    <div class="content login_guide_wrap">
+	      <h2>소개인 선택</h2>
+	      <div class="layerBody">
+	      	 <div style="">
+		      	 <input type="text" id="emp_nm2" class="text_box" style="width:98%;float:left;height:32px;margin-bottom:16px;border: 1px solid gray;padding-left:5px;"
+		      	 		placeholder="소개인이름" onkeyup="filterIntroducer();">
+		      	 <!-- <button class="b_search btnLayer" style="width: 26%;height:32px;float:right;margin-bottom:16px;" >찾기</button> -->
+	      	 </div>
+	         <div class="v_scroll" style="clear:both;">
+	            <ul class="search_person_wrap">
+	            
+	            </ul>
+	          </div>
+	        
+	      </div>
+	      <div class="btn_wrap">
+	        <a href="javascript:closePopup('search_person');" class="layerClose cancle">취소</a>
+	        <a href="javascript:selectIntroducer();" class="ok">확인</a>
+	      </div>
+	    </div>
+	    <div class="layerDim keep"></div>
+	  </div>
+	</body>
+	
+	<script>
+	var emplist = [];
+    $(document).ready(function(){
+		$('#bt_join').on('click', function(){
+			// console.log($('#emp_nm').val());
+			if ($('#emp_nm').val() == '') {
+				alert('소개인을 입력하세요.');
+				return;
+			}
+			
+			if ($('#customer_nm').val() == '') {
+				alert('고객님의 이름을 입력하세요.');
+				return;
+			}
+			
+			if ($('#perno1').val() == '') {
+				alert('고객님의 주민번호 앞자리를 입력하세요.');
+				return;
+			}
+			
+			if ($('#perno1').val().length != 6) {
+				alert('고객님의 주민번호 앞자리 형식이 올바르지 않습니다');
+				return;
+			}
+			
+			if ($('#perno2').val() == '') {
+				alert('고객님의 주민번호 뒷자리를 입력하세요.');
+				return;
+			}
+			
+			if ($('#perno2').val().length != 7) {
+				alert('고객님의 주민번호 뒷자리 형식이 올바르지 않습니다');
+				return;
+			}
+			
+			if ($('#customer_hpno').val() == '') {
+				alert('고객님의 휴대폰번호를 입력해주세요.');
+				return;
+			}
+			
+			
+			// location.href = '/m/P05';
+		});
+
+    });
+    
+    function closePopup(id) {
+    	$('#' + id).hide();
+    }
+    
+    function clickBtnSearch(){
+    	$('#btn_search').trigger('click');
+    }
+    
+    function selectIntroducer(){
+    	console.log('selectIntroducer()');
+    	var selected_cnt = 0 ;
+    	$('input[name=cc]').each(function(i,e){
+    		//console.log($(this).is(':checked'));
+    		//console.log($(this).attr('id'));
+    		if ($(this).is(':checked')) {
+    			console.log($(this).parent().find('input[name=emp_nm]').val());
+    			console.log($(this).parent().find('input[name=hpno]').val());
+    			console.log( $(this).attr('id'));
+    			$('#emp_nm_hp').val($(this).parent().find('input[name=emp_nm]').val() + ' ' + $(this).parent().find('input[name=hpno]').val());
+    			$('#emp_nm').val($(this).parent().find('input[name=emp_nm]').val());
+    			$('#user_id').val($(this).attr('id'));
+    			selected_cnt = 1;
+    		}
+    	});
+    	if (selected_cnt == 0){
+    		alert('소개인을 선택해주세요.');
+    		return;
+    	}
+    	$('#search_person').hide();
+    	
+    }
+    
+    function openPopup(id) {
+    	console.log('openPopup' + id);
+    	$('#'+id).show();
+    	$('.search_person_wrap').empty();
+    	
+		$.ajax({
+			url : "/fc/introducers",
+			type : "GET",
+			dataType : "json",
+			data : {
+				MB_ID : 'YNG'
+			},
+			//async : false,
+			contentType : 'application/json; charset=UTF-8',
+			success : function(data) {
+				console.log(data);
+				emplist = data;
+				if (data.length > 0) {
+			    	var html = '';
+			    	for (var i = 0; i< data.length; i++){
+			    		html += '<li>'
+			    		html += '	<div class="radio_wrap" style="height:30px;">'
+			            html += '		<input type="radio" id="'+ data[i].USER_ID +'" name="cc" />'
+			            html += '		<label for="'+ data[i].USER_ID + '" style="margin-bottom:-3px;text-align:bottom;">' + data[i].EMP_NM + '&nbsp;&nbsp;' + data[i].HPNO + '</label>'
+			          	html += '		<input type="hidden" name="emp_nm" value="'+ data[i].EMP_NM +'">'
+			          	html += '		<input type="hidden" name="hpno" value="'+ data[i].HPNO +'">'
+			            html += '	</div>'
+			        	html += '</li>'
+			    	}
+			    	$('.search_person_wrap').html(html);
+				}
+			},
+			error : function() {
+				console.log('error');
+			}
+		});
+    	
+    }
+    
+    function filterIntroducer(){
+    	var emp_nm = $('#emp_nm2').val();
+    	console.log(emp_nm);
+    	var templist = [];
+    	
+    	if (emp_nm.length == 0) {
+    		console.log('emp_nm is null');
+    		var html = '';
+	    	$('.search_person_wrap').empty();
+	    	var data = emplist;
+	    	for (var i = 0; i< data.length; i++){
+	    		html += '<li>'
+		    		html += '	<div class="radio_wrap" style="height:30px;">'
+		            html += '		<input type="radio" id="'+ data[i].USER_ID +'" name="cc" />'
+		            html += '		<label for="'+ data[i].USER_ID + '" style="margin-bottom:-3px;text-align:bottom;">' + data[i].EMP_NM + '&nbsp;&nbsp;' + data[i].HPNO + '</label>'
+		          	html += '		<input type="hidden" name="emp_nm" value="'+ data[i].EMP_NM +'">'
+		          	html += '		<input type="hidden" name="hpno" value="'+ data[i].HPNO +'">'
+		            html += '	</div>'
+		        	html += '</li>'
+	    	}
+	    	$('.search_person_wrap').html(html);
+    	} else {
+        	for (var i = 0; i<emplist.length; i++) {
+        		if (emp_nm.length > 0 && emplist[i].EMP_NM.indexOf(emp_nm) != -1) {
+        			console.log('match!!!!!!' + emplist[i].EMP_NM)
+        			templist.push(emplist[i]);
+        		} 
+        	}
+        	console.log(templist.length);
+        	if (templist.length > 0) {
+    	    	var html = '';
+    	    	$('.search_person_wrap').empty();
+    	    	var data = templist;
+    	    	for (var i = 0; i< data.length; i++){
+		    		html += '<li>'
+		    		html += '	<div class="radio_wrap" style="height:30px;">'
+		            html += '		<input type="radio" id="'+ data[i].USER_ID +'" name="cc" />'
+		            html += '		<label for="'+ data[i].USER_ID + '" style="margin-bottom:-3px;text-align:bottom;">' + data[i].EMP_NM + '&nbsp;&nbsp;' + data[i].HPNO + '</label>'
+		          	html += '		<input type="hidden" name="emp_nm" value="'+ data[i].EMP_NM +'">'
+		          	html += '		<input type="hidden" name="hpno" value="'+ data[i].HPNO +'">'
+		            html += '	</div>'
+		        	html += '</li>'
+    	    	}
+    	    	$('.search_person_wrap').html(html);
+        	}
+    	}
+
+    	
+    }
+    
+    function sendAuthNum(){
+    	console.log('sendAuthNo');
+    	var param = {
+    			MB_ID : 'YNG',
+				call_to : $('#customer_hpno').val()
+    		};
+		$.ajax({
+			url : "/sms/send-authnum-to-custoemr",
+			type : "POST",
+			dataType : "json",
+			data : JSON.stringify(param),
+			//async : false,
+			contentType : 'application/json; charset=UTF-8',
+			success : function(data) {
+				console.log(data);
+			},
+			error : function() {
+				console.log('error');
+			}
+		});
+    	
+    }
+    
+    function goBack(){
+    	location.href = '/m/P02';
+    }
+    
+    </script>
+
+</html>

@@ -16,6 +16,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -31,6 +33,8 @@ import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
 
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -1603,6 +1607,7 @@ public class CommUtil {
 	public static JSONObject getApiData(String apiUrl, String reqMethod, HashMap<String, Object> paramMap)
 			throws IOException, Exception {
 		JSONObject jsonObj = new JSONObject();
+		JSONArray jsonArr = new JSONArray();
 		BufferedReader bReader = null;
 		OutputStream os = null;
 		OutputStreamWriter writer = null;
@@ -1613,9 +1618,8 @@ public class CommUtil {
 			URL conUrl = new URL(apiUrl);
 
 			if (apiUrl.contains("https://")) {
-				logger.info("Https URLConnection!");
+				logger.info("Http'S' URLConnection!");
 				HttpsURLConnection connection = (HttpsURLConnection) conUrl.openConnection();
-
 				connection.setHostnameVerifier(new HostnameVerifier() {
 					@Override
 					public boolean verify(String hostname, SSLSession session) {
@@ -1627,18 +1631,50 @@ public class CommUtil {
 				SSLContext context = SSLContext.getInstance("TLS");
 				context.init(null, null, null); // No validation for now
 				connection.setSSLSocketFactory(context.getSocketFactory());
-
-				connection.setRequestProperty("dataType", "json");
-				connection.setDoInput(true); // 입력스트림 사용여부
-				connection.setDoOutput(true); // 출력스트림 사용여부
-				connection.setUseCaches(false); // 캐시사용 여부
-				connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+				
 				connection.setReadTimeout(10000); // 타임아웃 설정 ms단위
 				connection.setRequestMethod(reqMethod); // or GET
+				if ("GET".equals(reqMethod)) {
+					//connection.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+					connection.setRequestProperty("dataType", "json");
+					connection.setDoInput(true); // 입력스트림 사용여부
+					//connection.setDoOutput(false); // 출력스트림 사용여부 true 405 에러남 
+					//connection.setUseCaches(false); // 캐시사용 여부
+					//connection.setRequestProperty("Content-Type", "application/json; utf-8");		
+				} else {
+					connection.setRequestProperty("dataType", "json");
+					connection.setDoInput(true); // 입력스트림 사용여부
+					connection.setDoOutput(true); // 출력스트림 사용여부
+					connection.setUseCaches(false); // 캐시사용 여부
+					connection.setRequestProperty("Content-Type", "application/json; utf-8");	
+				}
+				if (CommUtil.isNotEmpty(paramMap.get("Authorization"))) {
+					connection.setRequestProperty("Authorization", paramMap.get("Authorization").toString());
+				}
+				if (CommUtil.isNotEmpty(paramMap.get("timestamp"))) {
+					connection.setRequestProperty("x-ncp-apigw-timestamp", paramMap.get("timestamp").toString());
+				}
+				if (CommUtil.isNotEmpty(paramMap.get("accessKey"))) {
+					connection.setRequestProperty("x-ncp-iam-access-key",  paramMap.get("accessKey").toString());
+				}
+				if (CommUtil.isNotEmpty(paramMap.get("signature"))) {
+					connection.setRequestProperty("x-ncp-apigw-signature-v2", paramMap.get("signature").toString());
+				}
 
-				os = connection.getOutputStream();
-				writer = new OutputStreamWriter(os);
+				
+				if (!"GET".equals(reqMethod)) {
+					// GET방식에서 outputStream을 사용하게 되면 POST로 변경된다.
+					os = connection.getOutputStream();
+					writer = new OutputStreamWriter(os);
+					String jsonstring = new ObjectMapper().writeValueAsString(paramMap);
+					jsonstring = new String(jsonstring.getBytes("UTF-8"));
+					
+					writer.write(jsonstring);
+					writer.flush();
+				}
 
+
+				/*
 				Iterator<String> iterator = paramMap.keySet().iterator();
 				while (iterator.hasNext()) {
 					String key = iterator.next();
@@ -1648,8 +1684,8 @@ public class CommUtil {
 						writer.write("&" + key + "=" + "");
 					}
 				}
-
-				writer.flush();
+				*/
+				
 
 				HttpResult = connection.getResponseCode();
 
@@ -1657,6 +1693,7 @@ public class CommUtil {
 				logger.info("connection Code = " + HttpResult);
 
 				if (HttpResult == HttpURLConnection.HTTP_OK) {
+					logger.info(HttpResult + "");
 					bReader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
 					String line = null;
 					while ((line = bReader.readLine()) != null) {
@@ -1664,10 +1701,40 @@ public class CommUtil {
 					}
 
 					param = stringBuilder.toString();
-					jsonObj = (JSONObject) JSONObject.fromObject(param);
+					logger.info("param ====== " + param);
+					if (param.startsWith("[")) {
+						logger.info("set JSONArray");
+						jsonArr = JSONArray.fromObject(param);
+						jsonObj.put("arr",jsonArr);
+					} else {
+						jsonObj = (JSONObject) JSONObject.fromObject(param);
+					}
+					jsonObj.put("res_cd", "OK");
 
+				} else if (HttpResult == HttpURLConnection.HTTP_ACCEPTED) {
+					logger.info(HttpResult + "");
+					bReader = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"));
+					String line = null;
+					while ((line = bReader.readLine()) != null) {
+						stringBuilder.append(line + "\n");
+					}
+
+					param = stringBuilder.toString();
+					logger.info("param ====== " + param);
+					if (param.startsWith("[")) {
+						logger.info("set JSONArray");
+						jsonArr = JSONArray.fromObject(param);
+						jsonObj.put("arr",jsonArr);
+					} else {
+						jsonObj = (JSONObject) JSONObject.fromObject(param);
+					}
+					jsonObj.put("res_cd", "OK");
+					
+					
 				} else {
 					logger.info("connection.getResponseMessage()=" + connection.getResponseMessage());
+					jsonObj.put("res_cd", "FAIL");
+					jsonObj.put("msg", connection.getResponseMessage());
 				}
 			} else {
 				logger.info("Http URLConnection!");
@@ -1876,6 +1943,49 @@ public class CommUtil {
 		}
 
 		return imageBytes;
+	}
+	
+	public static String getSigningKey (HashMap<String, Object> paramMap) {
+		String space = " ";					// one space
+		String newLine = "\n";					// new line
+		String method = "POST";					// method
+		String url = "/sms/v2/services/"+paramMap.get("serviceId").toString()+"/messages";	// url (include query string)
+		String timestamp = paramMap.get("timestamp").toString();			// current timestamp (epoch)
+		String accessKey = paramMap.get("accessKey").toString();			// access key id (from portal or Sub Account)
+		String secretKey = paramMap.get("secretKey").toString();
+
+		String message = new StringBuilder()
+			.append(method)
+			.append(space)
+			.append(url)
+			.append(newLine)
+			.append(timestamp)
+			.append(newLine)
+			.append(accessKey)
+			.toString();
+		
+		SecretKeySpec signingKey;
+		String encodeBase64String = "";
+		try {
+			signingKey = new SecretKeySpec(secretKey.getBytes("UTF-8"), "HmacSHA256");
+			Mac mac = Mac.getInstance("HmacSHA256");
+			mac.init(signingKey);
+			
+			byte[] rawHmac = mac.doFinal(message.getBytes("UTF-8"));
+			encodeBase64String = Base64.encodeBase64String(rawHmac);
+			
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InvalidKeyException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return encodeBase64String;
 	}
 	
 }

@@ -16,6 +16,7 @@
 	  , A.ENT_YMD    		/* 입사일 VARCHAR2(10) */
 	  , A.JIKGUB    		/* 직급 VARCHAR2(3) */
 	  , A.JIKCHK    		/* 직책 VARCHAR2(3) */
+	  , A.HPNO				/* 휴대폰번호 */
 	  , A.MB_ID 			/* 회사코드  */
 	  , A.ROLE_ID
    FROM (SELECT * FROM TBIN_EMPMST WHERE MB_ID = #{MB_ID} <![CDATA[AND NVL(DATA_DCD,'I') <> 'D']]> ) A /* [인사마스터] */  

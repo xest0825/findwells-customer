@@ -1,11 +1,11 @@
 package kr.co.fw.insa;
 
 import java.util.HashMap;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import kr.co.fw.erp.conf.InsaDAO;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -31,5 +31,9 @@ public class InsaService {
 			throw e;
 		}
 		return empInfoMap;
+	}
+	
+	public List<HashMap<String, Object>> getEmpList(InSaVO paramvo) throws Exception {
+		return dao.getEmpList(paramvo);
 	}
 }
