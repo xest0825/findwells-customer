@@ -338,7 +338,7 @@ SELECT ROLE_ID        /* 롤코드     VARCHAR2(50)     */
      , UP_EMP_CD      /* 수정자사번 VARCHAR2(20)     */
      , UP_DTM         /* 수정일시   TIMESTAMP(6)(11) */
   FROM TBSY_ROLES_MST /* [SY] 롤마스터 */
- WHERE MB_ID = #{MB_ID}
+ WHERE MB_ID = 'YNG'
    AND ROLE_ID != 'ROLE_SUPER'
 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(ROLE_ID)'>
   <![CDATA[ AND ROLE_ID = #{ROLE_ID} /* 롤코드 VARCHAR2(50) */]]>

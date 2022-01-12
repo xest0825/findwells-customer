@@ -178,4 +178,17 @@ public class CryptoUtil {
 		String enc = spe.encode(message);
 		return enc;
 	}
+	
+	public static void main(String [] args) {
+		String plain = "asdf1";
+		String enc = "";
+		try {
+			enc = encrypt(plain);
+			System.out.println(enc);
+			
+		} catch (UnsupportedEncodingException | GeneralSecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }

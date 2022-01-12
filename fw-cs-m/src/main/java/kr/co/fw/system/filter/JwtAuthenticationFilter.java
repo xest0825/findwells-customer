@@ -55,10 +55,10 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 				.collect(Collectors.toList());
 		String mb_id = user.getMb_id();
 
-		log.info("username : " + username + ", roles : " + roles);
+		log.info("username : " + username + ", roles : " + roles + ", mb_id : " + mb_id);
 //		String token = username + "_" + roles;
 		String token = createToken(username, roles, mb_id);
-		log.info("token : " + token);
+		log.info("successfulAuthentication token : " + token);
 
 		response.addHeader(SecurityConstants.TOKEN_HEADER, SecurityConstants.TOKEN_PREFIX + token);
 	}
@@ -75,7 +75,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 				.claim("rol", roles)
 				.compact();
 
-		log.info("token : " + token);
+		log.info("createToken token : " + token);
 
 		return token;
 

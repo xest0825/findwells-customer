@@ -22,8 +22,10 @@ public class User {
 	
 	private String mb_id;
 	
-	private boolean enabled;
+	private int enabled;
 	
 	private List<String> authorities;
+	
+	private String search_word;
 	
 }

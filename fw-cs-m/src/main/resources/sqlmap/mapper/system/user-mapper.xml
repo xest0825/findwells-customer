@@ -1,0 +1,430 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="User">
+
+
+	<sql id="getUserSql">
+		SELECT tb2.cust_id 	as user_id
+			 , tb1.login_id
+			 , tb1.login_id AS username
+			 , tb2.cust_nm 	AS user_nm
+			 , tb1.login_pw
+			 , tb1.login_pw	AS password
+			 , tb1.simpl_pw
+			 , 1 AS enabled
+			 , 'YNG' AS mb_id
+		  FROM tbcs_mobile_login tb1
+		  JOIN tbcs_customer_mobile tb2
+		    ON tb1.cust_id = tb2.cust_id
+		 WHERE 1 = 1
+	</sql>
+	
+	<select id="getUser" parameterType="Hmap" resultType="kr.co.fw.system.security.model.User">
+		/* user-mapper.xml getUser */
+		<include refid="getUserSql"/>
+		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_id)'>
+			AND tb1.login_id = #{login_id}
+		</if>
+	</select>
+	
+	<sql id="getUserListSql">
+				SELECT tb1.user_id
+					 , tb1.login_id
+					 , IFNULL(tb2.login_id, '') AS app_login_id
+					 , tb1.user_nm
+					 , IFNULL(tb2.login_pw, '') login_pw
+					 , IFNULL(tb2.smp_pw, '') smp_pw
+					 , IFNULL(tb1.mb_id , '') mb_id
+					 , IFNULL(tb3.mb_nm, '') mb_nm
+					 , IFNULL(tb1.user_typ, '') user_typ
+					 , IFNULL(tb1.cp_no, '') cp_no
+					 , IFNULL(tb1.is_foreigner, '') is_foreigner
+					 , IFNULL(tb1.gender, '') gender
+					 , IFNULL(tb1.email, '') email
+					 , IFNULL(tb1.birth_dt, '') birth_dt
+					 , IFNULL(tb1.reg_id, '') reg_id
+					 , IFNULL(tb1.mod_id, '') mod_id
+					 , DATE_FORMAT(tb1.reg_dtm, '%Y-%m-%d %H:%i:%S') AS reg_dtm 
+					 , DATE_FORMAT(tb1.mod_dtm, '%Y-%m-%d %H:%i:%S') AS mod_dtm
+				  FROM tb_sy_user tb1 	/* [사용자] */
+	   LEFT OUTER JOIN tb_sy_login tb2 	/* [로그인] */
+				    ON tb1.user_id = tb2.user_id
+	   LEFT OUTER JOIN tb_sy_mb tb3 	/* [회원사] */
+	   				ON tb1.mb_id = tb3.mb_id
+				 WHERE 1 = 1
+				<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(user_id)'>
+				   AND tb1.user_id = #{user_id}
+				</if>
+				<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(srch_login_id)'>
+				   AND tb1.login_id = #{srch_login_id}
+				</if>
+				<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(user_nm)'>
+				   AND tb1.user_nm = #{user_nm}
+				</if>
+				<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cp_no)'>
+				   AND REPLACE(tb1.cp_no, '-', '') = REPLACE(#{cp_no}, '-', '')
+				</if>
+				<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(srch_mb_id)'>
+				   AND tb1.mb_id = #{srch_mb_id} /* VARCHAR(20)     '회원사 ID' */
+				</if>
+				<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(srch_user_nm)'>
+				   AND (  UPPER(tb1.user_id) LIKE UPPER(CONCAT('%', #{srch_user_nm}, '%')) 
+					 	 OR UPPER(tb1.user_nm) LIKE UPPER(CONCAT('%', #{srch_user_nm}, '%')) )
+				</if>
+				<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(srch_reg_dtm)'>
+				   AND tb1.reg_dtm >= DATE_FORMAT(#{srch_reg_dtm}, '%Y-%m-%d')
+				</if>
+	</sql>
+	
+	<select id="getUserList" parameterType="kr.co.fw.system.user.UserVO" resultType="Hmap">
+		/* user-mapper.xml getUser */
+		<include refid="getUserListSql"/>
+		<if test='@kr.co.fw.common.util.CommUtil@isEmpty(sort_order)'>
+		ORDER BY tb1.reg_dtm DESC, user_nm
+		</if>
+		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(sort_order)'>
+		ORDER BY ${sort_order}
+		</if>
+		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(limit_cnt)'>
+		   LIMIT ${limit_cnt}
+		</if>
+	</select>
+	
+	<select id="getUserListCnt" parameterType="kr.co.fw.system.user.UserVO" resultType="Integer">
+		/* user-mapper.xml getUser */
+		<include refid="Common.CountStart"/>
+		<include refid="getUserListSql"/>
+		<include refid="Common.CountEnd"/>
+	</select>
+	
+	<select id="getUserListPaging" parameterType="kr.co.fw.system.user.UserVO" resultType="Hmap">
+		/* user-mapper.xml getUser */
+		<include refid="Common.PagingStart"/>
+		<include refid="getUserListSql"/>
+		<include refid="Common.PagingEnd"/>
+	</select>
+	
+	<insert id="insertUser" parameterType="kr.co.fw.system.security.model.User">
+		/* user-mapper.xml insertUser */
+		INSERT 
+		  INTO tb_sy_user 
+		  	 ( 
+		  	   user_id       /* VARCHAR(32)     '사용자 ID(UUID)' */
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_id)'>
+			 , login_id      /* VARCHAR(100)    '로그인 ID' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(user_nm)'>
+			 , user_nm       /* VARCHAR(50)     '사용자 명' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(user_typ)'>
+			 , user_typ      /* VARCHAR(1)      '사용자 유형' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(mb_id)'>
+			 , mb_id         /* VARCHAR(20)     '회원사 ID' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cp_no)'>
+			 , cp_no         /* VARCHAR(30)     '핸드폰번호' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(is_foreigner)'>
+			 , is_foreigner  /* VARCHAR(3)      '외국인 여부 (1 : 외국인, 0 : 내국인)' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(gender)'>
+			 , gender        /* VARCHAR(3)      '성별 (M: 남, F:여)' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(birth_dt)'>
+			 , birth_dt
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(email)'>
+			 , email
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(reg_id)'>
+			 , reg_id        /* VARCHAR(20)     '등록자 ID' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(mod_id)'>
+			 , mod_id        /* VARCHAR(20)     '수정자 ID' */
+			 </if>
+			 , reg_dtm       /* DATETIME        '등록 일시' */
+			 , mod_dtm       /* DATETIME        '등록 일시' */
+		  	 )
+		VALUES
+			 ( 
+			   #{user_id}       /* VARCHAR(32)     '사용자 ID(UUID)' */
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_id)'>
+			 , #{login_id}      /* VARCHAR(100)    '로그인 ID' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(user_nm)'>
+			 , #{user_nm}       /* VARCHAR(50)     '사용자 명' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(user_typ)'>
+			 , #{user_typ}      /* VARCHAR(1)      '사용자 유형' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(mb_id)'>
+			 , #{mb_id}         /* VARCHAR(20)     '회원사 ID' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cp_no)'>
+			 , #{cp_no}         /* VARCHAR(30)     '핸드폰번호' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(is_foreigner)'>
+			 , #{is_foreigner}  /* VARCHAR(3)      '외국인 여부 (1 : 외국인, 0 : 내국인)' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(gender)'>
+			 , #{gender}        /* VARCHAR(3)      '성별 (M: 남, F:여)' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(birth_dt)'>
+			 , #{birth_dt}
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(email)'>
+			 , #{email}
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(reg_id)'>
+			 , #{reg_id}        /* VARCHAR(20)     '등록자 ID' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(mod_id)'>
+			 , #{mod_id}        /* VARCHAR(20)     '수정자 ID' */
+			 </if>
+			 , NOW()       		/* DATETIME        '등록 일시' */
+			 , NOW()       		/* DATETIME        '등록 일시' */
+			 
+			 )
+	</insert>
+	
+	<update id="updateUser" parameterType="kr.co.fw.system.security.model.User">
+		/* user-mapper.xml updateUser */
+		UPDATE tb_sy_user 
+		   SET mod_dtm  = NOW()     		/* DATETIME        '등록 일시' */
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(mod_id)'>
+			 , mod_id = #{mod_id}        	/* VARCHAR(20)     '수정자 ID' */
+			 </if>
+ 			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_id)'>
+			 , login_id = #{login_id}      	/* VARCHAR(100)    '로그인 ID' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(user_nm)'>
+			 , user_nm = #{user_nm}       	/* VARCHAR(50)     '사용자 명' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(user_typ)'>
+			 , user_typ = #{user_typ}      	/* VARCHAR(1)      '사용자 유형' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(mb_id)'>
+			 , mb_id = #{mb_id}         	/* VARCHAR(20)     '회원사 ID' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cp_no)'>
+			 , cp_no = #{cp_no}         	/* VARCHAR(30)     '핸드폰번호' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(is_foreigner)'>
+			 , is_foreigner = #{is_foreigner}  /* VARCHAR(3)      '외국인 여부 (1 : 외국인, 0 : 내국인)' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(gender)'>
+			 , gender = #{gender}        		/* VARCHAR(3)      '성별 (M: 남, F:여)' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(birth_dt)'>
+			 , birth_dt = #{birth_dt}
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(email)'>
+			 , email = #{email}
+			 </if>
+		 WHERE user_id = #{user_id}
+	</update>
+	
+	<delete id="deleteUser" parameterType="kr.co.fw.system.security.model.User">
+		DELETE FROM tb_sy_user
+		 WHERE user_id = #{user_id}
+	</delete>
+	
+	<select id="getLoginPW" resultType="Hmap" parameterType="kr.co.fw.system.login.LoginVO">
+			SELECT tb2.user_id		/* VARCHAR(100) '사용자 ID' */
+			 	 , tb1.login_id		/* VARCHAR(100) '로그인 ID' */
+			 	 , tb3.fc_nm		/* VARCHAR(50)  '사용자 이름' */
+			 	 , tb1.login_pw		/* VARCHAR(256) '로그인 비밀번호' */
+			 	 , tb2.mb_id 		/* VARCHAR(20)  '회원사 ID' */
+			 	 , tb3.contact_no 	/* VARCHAR(256) '사용자 ID' */
+		  	  FROM tb_sy_login tb1
+		  	  JOIN tb_sy_user tb2
+		    	ON tb1.user_id = tb2.user_id
+   LEFT OUTER JOIN tb_cn_fc tb3
+				ON tb1.user_id = tb3.fc_id 
+		 	 WHERE 1 = 1 
+		 	 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_id)'>
+		  	   AND tb1.login_id = #{login_id}
+		  	 </if>  
+		  	 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(fc_nm)'>
+		  	   AND tb3.fc_nm = #{fc_nm}
+		  	 </if>
+		  	 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(contact_no)'>
+		  	   AND tb3.contact_no = #{contact_no}
+		  	 </if>
+	</select>
+	
+	<sql id="getLoginInfoSql">
+	        SELECT  tb1.login_id      /* VARCHAR(100) '로그인 ID' */
+	              , tb1.user_id       /* VARCHAR(100) '사용자 ID' */
+	              , tb1.login_pw      /* VARCHAR(256) '로그인 비밀번호' */
+	              , IFNULL(tb1.smp_pw,'') smp_pw        /* VARCHAR(256) '간편 비밀번호' */
+	              , tb1.accnt_sts     /* VARCHAR(1)   '계정상태' */
+	              , tb1.pw_err_cnt    /* INT          '비밀번호 오류 횟수' */
+	              , tb1.acnt_lock_yn  /* VARCHAR(1)   '계정 잠김 여부' */
+	              , tb1.acnt_expr_dt  /* VARCHAR(10)  '계정 만료 일자' */
+	              , tb1.mb_id         /* VARCHAR(20)  '회원사 ID' */
+	              , tb1.reg_id        /* VARCHAR(20)  '등록자 ID' */
+	              , tb1.mod_id        /* VARCHAR(20)  '수정자 ID' */
+	              , DATE_FORMAT(tb1.reg_dtm, '%Y-%m-%d %H:%i:%S') reg_dtm /* DATETIME '등록 일시' */
+	              , DATE_FORMAT(tb1.mod_dtm, '%Y-%m-%d %H:%i:%S') mod_dtm /* DATETIME '등록 일시' */
+	           FROM tb_sy_login tb1
+	LEFT OUTER JOIN tb_sy_user tb2
+	             ON tb1.user_id = tb2.user_id
+	          WHERE 1 = 1
+	</sql>
+	
+	<select id="getLoginInfoList" resultType="Hmap" parameterType="kr.co.fw.system.login.LoginVO">
+		/* user-mapper.xml getLoginInfoList */
+		<include refid="getLoginInfoSql"/>
+		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_id)'>
+			AND tb1.login_id = #{login_id}
+		</if>
+		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(mb_id)'>
+			AND tb1.mb_id = #{mb_id}
+		</if>
+		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(user_id)'>
+			AND tb1.user_id = #{user_id}
+		</if>
+		
+	</select>
+	
+	<select id="getLoginInfo" resultType="Hmap" parameterType="kr.co.fw.system.login.LoginVO">
+		/* user-mapper.xml getLoginInfoList */
+		<include refid="getLoginInfoSql"/>
+		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_id)'>
+			AND tb1.login_id = #{login_id}
+		</if>
+		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(mb_id)'>
+			AND tb1.mb_id = #{mb_id}
+		</if>
+		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(user_id)'>
+			AND tb1.user_id = #{user_id}
+		</if>
+	</select>
+	
+	<insert id="insertLoginInfo" parameterType="kr.co.fw.system.login.LoginVO">
+		/* user-mapper.xml insertLoginInfo */
+		INSERT 
+          INTO tb_sy_login
+             (  
+                login_id        /* VARCHAR(100) '로그인 ID' */
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(user_id)'>
+              , user_id         /* VARCHAR(100) '사용자 ID' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_pw)'>
+              , login_pw        /* VARCHAR(256) '로그인 비밀번호' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(smp_pw)'>
+              , smp_pw          /* VARCHAR(256) '간편 비밀번호' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(accnt_sts)'>
+              , accnt_sts       /* VARCHAR(1)   '계정상태' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(pw_err_cnt)'>
+              , pw_err_cnt      /* INT          '비밀번호 오류 횟수' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(acnt_lock_yn)'>
+              , acnt_lock_yn    /* VARCHAR(1)   '계정 잠김 여부' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(acnt_expr_dt)'>
+              , acnt_expr_dt    /* VARCHAR(10)  '계정 만료 일자' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(mb_id)'>
+              , mb_id           /* VARCHAR(20)  '회원사 ID' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(reg_id)'>
+              , reg_id          /* VARCHAR(20)  '등록자 ID' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(mod_id)'>
+              , mod_id          /* VARCHAR(20)  '수정자 ID' */
+              </if>
+              , reg_dtm         /* DATETIME     '등록 일시' */
+              , mod_dtm         /* DATETIME     '등록 일시' */
+              ) 
+         VALUES
+              (
+                #{login_id}      /* VARCHAR(100) '로그인 ID' */
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(user_id)'>
+              , #{user_id}       /* VARCHAR(100) '사용자 ID' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_pw)'>
+              , #{login_pw}      /* VARCHAR(256) '로그인 비밀번호' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(smp_pw)'>
+              , #{smp_pw}        /* VARCHAR(256) '간편 비밀번호' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(accnt_sts)'>
+              , #{accnt_sts}     /* VARCHAR(1)   '계정상태' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(pw_err_cnt)'>
+              , #{pw_err_cnt}    /* INT          '비밀번호 오류 횟수' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(acnt_lock_yn)'>
+              , #{acnt_lock_yn}  /* VARCHAR(1)   '계정 잠김 여부' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(acnt_expr_dt)'>
+              , #{acnt_expr_dt}  /* VARCHAR(10)  '계정 만료 일자' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(mb_id)'>
+              , #{mb_id}         /* VARCHAR(20)  '회원사 ID' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(reg_id)'>
+              , #{reg_id}        /* VARCHAR(20)  '등록자 ID' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(mod_id)'>
+              , #{mod_id}        /* VARCHAR(20)  '수정자 ID' */
+              </if>
+              , NOW()       	 /* DATETIME     '등록 일시' */
+              , NOW()	       	 /* DATETIME     '등록 일시' */
+              )
+	</insert>
+	
+	
+	<update id="updateLoginInfo" parameterType="kr.co.fw.system.login.LoginVO">
+		/* user-mapper.xml updateLoginInfo */
+		 UPDATE tb_sy_login
+            SET mod_dtm       = NOW()       	 /* DATETIME     '등록 일시' */
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(mod_id)'>
+              , mod_id        = #{mod_id}        /* VARCHAR(20)  '수정자 ID' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_id)'>
+              , login_id      = #{login_id}      /* VARCHAR(100) '로그인 ID' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(user_id)'>
+              , user_id       = #{user_id}       /* VARCHAR(100) '사용자 ID' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_pw)'>
+              , login_pw      = #{login_pw}      /* VARCHAR(256) '로그인 비밀번호' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(smp_pw)'>
+              , smp_pw        = #{smp_pw}        /* VARCHAR(256) '간편 비밀번호' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(accnt_sts)'>
+              , accnt_sts     = #{accnt_sts}     /* VARCHAR(1)   '계정상태' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(pw_err_cnt)'>
+              , pw_err_cnt    = #{pw_err_cnt}    /* INT          '비밀번호 오류 횟수' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(acnt_lock_yn)'>
+              , acnt_lock_yn  = #{acnt_lock_yn}  /* VARCHAR(1)   '계정 잠김 여부' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(acnt_expr_dt)'>
+              , acnt_expr_dt  = #{acnt_expr_dt}  /* VARCHAR(10)  '계정 만료 일자' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(mb_id)'>
+              , mb_id         = #{mb_id}         /* VARCHAR(20)  '회원사 ID' */
+              </if>
+          WHERE login_id      = #{login_id} 
+            AND mb_id 		  = #{mb_id}
+	</update>
+	
+	<delete id="deleteLoginInfo" parameterType="kr.co.fw.system.login.LoginVO">
+		/* user-mapper.xml deleteLoginInfo */
+		DELETE FROM tb_sy_login
+		 WHERE login_id = #{login_id}
+		   AND mb_id 	= #{mb_id}
+	</delete>
+
+</mapper>

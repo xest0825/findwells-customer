@@ -40,20 +40,31 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 
 		user.setLogin_id(login_id);
 		retuser = userService.getUser(user);
+		if (CommUtil.isEmpty(retuser)) {
+			log.info("계정정보가 업습니다. 0");
+			throw new BadCredentialsException("계정정보가 업거나 비빌번호가 일치하지 않습니다.");
+		} else {
+			log.info("user : " + retuser.toString());			
+		}
 
 		List<String> roleList = new ArrayList<String>();
 		roleList = userService.getRoleList(retuser);
+		log.info("roleList.size : " + roleList.size());
 		retuser.setAuthorities(roleList);
+		log.info("user : " + retuser.toString());
 		try {
 			if (CommUtil.isNotEmpty(retuser.getPassword())) {
 				if (!login_pw.equals(CryptoUtil.decrypt(retuser.getPassword()))) {
+					log.info("계정정보가 업거나 비빌번호가 일치하지 않습니다. 1");
 					throw new BadCredentialsException("계정정보가 업거나 비빌번호가 일치하지 않습니다.");
 				}
 			} else {
+				log.info("계정정보가 업거나 비빌번호가 일치하지 않습니다. 2");
 				throw new BadCredentialsException("계정정보가 업거나 비빌번호가 일치하지 않습니다.");
 			}
 		} catch (UnsupportedEncodingException | GeneralSecurityException e) {
 			// TODO Auto-generated catch block
+			log.info("에러발생 3");
 			e.printStackTrace();
 			throw new BadCredentialsException("계정정보가 업거나 비빌번호가 일치하지 않습니다.");
 		}

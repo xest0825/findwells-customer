@@ -35,6 +35,7 @@ public class RoleVO extends BaseVO implements Serializable {
 	private String CURRENT_MENU  =""; // 현재 메뉴
     private String EMP_CD = "";
     private String SCD = ""; // 조직코드
+    private String SEARCH_WORD;
     
     public String getROLE_ID() {
 		return ROLE_ID;
@@ -217,8 +218,16 @@ public class RoleVO extends BaseVO implements Serializable {
     public boolean getexpanded() {
     		return true;
     }
-
+    
  	
+	public String getSEARCH_WORD() {
+		return SEARCH_WORD;
+	}
+
+	public void setSEARCH_WORD(String sEARCH_WORD) {
+		SEARCH_WORD = sEARCH_WORD;
+	}
+
 	@Override
 	public String toString() {
 		return "RoleVO [ROLE_ID=" + ROLE_ID + ", ROLE_NAME=" + ROLE_NAME

@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html xmlns:tm="http://www.thymeleaf.org" 
+	  xmlns:th="http://www.thymeleaf.org" 
+	  xmlns:layout="http://www.thymeleaf.org/layout">
 
 <head>
   <meta charset="utf-8" />
@@ -7,13 +9,12 @@
   <meta name="viewport"
     content="user-scalable=yes, initial-scale=1, width=device-width, target-densitydpi=medium-dpi" />
   <meta name="format-detection" content="telephone=no" />
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="../css/style.css" />
-  <link href="../css/bootstrap.css" type="text/css" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link href="/css/bootstrap.css" type="text/css" rel="stylesheet" />
 
   <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-  <script type="text/javascript" src="../js/common_added.js"></script>
-  <script type="text/javascript" src="../js/app.js"></script>
+  <script type="text/javascript" src="/js/common_added.js"></script>
+  <script type="text/javascript" src="/js/app.js"></script>
 
   <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
   <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
@@ -37,13 +38,13 @@
         <ul class="menu-list accordion">
           <p class="welcome">
             <span>
-              <img src="../images/lnb_person.png">
+              <img src="/images/lnb_person.png">
               <em>홍길동</em>
             </span>
           </p>
-          <li id="nav1" class="toggle accordion-toggle">
+          <li id="nav1" class="toggle accordion-toggle" onclick="goNotices();">
             <span class="icon-plus">
-              <img src="../images/icon_menu_notice.png">
+              <img src="/images/icon_menu_notice.png">
             </span>
             <a class="menu-link" href="#">
               공지사항
@@ -51,7 +52,7 @@
           </li>
           <li id="nav2" class="toggle accordion-toggle" onclick="goContractList();">
             <span class="icon-plus">
-              <img src="../images/icon_menu_join_list.png">
+              <img src="/images/icon_menu_join_list.png">
             </span>
             <a class="menu-link" href="#">
               가입내역
@@ -59,15 +60,15 @@
           </li>
           <li id="nav3" class="toggle accordion-toggle" onclick="goMessages();">
             <span class="icon-plus">
-              <img src="../images/icon_menu_message.png">
+              <img src="/images/icon_menu_message.png">
             </span>
             <a class="menu-link" href="#">
               메세지
             </a>
           </li>
-          <li id="nav4" class="toggle accordion-toggle" onclick="goWithdrwalLog();">
+          <li id="nav4" class="toggle accordion-toggle" onclick="goWithdrawalLog();">
             <span class="icon-plus">
-              <img src="../images/icon_menu_out.png">
+              <img src="/images/icon_menu_out.png">
             </span>
             <a class="menu-link" href="#">
               인출내역
@@ -75,7 +76,7 @@
           </li>
           <li id="nav5" class="toggle accordion-toggle" onclick="goAssetPlan();">
             <span class="icon-plus">
-              <img src="../images/icon_menu_plan.png">
+              <img src="/images/icon_menu_plan.png">
             </span>
             <a class="menu-link" href="#">
               자산계획
@@ -83,7 +84,7 @@
           </li>
           <li id="nav6" class="toggle accordion-toggle" onclick="goIntroducing();">
             <span class="icon-plus">
-              <img src="../images/icon_menu_company.png">
+              <img src="/images/icon_menu_company.png">
             </span>
             <a class="menu-link" href="#">
               회사소개
@@ -91,7 +92,7 @@
           </li>
           <li id="nav7" class="toggle accordion-toggle">
             <span class="icon-plus">
-              <img src="../images/icon_menu_link.png">
+              <img src="/images/icon_menu_link.png">
             </span>
             <a class="menu-link" href="#">
               제휴사링크
@@ -99,12 +100,12 @@
           </li>
 
           <div class="btn">
-            <a href="#none" class="b_logout">
-              <img src="../images/b_lnb_logout.png">
+            <a href="javascript:logout()" class="b_logout">
+              <img src="/images/b_lnb_logout.png">
               로그아웃
             </a>
-            <a href="#none" class="b_lock">
-              <img src="../images/b_lnb_pw.png">
+            <a href="javascript:goSimplePw()" class="b_lock">
+              <img src="/images/b_lnb_pw.png">
               잠금 비밀번호
             </a>
           </div>
@@ -118,11 +119,11 @@
         </ul>
         <h1>
           <a href="#none" class="logo_findwell">
-            <img src="../images/logo_findwell.png" />
+            <img src="/images/logo_findwell.png" />
           </a>
         </h1>
         <button class="go_home">
-          <img src="../images/home.png" />
+          <img src="/images/home.png" />
         </button>
       </div>
     </header>
@@ -144,7 +145,7 @@
         <div class="swiper-wrapper">
           <div class="swiper-slide">
             <div class="logo">
-              <img src="../images/logo_metis.png" />
+              <img src="/images/logo_metis.png" />
             </div>
             <div class="txt">
               <p class="logo_txt">
@@ -165,7 +166,7 @@
           </div>
           <div class="swiper-slide">
             <div class="logo">
-              <img src="../images/logo_Generali.png" />
+              <img src="/images/logo_Generali.png" />
             </div>
             <div class="txt">
               <p class="logo_txt">
@@ -190,7 +191,7 @@
         <div class="swiper-pagination"></div>
       </div>
 
-      <script type="text/javascript" src="../js/common_added_main.js"></script>
+      <script type="text/javascript" src="/js/common_added_main.js"></script>
 
       <!-- message -->
       <div class="message_wrap">
@@ -236,28 +237,28 @@
           <li>
             <span>
               <a href="javascript:goContractList();">
-                <img src="../images/icon_join_list.png">
+                <img src="/images/icon_join_list.png">
                 가입
                 내역
               </a>
             </span>
             <span>
               <a href="javascript:goWithdrawalLog();">
-                <img src="../images/icon_out_list.png">
+                <img src="/images/icon_out_list.png">
                 인출
                 내역
               </a>
             </span>
             <span>
               <a href="javascript:goAssetPlan();">
-                <img src="../images/icon_account.png">
+                <img src="/images/icon_account.png">
                 자산
                 계획
               </a>
             </span>
             <span>
               <a href="javascript:goIntroducing();">
-                <img src="../images/icon_company.png">
+                <img src="/images/icon_company.png">
                 회사
                 소개
               </a>
@@ -266,28 +267,28 @@
           <li>
             <span>
               <a href="javascript:goStudyAbroad();">
-                <img src="../images/icon_flying.png">
+                <img src="/images/icon_flying.png">
                 유학
                 서비스
               </a>
             </span>
             <span>
               <a href="javascript:goHealthCare();">
-                <img src="../images/icon_health.png">
+                <img src="/images/icon_health.png">
                 헬스
                 케어
               </a>
             </span>
             <span>
               <a href="javascript:goPasswordManage();">
-                <img src="../images/icon_pw.png">
+                <img src="/images/icon_pw.png">
                 PW
                 관리
               </a>
             </span>
             <span>
               <a href="javascript:goReport();">
-                <img src="../images/icon_report.png">
+                <img src="/images/icon_report.png">
                 리포트
               </a>
             </span>
@@ -302,44 +303,60 @@
 </body>
 
 	<script>
+	var user_id = "[[${user_id}]]" 
     $(document).ready(function(){
 
     });
+	
+	function goNotices(){
+    	location.href = '/m/PM02/' + user_id;		
+	}
     
     function goMessages(){
-    	location.href = '/m/P06';
+    	location.href = '/m/PM06/' + user_id;
     }
     
     function goContractList(){
-    	location.href = '/m/P04';
+    	location.href = '/m/PM04/' + user_id;
     }
     
     function goWithdrawalLog(){
-    	location.href = '/m/P07';
+    	location.href = '/m/PM07/' + user_id;
     }
     
     function goAssetPlan(){
-    	location.href = '/m/P08';
+    	location.href = '/m/PM08/' + user_id;
     }
     
     function goIntroducing(){
-    	location.href = '/m/P09';
+    	location.href = '/m/PM09/' + user_id;
     }
     
     function goStudyAbroad(){
-    	location.href = '/m/P15';
+    	location.href = '/m/PM15/' + user_id;
     }
     
     function goHealthCare(){
-    	location.href = '/m/P11';
+    	location.href = '/m/PM11/' + user_id;
     }
     
     function goPasswordManage(){
-    	location.href = '/m/P12';
+    	location.href = '/m/PM12/' + user_id;
     }
     
     function goReport(){
-    	location.href = '/m/P13';
+    	location.href = '/m/PM13/' + user_id;
+    	location.href = '/m/PM13/' + user_id;
+    }
+    
+    function logout() {
+    	location.href = '/m/P00';
+    }
+    
+    function goSimplePw(){
+    	console.log('simple pw');
+    	// 화면 필요
+    	location.href = '/m/P04/' + user_id;
     }
     </script>
 

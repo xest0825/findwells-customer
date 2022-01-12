@@ -12,7 +12,6 @@ public class LoginService extends BaseService {
 
 	public User getUser(User paramvo) {
 		return getLoginDAO().getUser(paramvo);
-
 	}
 
 	public List<String> getRoleList(User paramvo) {

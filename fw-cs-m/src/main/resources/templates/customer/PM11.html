@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html xmlns:tm="http://www.thymeleaf.org" 
+	  xmlns:th="http://www.thymeleaf.org" 
+	  xmlns:layout="http://www.thymeleaf.org/layout">
 
 <head>
   <meta charset="utf-8" />
@@ -7,12 +9,12 @@
   <meta name="viewport"
     content="user-scalable=yes, initial-scale=1, width=device-width, target-densitydpi=medium-dpi" />
   <meta name="format-detection" content="telephone=no" />
-  <link rel="stylesheet" href="../css/style.css" />
-  <link href="../css/bootstrap.css" type="text/css" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link href="/css/bootstrap.css" type="text/css" rel="stylesheet" />
 
   <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-  <script type="text/javascript" src="../js/common_added.js"></script>
-  <script type="text/javascript" src="../js/app.js"></script>
+  <script type="text/javascript" src="/js/common_added.js"></script>
+  <script type="text/javascript" src="/js/app.js"></script>
 </head>
 
 <body>
@@ -31,13 +33,13 @@
         <ul class="menu-list accordion">
           <p class="welcome">
             <span>
-              <img src="../images/lnb_person.png">
+              <img src="/images/lnb_person.png">
               <em>홍길동</em>
             </span>
           </p>
           <li id="nav1" class="toggle accordion-toggle">
             <span class="icon-plus">
-              <img src="../images/icon_menu_notice.png">
+              <img src="/images/icon_menu_notice.png">
             </span>
             <a class="menu-link" href="#">
               공지사항
@@ -45,7 +47,7 @@
           </li>
           <li id="nav2" class="toggle accordion-toggle">
             <span class="icon-plus">
-              <img src="../images/icon_menu_join_list.png">
+              <img src="/images/icon_menu_join_list.png">
             </span>
             <a class="menu-link" href="#">
               가입내역
@@ -53,7 +55,7 @@
           </li>
           <li id="nav3" class="toggle accordion-toggle">
             <span class="icon-plus">
-              <img src="../images/icon_menu_message.png">
+              <img src="/images/icon_menu_message.png">
             </span>
             <a class="menu-link" href="#">
               메세지
@@ -61,7 +63,7 @@
           </li>
           <li id="nav4" class="toggle accordion-toggle">
             <span class="icon-plus">
-              <img src="../images/icon_menu_out.png">
+              <img src="/images/icon_menu_out.png">
             </span>
             <a class="menu-link" href="#">
               인출내역
@@ -69,7 +71,7 @@
           </li>
           <li id="nav5" class="toggle accordion-toggle">
             <span class="icon-plus">
-              <img src="../images/icon_menu_plan.png">
+              <img src="/images/icon_menu_plan.png">
             </span>
             <a class="menu-link" href="#">
               자산계획
@@ -77,7 +79,7 @@
           </li>
           <li id="nav6" class="toggle accordion-toggle">
             <span class="icon-plus">
-              <img src="../images/icon_menu_company.png">
+              <img src="/images/icon_menu_company.png">
             </span>
             <a class="menu-link" href="#">
               회사소개
@@ -85,7 +87,7 @@
           </li>
           <li id="nav7" class="toggle accordion-toggle">
             <span class="icon-plus">
-              <img src="../images/icon_menu_link.png">
+              <img src="/images/icon_menu_link.png">
             </span>
             <a class="menu-link" href="#">
               제휴사링크
@@ -94,11 +96,11 @@
 
           <div class="btn">
             <a href="#none" class="b_logout">
-              <img src="../images/b_lnb_logout.png">
+              <img src="/images/b_lnb_logout.png">
               로그아웃
             </a>
             <a href="#none" class="b_lock">
-              <img src="../images/b_lnb_pw.png">
+              <img src="/images/b_lnb_pw.png">
               잠금 비밀번호
             </a>
           </div>
@@ -112,11 +114,11 @@
         </ul>
         <h1>
           <a href="#none" class="logo_findwell">
-            <img src="../images/logo_findwell.png" />
+            <img src="/images/logo_findwell.png" />
           </a>
         </h1>
         <button class="go_home">
-          <img src="../images/home.png" />
+          <img src="/images/home.png" />
         </button>
       </div>
     </header>
@@ -125,14 +127,14 @@
 
     <section class="hearth_care_wrap">
         <div class="tit">
-          <img src="../images/txt_health.png">
+          <img src="/images/txt_health.png">
         </div>
 
         <ul class="main_list">
           <li>
             <a href="">
               <p>
-                <img src="../images/healthcare_icon_1.png">
+                <img src="/images/healthcare_icon_1.png">
               </p>
               <p>
                 건강검진
@@ -142,7 +144,7 @@
           <li>
             <a href="">
               <p>
-                <img src="../images/healthcare_icon_eye.png">
+                <img src="/images/healthcare_icon_eye.png">
               </p>
               <p>
                 안과
@@ -152,7 +154,7 @@
           <li>
             <a href="">
               <p>
-                <img src="../images/healthcare_icon_out.png">
+                <img src="/images/healthcare_icon_out.png">
               </p>
               <p>
                 외과
@@ -162,7 +164,7 @@
           <li>
             <a href="">
               <p>
-                <img src="../images/healthcare_icon_skin.png">
+                <img src="/images/healthcare_icon_skin.png">
               </p>
               <p>
                 피부과
@@ -172,7 +174,7 @@
           <li>
             <a href="">
               <p>
-                <img src="../images/healthcare_icon_sur.png">
+                <img src="/images/healthcare_icon_sur.png">
               </p>
               <p>
                 성형외과
@@ -182,7 +184,7 @@
           <li>
             <a href="">
               <p>
-                <img src="../images/healthcare_icon_woman.png">
+                <img src="/images/healthcare_icon_woman.png">
               </p>
               <p>
                 여성과
@@ -192,7 +194,7 @@
           <li>
             <a href="">
               <p>
-                <img src="../images/healthcare_icon_cell.png">
+                <img src="/images/healthcare_icon_cell.png">
               </p>
               <p>
                 줄기세포
@@ -202,7 +204,7 @@
           <li>
             <a href="./PM11_1.html">
               <p>
-                <img src="../images/healthcare_icon_hair.png">
+                <img src="/images/healthcare_icon_hair.png">
               </p>
               <p>
                 모발이식
@@ -212,7 +214,7 @@
           <li>
             <a href="">
               <p>
-                <img src="../images/healthcare_icon_killa.png">
+                <img src="/images/healthcare_icon_killa.png">
               </p>
               <p>
                 킬레이션치료
@@ -222,7 +224,7 @@
           <li>
             <a href="">
               <p>
-                <img src="../images/healthcare_icon_teeth.png">
+                <img src="/images/healthcare_icon_teeth.png">
               </p>
               <p>
                 치과
@@ -232,7 +234,7 @@
           <li>
             <a href="">
               <p>
-                <img src="../images/healthcare_icon_etc.png">
+                <img src="/images/healthcare_icon_etc.png">
               </p>
               <p>
                 기타
@@ -242,7 +244,7 @@
           <li>
             <a href="">
               <p>
-                <img src="../images/healthcare_icon_apply.png">
+                <img src="/images/healthcare_icon_apply.png">
               </p>
               <p>
                 신청하기
@@ -255,5 +257,16 @@
     </section>
   </div>
 </body>
+
+	<script>
+	var user_id =  '[[${user_id}]]';
+	$(document).ready(function(){
+
+    });
+    
+    function goBack(){
+    	location.href = '/m/PM01/'+ user_id;
+    }
+    </script>
 
 </html>

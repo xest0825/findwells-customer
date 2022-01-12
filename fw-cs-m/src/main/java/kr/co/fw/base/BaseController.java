@@ -9,6 +9,7 @@ import kr.co.fw.consultant.ConsultantService;
 import kr.co.fw.customer.CustomerService;
 import kr.co.fw.product.ProductService;
 import kr.co.fw.system.log.LogService;
+import kr.co.fw.system.user.UserService;
 import lombok.Getter;
 
 @Getter
@@ -25,6 +26,9 @@ public class BaseController {
 	
 	@Autowired
 	FileService fileService;
+	
+	@Autowired
+	UserService userService;
 	
 	
 	/* Biz 영역 */

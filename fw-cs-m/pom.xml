@@ -8,7 +8,7 @@
 		<version>2.5.1</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>kr.co.gnx</groupId>
+	<groupId>kr.co.fw</groupId>
 	<artifactId>fw-cs-m</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>fw-cs-m</name>
@@ -166,7 +166,7 @@
             <configuration>
                 <archive>
                     <manifest>
-                        <mainClass>kr.co.gnx.JwtdemoApplication</mainClass>
+                        <mainClass>kr.co.fw.JwtdemoApplication</mainClass>
                     </manifest>
                 </archive>
             </configuration>

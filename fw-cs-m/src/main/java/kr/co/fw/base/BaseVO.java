@@ -68,6 +68,7 @@ public class BaseVO {
 	private String json_string;
 	private String page;
     private String page_size;
+    private boolean isPagination;
 	
 	
 	

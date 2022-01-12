@@ -4,17 +4,14 @@
 <mapper namespace="Role">
 
 <!-- 권한 리스트 조회 -->  
- <select id="getRoleList" resultType="kr.co.fw.system.role.RoleVO" parameterType="kr.co.fw.system.role.RoleVO" >
+ <select id="getRoleList" parameterType="kr.co.fw.system.security.model.User" resultType="String" >
 /* role-mapper getRoleList 권한 리스트 조회 */
-SELECT ROLE_ID      /* 롤코드     VARCHAR2(50)     */
-     , ROLE_NAME    /* 롤명       VARCHAR2(50)     */
-     , IN_EMP_CD   	/* 입력자사번 VARCHAR2(20)     */
-     , IN_DTM       /* 입력일시   TIMESTAMP(6)(11) */
+SELECT ROLE_ID  AS name     /* 롤코드     VARCHAR2(50)     */
   FROM TBSY_ROLES_MST /* [SY] 롤마스터 */
- WHERE MB_ID   = #{MB_ID}
-   AND ROLE_ID != 'ROLE_SUPER'
-<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SEARCH_WORD)'>
-  <![CDATA[   AND UPPER(ROLE_NAME) LIKE '%'|| UPPER(#{SEARCH_WORD}) ||'%']]>
+ WHERE MB_ID   = 'YNG'
+   AND ROLE_ID = 'ROLE_CUSTOMER'
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(search_word)'>
+  <![CDATA[   AND UPPER(ROLE_NAME) LIKE '%'|| UPPER(#{search_word}) ||'%']]>
 </if>
 </select>
 

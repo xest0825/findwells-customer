@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html xmlns:tm="http://www.thymeleaf.org" 
+	  xmlns:th="http://www.thymeleaf.org" 
+	  xmlns:layout="http://www.thymeleaf.org/layout">
 
 <head>
   <meta charset="utf-8" />
@@ -8,21 +10,21 @@
     content="user-scalable=yes, initial-scale=1, width=device-width, target-densitydpi=medium-dpi" />
   <meta name="format-detection" content="telephone=no" />
   <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="../css/style.css" />
-  <link href="../css/bootstrap.css" type="text/css" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link href="/css/bootstrap.css" type="text/css" rel="stylesheet" />
 
   <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-  <script type="text/javascript" src="../js/common_added.js"></script>
-  <script type="text/javascript" src="../js/app.js"></script>
+  <script type="text/javascript" src="/js/common_added.js"></script>
+  <script type="text/javascript" src="/js/app.js"></script>
 </head>
 
 <body>
   <div class="wrapper_notice">
     <div class="top_wrapper">
-      <a href="" class="go_back">뒤로가기</a>
+      <a href="javascript:goBack();" class="go_back">뒤로가기</a>
       <h2>리포트</h2>
       <button class="go_home sub">
-        <img src="../images/home.png" />
+        <img src="/images/home.png" />
       </button>
     </div>
     <section class="self_certification">
@@ -51,5 +53,16 @@
     </section>
   </div>
 </body>
+
+	<script>
+	var user_id =  '[[${user_id}]]';
+	$(document).ready(function(){
+
+    });
+    
+    function goBack(){
+    	location.href = '/m/PM01/'+ user_id;
+    }
+    </script>
 
 </html>

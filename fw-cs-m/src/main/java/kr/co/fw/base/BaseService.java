@@ -12,6 +12,7 @@ import kr.co.fw.customer.CustomerDAO;
 import kr.co.fw.product.ProductDAO;
 import kr.co.fw.system.log.LogDAO;
 import kr.co.fw.system.login.LoginDAO;
+import kr.co.fw.system.user.UserDAO;
 import lombok.Getter;
 
 @Getter
@@ -35,6 +36,9 @@ public class BaseService {
 	
 	@Autowired
 	private SmsDAO smsDAO;
+	
+	@Autowired
+	private UserDAO userDAO;
 	
 	
 	/* Biz 영역 */
