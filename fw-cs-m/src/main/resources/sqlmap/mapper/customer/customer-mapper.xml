@@ -65,7 +65,7 @@ SELECT AA.*
 		AND AA.CUST_NM = #{cust_nm}
 	</if>
 	<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(ssn)">
-		AND AA.SSM = #{ssn}
+		AND AA.SSN = #{ssn}
 	</if>
 	<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_cell)">
 		AND AA.CUST_CELL = #{cust_cell}
@@ -133,7 +133,7 @@ SELECT A.MB_ID              	/* 회사코드                     		*/
 </select>
 
 <!-- 고객번호 채번 -->
-<select id="selectNewNo" resultType="String">
+<select id="selectNewNo" parameterType="kr.co.fw.customer.CustomerVO" resultType="String">
 /* customer-mapper.xml id="selectNewNo" 고객 번호 채번 */
 SELECT TO_CHAR(SYSDATE,'YYYYMMDD')||LPAD(NVL(MAX(SUBSTR(NVL(CUST_ID,'00000'), -5, 5)
                           ), 0) + 1, 5, '0') AS CUST_NEW_NO
@@ -142,6 +142,12 @@ SELECT TO_CHAR(SYSDATE,'YYYYMMDD')||LPAD(NVL(MAX(SUBSTR(NVL(CUST_ID,'00000'), -5
 </select>
 
 <insert id="insertCustomer" parameterType="kr.co.fw.customer.CustomerVO">
+<selectKey order="BEFORE" resultType="String" keyProperty="cust_id">
+SELECT TO_CHAR(SYSDATE,'YYYYMMDD')||LPAD(NVL(MAX(SUBSTR(NVL(CUST_ID,'00000'), -5, 5)
+                          ), 0) + 1, 5, '0') AS cust_id
+  FROM TBCS_CUSTOMER
+  	 WHERE TO_CHAR(IN_DTM,'YYYYMMDD')=TO_CHAR(SYSDATE,'YYYYMMDD')
+</selectKey>
 /* customer-mapper.xml id="insertCustomer" 고객 입력 */
 INSERT
   INTO TBCS_CUSTOMER

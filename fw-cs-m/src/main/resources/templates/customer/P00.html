@@ -58,9 +58,12 @@
 	        <input type="password" id="login_pw" class="text_box" placeholder="로그인 아이디" />
 	        <p id="err_msg_pw" class="error_msg" style="display:none;">비밀번호를 입력해주세요.</p>
 	      </div>
+	      <div class="input_text_wrap no_flex mt25">
+	        <p id="error_msg" class="error_msg" style="display:none;">계정정보가 없거나 비밀번호가 일치하지 않습니다.</p>
+	      </div>
 	    </section>
 	    
-	    <div class="btn_wrap">
+	    <div class="btn_wrap" style="margin-top:00px;">
 	      <button class="b_point" id="bt_login">로그인</button>
 	    </div>
 	    
@@ -121,6 +124,8 @@
 				}
 				, error : function(req, status, error){
 					console.log(req + ", "+ status + ", "  + error);
+					//alert('계정정보가 없거나 비밀번호가 일치하지 않습니다.');
+					$('#error_msg').show();
 				}
 			});
 	   }
@@ -140,11 +145,13 @@
 					//console.log(data + "");
 					console.log(data.substring(data.indexOf("uid") + 4, data.indexOf("mid") - 2));   //uid 만 파싱
 					USER_ID = data.substring(data.indexOf("uid") + 4, data.indexOf("mid") - 2); //uid 만 파싱
+					console.log('/m/PM01/' + USER_ID);
 					location.href = "/m/PM01/" + USER_ID;
 					
 				}
 				, error: function (req, status, error) {
 					console.log(req + ", " + status + ", " + error);
+					
 				}
 			});
 		}

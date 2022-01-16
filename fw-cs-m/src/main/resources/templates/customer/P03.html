@@ -109,7 +109,8 @@
     	
     	
 		$('#bt_join').on('click', function(){
-			checkAuthNo();
+			// checkAuthNo();
+			join();
 		});
 		
 		$('#bt_join2').on('click', function(){
@@ -269,6 +270,7 @@
 		            html += '		<input type="radio" id="'+ data[i].USER_ID +'" name="cc" />'
 		            html += '		<label for="'+ data[i].USER_ID + '" style="margin-bottom:-3px;text-align:bottom;">' + data[i].EMP_NM + '&nbsp;&nbsp;' + data[i].HPNO + '</label>'
 		          	html += '		<input type="hidden" name="emp_nm" value="'+ data[i].EMP_NM +'">'
+		          	html += '		<input type="hidden" name="emp_cd" value="'+ data[i].EMP_CD +'">'
 		          	html += '		<input type="hidden" name="hpno" value="'+ data[i].HPNO +'">'
 		            html += '	</div>'
 		        	html += '</li>'
@@ -444,16 +446,19 @@
 	}
 	
 	function join(){
+		var cust_cell = $('#customer_hpno').val();
+		cust_cell = cust_cell.substr(0, 3) +'-' + cust_cell.substring(cust_cell.length-8, cust_cell.length-4) + '-' + cust_cell.substr(-4)
     	var param = {
     			MB_ID : 'YNG',
-				login_id : '',
-				login_pw : '',
-				cust_nm : '',
-				ssn : '',
-				cust_cell : '',
-				mo_cd : '',
+				login_id : $('#login_id').val(),
+				login_pw : $('#login_pw').val(),
+				cust_nm : $('#customer_nm').val(),
+				ssn : $('#perno1').val() + '-' + $('#perno2').val(),
+				cust_cell : cust_cell,
+				mo_cd : $('#user_id').val(),
     		};
     	console.log(param)
+    	
     	
 		$.ajax({
 			url : "/cs/join/join-customer",
@@ -466,6 +471,8 @@
 				console.log(data);
 				if (data.res_cd == 'OK'){
 					console.log('Join Success');
+					alert('가입신청이 완료되었습니다. 승인이 완료되면 SMS를 통해 알려드리겠습니다.');
+					location.href = '/m/P00';
 				} else {
 					console.log('Join Failed');
 				}
@@ -474,6 +481,7 @@
 				console.log('error');
 			}
 		});
+    	
 		
 	}
     

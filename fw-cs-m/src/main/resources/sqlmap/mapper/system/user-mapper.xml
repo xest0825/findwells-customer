@@ -39,7 +39,7 @@
 	<select id="getCustomerUserList" parameterType="kr.co.fw.customer.CustomerVO" resultType="hmap"  >
 		/* user-mapper.xml getCustomerUserList */
 		 SELECT cust_id, cust_nm, ssn, cust_cell, mo_cd, approved_yn, data_dcd, in_emp_cd, in_dtm, up_emp_cd, up_dtm
-		   FROM tbcs_customer_mobile
+		   FROM tbcs_customer_mobile tb1
 		  WHERE 1 = 1
 		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_id)'>
 			AND tb1.cust_id = #{cust_id}
@@ -111,7 +111,7 @@
 			 , cust_nm = #{cust_nm}       /* VARCHAR(50)     '사용자 명' */
 			 </if>
 			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(ssn)'>
-			 , cust_nm = #{ssn}
+			 , ssn = #{ssn}
 			 </if>
 			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_cell)'>
 			 , cust_cell = #{cust_cell}
@@ -155,6 +155,7 @@
 	<sql id="getCustomerLoginInfoSql">
 	        SELECT  tb1.login_id      /* VARCHAR(100) '로그인 ID' */
 	              , tb1.cust_id       /* VARCHAR(100) '사용자 ID' */
+	              , tb2.cust_nm
 	              , tb1.devc_id
 	              , tb1.login_pw      /* VARCHAR(256) '로그인 비밀번호' */
 	              , NVL(tb1.simpl_pw,'') simpl_pw        /* VARCHAR(256) '간편 비밀번호' */
@@ -246,7 +247,7 @@
 	<update id="updateCustomerLoginInfo" parameterType="kr.co.fw.customer.CustomerVO">
 		/* user-mapper.xml updateCustomerLoginInfo */
 		 UPDATE tbcs_mobile_login
-            SET up_dtm       = SYSDATE         /* DATETIME     '등록 일시' */
+            SET UP_DTM       = SYSDATE         /* DATETIME     '등록 일시' */
 			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_id)'>
               , cust_id 	= #{cust_id}       /* VARCHAR(100) '사용자 ID' */
               </if>

@@ -54,25 +54,29 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 		List<String> roles = user.getAuthorities().stream().map(GrantedAuthority::getAuthority)
 				.collect(Collectors.toList());
 		String mb_id = user.getMb_id();
+		String user_id = user.getUser_id();
+		String user_nm = user.getUser_nm();
 
-		log.info("username : " + username + ", roles : " + roles + ", mb_id : " + mb_id);
+		log.info("username : " + username + ", roles : " + roles + ", mb_id : " + mb_id + ", user_id : " + user_id + ", user_nm :" + user_nm);
 //		String token = username + "_" + roles;
-		String token = createToken(username, roles, mb_id);
+		String token = createToken(username, roles, mb_id, user_id, user_nm);
 		log.info("successfulAuthentication token : " + token);
 
 		response.addHeader(SecurityConstants.TOKEN_HEADER, SecurityConstants.TOKEN_PREFIX + token);
 	}
 
-	private String createToken(String username, List<String> roles, String mb_id) {
+	private String createToken(String username, List<String> roles, String mb_id, String user_id, String user_nm) {
 		byte[] signingkey = SecurityConstants.JWT_SECRET.getBytes();
 
 		String token = Jwts.builder().signWith(Keys.hmacShaKeyFor(signingkey), SignatureAlgorithm.HS512)
 				.setHeaderParam("typ", SecurityConstants.TOKEN_TYPE)
-				.setSubject(username)
+				.setSubject(user_id)
 				.setExpiration(new Date(System.currentTimeMillis() + 864000000))
-				.claim("uid", username)
+				.claim("unm", username)
+				.claim("uid", user_id)
 				.claim("mid", mb_id)
 				.claim("rol", roles)
+				.claim("lid", username)
 				.compact();
 
 		log.info("createToken token : " + token);
