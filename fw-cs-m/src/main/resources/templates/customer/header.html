@@ -3,25 +3,7 @@
 	  xmlns:th="http://www.thymeleaf.org" 
 	  xmlns:layout="http://www.thymeleaf.org/layout">
 
-<head>
-  <meta charset="utf-8" />
-  <title>유학서비스2</title>
-  <meta name="viewport" content="user-scalable=yes, initial-scale=1, width=device-width, target-densitydpi=medium-dpi" />
-  <meta name="format-detection" content="telephone=no" />
-  <link type="text/css" rel="stylesheet" href="/css/style.css" />
-  <link type="text/css" rel="stylesheet" href="/css/bootstrap.css" />
-  <link type="text/css" rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
-  <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" />
-
-  <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-  <script type="text/javascript" src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-  <script type="text/javascript" src="/js/common_added.js"></script>
-  <script type="text/javascript" src="/js/app.js"></script>
-  <script type="text/javascript" src="/js/navigation.js"></script>
-</head>
-
-<body>
-  <div class="wrapper_lock health">
+    <!-- gnb -->
     <header>
       <div id="menu-container">
         <div id="menu-wrapper">
@@ -40,7 +22,7 @@
               <em>홍길동</em>
             </span>
           </p>
-          <li id="nav1" class="toggle accordion-toggle">
+          <li id="nav1" class="toggle accordion-toggle" onclick="goNotices();">
             <span class="icon-plus">
               <img src="/images/icon_menu_notice.png">
             </span>
@@ -48,7 +30,7 @@
               공지사항
             </a>
           </li>
-          <li id="nav2" class="toggle accordion-toggle">
+          <li id="nav2" class="toggle accordion-toggle" onclick="goContractList();">
             <span class="icon-plus">
               <img src="/images/icon_menu_join_list.png">
             </span>
@@ -56,7 +38,7 @@
               가입내역
             </a>
           </li>
-          <li id="nav3" class="toggle accordion-toggle">
+          <li id="nav3" class="toggle accordion-toggle" onclick="goMessages();">
             <span class="icon-plus">
               <img src="/images/icon_menu_message.png">
             </span>
@@ -64,7 +46,7 @@
               메세지
             </a>
           </li>
-          <li id="nav4" class="toggle accordion-toggle">
+          <li id="nav4" class="toggle accordion-toggle" onclick="goWithdrawalLog();">
             <span class="icon-plus">
               <img src="/images/icon_menu_out.png">
             </span>
@@ -72,7 +54,7 @@
               인출내역
             </a>
           </li>
-          <li id="nav5" class="toggle accordion-toggle">
+          <li id="nav5" class="toggle accordion-toggle" onclick="goAssetPlan();">
             <span class="icon-plus">
               <img src="/images/icon_menu_plan.png">
             </span>
@@ -80,7 +62,7 @@
               자산계획
             </a>
           </li>
-          <li id="nav6" class="toggle accordion-toggle">
+          <li id="nav6" class="toggle accordion-toggle" onclick="goIntroducing();">
             <span class="icon-plus">
               <img src="/images/icon_menu_company.png">
             </span>
@@ -88,7 +70,7 @@
               회사소개
             </a>
           </li>
-          <li id="nav7" class="toggle accordion-toggle">
+          <li id="nav7" class="toggle accordion-toggle" onclick="goInsuranceCompany();">
             <span class="icon-plus">
               <img src="/images/icon_menu_link.png">
             </span>
@@ -98,11 +80,11 @@
           </li>
 
           <div class="btn">
-            <a href="#none" class="b_logout">
+            <a href="javascript:logout()" class="b_logout">
               <img src="/images/b_lnb_logout.png">
               로그아웃
             </a>
-            <a href="#none" class="b_lock">
+            <a href="javascript:goSimplePw()" class="b_lock">
               <img src="/images/b_lnb_pw.png">
               잠금 비밀번호
             </a>
@@ -120,40 +102,11 @@
             <img src="/images/logo_findwell.png" />
           </a>
         </h1>
-        <button class="go_home">
+        <button class="go_home" onclick="goMain();">
           <img src="/images/home.png" />
         </button>
       </div>
     </header>
-
-
-
-    <section class="hearth_care_wrap sub">
-        <div class="tit">
-          <img src="/images/txt_flying2.png">
-        </div>
-
-        <div class="health_big_img_wrap">
-          <img src="/images/img_big_flying_america.png">
-        </div>
-        <div class="health_big_img_wrap">
-          <img src="/images/img_big_flying_america2.png">
-        </div>
-
-
-    </section>
-  </div>
-</body>
-
-	<script>
-	var user_id =  '[[${user_id}]]';
-	$(document).ready(function(){
-
-    });
-    
-    function goBack(){
-    	location.href = '/m/PM01/'+ user_id;
-    }
-    </script>
+   
 
 </html>

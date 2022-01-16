@@ -104,7 +104,7 @@ public class CustomerMobilePageController {
 	}
 	
 	/**
-	 * @description 메인 인덱스
+	 * @description 메인화면
 	 */
 	@GetMapping(value = "/m/PM01/{user_id}")
 	public ModelAndView pm01(HttpServletRequest req, @PathVariable("user_id") String user_id) throws Exception {
@@ -220,6 +220,17 @@ public class CustomerMobilePageController {
 	public ModelAndView pm09(HttpServletRequest req, @PathVariable("user_id") String user_id) throws Exception {
 		log.info("/m/PM09");
 		ModelAndView mav = new ModelAndView("customer/PM09");
+		mav.addObject("user_id", user_id);
+		return mav;
+	}
+	
+	/**
+	 * @descriptio 제휴사링크
+	 */
+	@GetMapping(value = "/m/PM10/{user_id}")
+	public ModelAndView pm10(HttpServletRequest req, @PathVariable("user_id") String user_id) throws Exception {
+		log.info("/m/PM10");
+		ModelAndView mav = new ModelAndView("customer/PM10");
 		mav.addObject("user_id", user_id);
 		return mav;
 	}

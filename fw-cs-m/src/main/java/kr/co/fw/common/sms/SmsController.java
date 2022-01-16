@@ -10,13 +10,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import kr.co.fw.base.BaseController;
 import kr.co.fw.common.util.CommUtil;
+import kr.co.fw.system.auth.AuthVO;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.json.JSONObject;
 
 @Slf4j
 @RestController
-public class SmsController {
+public class SmsController extends BaseController {
 	
 	@PostMapping("/sms/send-authnum-to-custoemr")
 	public ResponseEntity<HashMap<String, Object>> getIntroducers(@RequestBody SmsVO paramvo) {
@@ -46,7 +48,8 @@ public class SmsController {
 			paramMap.put("x-ncp-iam-access-key",  "t49MAOU3HwqZaMkkcpt7");
 			paramMap.put("x-ncp-apigw-signature-v2", signature);
 			*/
-			
+			String authno = CommUtil.makeRandomNumber(6, 2);
+			log.info("AuthNo : " + authno);
 			
 			HashMap<String, Object> paramMap = new HashMap<String, Object>();
 			paramMap.put("timestamp", timestamp + "");
@@ -60,7 +63,7 @@ public class SmsController {
 			paramMap.put("to", paramvo.getCall_to().replace("-", ""));
 			paramMap.put("subject", "[파인드웰스] 인증번호 전송");
 			String content = "[파인드웰스] 회원가입을 위한 인증번호는 \n"
-					+ "000000" + " 입니다." 
+					+ authno + " 입니다." 
 					;
 			paramMap.put("content", content);
 			List<HashMap<String,Object>> msgList = new ArrayList<HashMap<String, Object>>();
@@ -81,8 +84,20 @@ public class SmsController {
 			
 			jobj = CommUtil.getApiData(apiUrl, reqMethod, paramMap);
 			if (jobj.get("res_cd").toString().equals("OK")) {
+				
+				AuthVO auth = new AuthVO();
+				auth.setAuth_no(authno);
+				auth.setSender("01046933692");
+				auth.setReceiver(paramvo.getCall_to().replace("-", ""));
+				auth.setReceiver_nm(paramvo.getReceiver_nm());
+				getAuthService().insertAuthLog(auth);
+				
 				hmap.put("res_cd", "OK");
-				hmap.put("msg", "SMS 전송 완료");				
+				hmap.put("msg", "SMS 전송 완료");			
+				hmap.put("msg_seq", auth.getSeq());
+				
+				
+				
 			} else {
 				hmap.put("res_cd", "FAIL");
 				hmap.put("msg", jobj.get("msg").toString());				

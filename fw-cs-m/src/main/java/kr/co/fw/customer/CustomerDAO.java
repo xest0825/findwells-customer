@@ -14,6 +14,10 @@ public class CustomerDAO extends BaseDAO {
 		return getSqlSession().selectList(getCustomerMapper() + "getCustomerList", paramvo);
 	}
 	
+	public String selectNewNo() {
+		return getSqlSession().selectOne(getCustomerMapper(), "selectNewNo");
+	}
+	
 	public int insertCustomer(CustomerVO paramvo) {
 		return getSqlSession().insert(getCustomerMapper() + "insertCustomer", paramvo);
 	}
@@ -26,6 +30,8 @@ public class CustomerDAO extends BaseDAO {
 		return getSqlSession().delete(getCustomerMapper() + "deleteCustomer", paramvo);
 	}
 	
+	/* user-mapper */
+	/* 
 	public List<HashMap<String, Object>> getCustomerAccountList(CustomerVO paramvo) {
 		return getSqlSession().selectList(getCustomerMapper() + "getCustomerAccountList", paramvo);
 	}
@@ -41,5 +47,6 @@ public class CustomerDAO extends BaseDAO {
 	public int deleteCustomerAccount(CustomerVO paramvo) {
 		return getSqlSession().delete(getCustomerMapper() + "deleteCustomerAccount", paramvo);
 	}
+	*/
 	
 }

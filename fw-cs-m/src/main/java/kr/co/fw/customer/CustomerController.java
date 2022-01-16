@@ -43,32 +43,4 @@ public class CustomerController extends BaseController {
 		return mv;
 	}
 
-	@RequestMapping("/cs/getCustomerAccountList.ajax")
-	public ModelAndView getCustomerAccountList(HttpServletRequest req, @RequestBody CustomerVO paramvo) {
-		ModelAndView mv = new ModelAndView("jsonView");
-		mv.addObject("results", getCustomerService().getCustomerAccountList(paramvo));
-		return mv;
-	}
-
-	@RequestMapping("/cs/insertCustomerAccount.ajax")
-	public ModelAndView insertCustomerAccount(HttpServletRequest req, @RequestBody CustomerVO paramvo) {
-		ModelAndView mv = new ModelAndView("jsonView");
-		mv.addObject("results", getCustomerService().insertCustomerAccount(paramvo));
-		return mv;
-	}
-
-	@RequestMapping("/cs/updateCustomerAccount.ajax")
-	public ModelAndView updateCustomerAccount(HttpServletRequest req, @RequestBody CustomerVO paramvo) {
-		ModelAndView mv = new ModelAndView("jsonView");
-		mv.addObject("results", getCustomerService().updateCustomerAccount(paramvo));
-		return mv;
-	}
-
-	@RequestMapping("/cs/deleteCustomerAccount.ajax")
-	public ModelAndView deleteCustomerAccount(HttpServletRequest req, @RequestBody CustomerVO paramvo) {
-		ModelAndView mv = new ModelAndView("jsonView");
-		mv.addObject("results", getCustomerService().deleteCustomerAccount(paramvo));
-		return mv;
-	}
-
 }

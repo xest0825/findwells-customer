@@ -7,8 +7,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import kr.co.fw.base.BaseService;
-import kr.co.fw.common.util.CommUtil;
-import kr.co.fw.system.security.model.User;
+import kr.co.fw.customer.CustomerVO;
 
 @Service
 public class UserService extends BaseService {
@@ -40,13 +39,29 @@ public class UserService extends BaseService {
 	}
 	
 	/**
-	 * 사용자 목록 개수 조회
+	 * 사용자 목록 조회
 	 * 
-	 * @param UserVO
-	 * @return List<HashMap<String, String>>
+	 * @param User
+	 * @return int
 	 */
-	public int getUserListCnt(UserVO paramap) {
-		return getUserDAO().getUserListCnt(paramap);
+	public List<HashMap<String, Object>> getCustomerUserList(UserVO paramap) {
+		return getUserDAO().getUserList(paramap);
+	}
+	
+	/**
+	 * 사용자 목록 조회
+	 * 
+	 * @param User
+	 * @return int
+	 */
+	public HashMap<String, Object> getCustomerUser(CustomerVO paramap) {
+		List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		list = getUserDAO().getCustomerUserList(paramap);
+		if (list.size() > 0) {
+			retMap = list.get(0);
+		}
+		return retMap;
 	}
 	
 	/**
@@ -55,9 +70,8 @@ public class UserService extends BaseService {
 	 * @param User
 	 * @return int
 	 */
-	public int insertUser(User paramap) {
-		paramap.setUser_id(CommUtil.getUUIDExceptDash());
-		return getUserDAO().insertUser(paramap);
+	public int insertCustomerUser(CustomerVO paramap) {
+		return getUserDAO().insertCustomerUser(paramap);
 	}
 	
 	/**
@@ -66,8 +80,8 @@ public class UserService extends BaseService {
 	 * @param User
 	 * @return int
 	 */
-	public int updateUser(User paramap) {
-		return getUserDAO().updateUser(paramap);
+	public int updateCustomerUser(CustomerVO paramap) {
+		return getUserDAO().updateCustomerUser(paramap);
 	}
 
 	/**
@@ -76,62 +90,64 @@ public class UserService extends BaseService {
 	 * @param User
 	 * @return int
 	 */
-	public int deleteUser(User paramap) {
-		return getUserDAO().deleteUser(paramap);
+	public int deleteCustomerUser(CustomerVO paramap) {
+		return getUserDAO().deleteCustomerUser(paramap);
 	}
-
 	
-	
-	
-	
-	/* ==========================   [사용자 기기 정보]  =========================== */
 	
 	/**
-	 * 사용자 - 기기 매핑정보 조회
+	 * 사용자 목록 조회
 	 * 
 	 * @param User
 	 * @return int
 	 */
-	public HashMap<String, Object> getDevcList(UserVO paramap) {
+	public List<HashMap<String, Object>> getCustomerLoginInfoList(UserVO paramap) {
+		return getUserDAO().getUserList(paramap);
+	}
+	
+	/**
+	 * 사용자 목록 조회
+	 * 
+	 * @param User
+	 * @return int
+	 */
+	public HashMap<String, Object> getCustomerLoginInfo(CustomerVO paramap) {
 		List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
 		HashMap<String, Object> retMap = new HashMap<String, Object>();
-		list = getUserDAO().getDevcList(paramap);
+		list = getUserDAO().getCustomerLoginInfoList(paramap);
 		if (list.size() > 0) {
 			retMap = list.get(0);
 		}
 		return retMap;
 	}
-	
 	/**
-	 * 사용자 - 기기 매핑정보 입력
+	 * 사용자 로그인 정보 입력
 	 * 
 	 * @param User
 	 * @return int
 	 */
-	public int insertDevc(User paramap) {
-		paramap.setUser_id(CommUtil.getUUIDExceptDash());
-		return getUserDAO().insertDevc(paramap);
+	public int insertCustomerLoginInfo(CustomerVO paramap) {
+		return getUserDAO().insertCustomerLoginInfo(paramap);
 	}
 	
 	/**
-	 * 사용자 - 기기 매핑정보 수정
+	 * 사용자 로그인 정보 수정
 	 * 
 	 * @param User
 	 * @return int
 	 */
-	public int updateDevc(User paramap) {
-		return getUserDAO().updateDevc(paramap);
+	public int updateCustomerLoginInfo(CustomerVO paramap) {
+		return getUserDAO().updateCustomerLoginInfo(paramap);
 	}
-
+	
 	/**
-	 * 사용자 - 기기 매핑정보 삭제
+	 * 사용자 로그인 정보 삭제
 	 * 
 	 * @param User
 	 * @return int
 	 */
-	public int deleteDevc(User paramap) {
-		return getUserDAO().deleteDevc(paramap);
+	public int deleteCustomerLoginInfo(CustomerVO paramap) {
+		return getUserDAO().deleteCustomerLoginInfo(paramap);
 	}
-	
 
 }

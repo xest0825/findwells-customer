@@ -5,7 +5,7 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>유학서비스</title>
+  <title>회사소개</title>
   <meta name="viewport" content="user-scalable=yes, initial-scale=1, width=device-width, target-densitydpi=medium-dpi" />
   <meta name="format-detection" content="telephone=no" />
   <link type="text/css" rel="stylesheet" href="/css/style.css" />
@@ -20,55 +20,26 @@
   <script type="text/javascript" src="/js/navigation.js"></script>
 </head>
 
-<body>
-  <div class="wrapper_lock flying">
+	<body>
+	  <div class="wrapper_company">
+	    <div class="top_wrapper">
+	      <a href="javascript:goBack();" class="go_back">뒤로가기</a>
+	      <h2>회사소개</h2>
+	    </div>
+	    <section class="self_certification">
+	      
+	
+	      <div class="comapny_wrap">
+	
+	
+	
+	      </div>
+	
+	
+	    </section>
+	  </div>
+	</body>
 
-	<!-- header //-->
-	<th:block th:include="mobile/header"></th:block>
-	<!-- // header -->
-
-
-
-    <section class="hearth_care_wrap">
-        <div class="tit">
-          <img src="/images/txt_flying.png">
-        </div>
-
-        <ul class="main_list flying">
-          <li>
-            <a href="">
-              <p>
-                캐나다
-              </p>
-            </a>
-          </li>
-          <li>
-            <a href="./PM15_1.html">
-              <p>
-                미국
-              </p>
-            </a>
-          </li>
-          <li>
-            <a href="">
-              <p>
-                동남아
-              </p>
-            </a>
-          </li>
-          <li>
-            <a href="">
-              <p>
-                유럽
-              </p>
-            </a>
-          </li>
-        </ul>
-
-
-    </section>
-  </div>
-</body>
 	<script>
 	var user_id =  '[[${user_id}]]';
 	$(document).ready(function(){

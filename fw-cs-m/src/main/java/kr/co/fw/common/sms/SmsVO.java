@@ -16,5 +16,6 @@ public class SmsVO {
 	private String hp_no;			/* 수신자 휴대폰 번호 */
 	private String cont_seq;		/* 일련번호 */
 	private String call_to;			/* 발신자 */
+	private String receiver_nm;
 
 }

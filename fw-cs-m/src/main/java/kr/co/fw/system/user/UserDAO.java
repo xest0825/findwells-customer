@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.stereotype.Repository;
 
 import kr.co.fw.base.BaseDAO;
+import kr.co.fw.customer.CustomerVO;
 import kr.co.fw.system.security.model.User;
 
 @Repository
@@ -31,18 +32,19 @@ public class UserDAO extends BaseDAO {
 	 * @param UserVO
 	 * @return List<HashMap<String, String>>
 	 */
-	public List<HashMap<String, Object>> getUserListPaging(UserVO paramap) {
+	public List<HashMap<String, Object>> getUserListPaging(User paramap) {
 		return getSqlSession().selectList(getUserMapper() + "getUserListPaging", paramap);
 	}
 	
+	
 	/**
-	 * 사용자 목록 개수 조회
+	 * 사용자 목록 조회
 	 * 
 	 * @param UserVO
 	 * @return List<HashMap<String, String>>
 	 */
-	public int getUserListCnt(UserVO paramap) {
-		return getSqlSession().selectOne(getUserMapper() + "getUserListCnt", paramap);
+	public List<HashMap<String, Object>> getCustomerUserList(CustomerVO paramap) {
+		return getSqlSession().selectList(getUserMapper() + "getCustomerUserList", paramap);			
 	}
 	
 	/**
@@ -51,8 +53,8 @@ public class UserDAO extends BaseDAO {
 	 * @param User
 	 * @return int
 	 */
-	public int insertUser(User paramap) {
-		return getSqlSession().insert(getUserMapper() + "insertUser", paramap);
+	public int insertCustomerUser(CustomerVO paramap) {
+		return getSqlSession().insert(getUserMapper() + "insertCustomerUser", paramap);
 	}
 	
 	/**
@@ -61,8 +63,8 @@ public class UserDAO extends BaseDAO {
 	 * @param User
 	 * @return int
 	 */
-	public int updateUser(User paramap) {
-		return getSqlSession().update(getUserMapper() + "updateUser", paramap);
+	public int updateCustomerUser(CustomerVO paramap) {
+		return getSqlSession().update(getUserMapper() + "updateCustomerUser", paramap);
 	}
 
 	/**
@@ -71,54 +73,55 @@ public class UserDAO extends BaseDAO {
 	 * @param User
 	 * @return int
 	 */
-	public int deleteUser(User paramap) {
-		return getSqlSession().delete(getUserMapper() + "deleteUser", paramap);
+	public int deleteCustomerUser(CustomerVO paramap) {
+		return getSqlSession().delete(getUserMapper() + "deleteCustomerUser", paramap);
 	}
 	
 	
-	
-	
-	
-	/* ==========================   [사용자 기기 정보]  =========================== */
-	
 	/**
-	 * 사용자 - 기기 매핑정보 조회
+	 * 사용자 목록 조회
 	 * 
 	 * @param UserVO
 	 * @return List<HashMap<String, String>>
 	 */
-	public List<HashMap<String, Object>> getDevcList(UserVO paramap) {
-		return getSqlSession().selectList(getDevcMapper() + "getDevcList", paramap);			
+	public List<HashMap<String, Object>> getCustomerLoginInfoList(CustomerVO paramap) {
+		return getSqlSession().selectList(getUserMapper() + "getCustomerLoginInfoList", paramap);			
 	}
 	
 	/**
-	 * 사용자 - 기기 매핑정보 입력
+	 * 사용자 로그인 정보 입력
 	 * 
 	 * @param User
 	 * @return int
 	 */
-	public int insertDevc(User paramap) {
-		return getSqlSession().insert(getDevcMapper() + "insertDevc", paramap);
+	public int insertCustomerLoginInfo(CustomerVO paramap) {
+		return getSqlSession().insert(getUserMapper() + "insertCustomerLoginInfo", paramap);
 	}
 	
 	/**
-	 * 사용자 - 기기 매핑정보 수정
+	 * 사용자 로그인 정보 수정
 	 * 
 	 * @param User
 	 * @return int
 	 */
-	public int updateDevc(User paramap) {
-		return getSqlSession().update(getDevcMapper() + "updateDevc", paramap);
+	public int updateCustomerLoginInfo(CustomerVO paramap) {
+		return getSqlSession().update(getUserMapper() + "updateCustomerLoginInfo", paramap);
 	}
 
 	/**
-	 * 사용자 - 기기 매핑정보 삭제
+	 * 사용자 로그인 정보 삭제
 	 * 
 	 * @param User
 	 * @return int
 	 */
-	public int deleteDevc(User paramap) {
-		return getSqlSession().delete(getDevcMapper() + "deleteDevc", paramap);
+	public int deleteCustomerLoginInfo(CustomerVO paramap) {
+		return getSqlSession().delete(getUserMapper() + "deleteCustomerLoginInfo", paramap);
 	}
+	
+	
+	
+	
+	
+
 
 }

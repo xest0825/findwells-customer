@@ -1,5 +1,6 @@
 package kr.co.fw.customer;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -14,6 +15,20 @@ public class CustomerService extends BaseService {
 		return getCustomerDAO().getCustomerList(paramvo);
 	}
 	
+	public HashMap<String, Object> getCustomer(CustomerVO paramvo) {
+		List<HashMap<String, Object>> list = new ArrayList<HashMap<String, Object>>();
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		list = getCustomerDAO().getCustomerList(paramvo);
+		if (list.size() > 0) {
+			retMap = list.get(0);
+		}
+		return retMap;
+	}
+	
+	public String selectNewNo() {
+		return getCustomerDAO().selectNewNo();
+	}
+	
 	public int insertCustomer(CustomerVO paramvo) {
 		return getCustomerDAO().insertCustomer(paramvo);
 	}
@@ -26,20 +41,21 @@ public class CustomerService extends BaseService {
 		return getCustomerDAO().deleteCustomer(paramvo);
 	}
 	
-	public List<HashMap<String, Object>> getCustomerAccountList(CustomerVO paramvo) {
-		return getCustomerDAO().getCustomerAccountList(paramvo);
-	}
-	
-	public int insertCustomerAccount(CustomerVO paramvo) {
-		return getCustomerDAO().insertCustomerAccount(paramvo);
-	}
-	
-	public int updateCustomerAccount(CustomerVO paramvo) {
-		return getCustomerDAO().updateCustomerAccount(paramvo);
-	}
-	
-	public int deleteCustomerAccount(CustomerVO paramvo) {
-		return getCustomerDAO().deleteCustomerAccount(paramvo);
+	public HashMap<String, Object> saveAndGetCustomer(CustomerVO paramvo) {
+		CustomerVO retCS = new CustomerVO();
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		List<HashMap<String, Object>> customerList = new ArrayList<HashMap<String, Object>>();
+		if (customerList.size() > 0) {
+			getCustomerDAO().updateCustomer(paramvo);
+		} else {
+			getCustomerDAO().insertCustomer(paramvo);
+		}
+		customerList = getCustomerDAO().getCustomerList(paramvo);
+		if (customerList.size() > 0) {
+			retMap = customerList.get(0);
+		}
+		
+		return retMap;
 	}
 	
 }

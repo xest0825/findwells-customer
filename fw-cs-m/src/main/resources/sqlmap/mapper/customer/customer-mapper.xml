@@ -4,55 +4,54 @@
 
 <mapper namespace="Customer">
 
-<!-- 고객 리스트 -->
-<sql id="selectCustomerListSql">
-/* customer-mapper.xml id="selectCustomerListSql" 고객조회 쿼리 */
+<select id="getCustomerList" parameterType="kr.co.fw.customer.CustomerVO" resultType="Hmap">
+/* customer-mapper.xml id="getCustomerList" 모바일 고객 맵핑을 위한 기존 고객 리스트 조회 */
 SELECT AA.*
   FROM (
 		SELECT A.MB_ID              	/* 회사코드                     		*/
-		     , A.CUST_ID                /* 고객 ID            	*/
-		     , A.MO_CD                  /* 소개인사원코드          	 	*/
-		     , C.EMP_NM AS MO_NM        /* 소개인사원이름          	 	*/
-		     , C.SCD					/* 소개인사원소속         	 	*/
-		     , A.CUST_NM                /* 고객명                      		*/
+		     , A.CUST_ID                /* 고객 ID            					*/
+		     , A.MO_CD                  /* 소개인사원코드          	 			*/
+		     , C.EMP_NM AS MO_NM        /* 소개인사원이름          	 			*/
+		     , C.SCD					/* 소개인사원소속         	 			*/
+		     , A.CUST_NM                /* 고객명                      			*/
 		     , A.CUST_NME               /* 영문고객명                    		*/
-		     , A.PASSPORT_NUM        	/* 여권번호                  		*/
-		     , A.PASSPORT_END_YMD    	/* 여권말료일                 		*/
-		     , A.SSN                    /* 주민등록번호                   	*/
-		     , A.GNDR_CD                /* 성별구분코드(GRP_CMM_CD = GNDR_CD) */
+		     , A.PASSPORT_NUM        	/* 여권번호                  			*/
+		     , A.PASSPORT_END_YMD    	/* 여권말료일                 			*/
+		     , A.SSN                    /* 주민등록번호                   		*/
+		     , A.GNDR_CD                /* 성별구분코드(GRP_CMM_CD = GNDR_CD) 	*/
 		     , A.FOREIGN_YN             /* 외국인코드                    		*/
 		     , A.EMAIL                  /* 이메일                             	*/
 		     , A.CUST_CELL              /* 핸드폰번호                    		*/
 		     , A.TELNO                  /* 추가연락처                    		*/
 		     , A.ZIPCD                  /* 우편번호                     		*/
 		     , A.ADDR1                  /* 한글주소                     		*/
-		     , A.ADDR2                  /* 한글상세주소                   	*/
+		     , A.ADDR2                  /* 한글상세주소                   		*/
 		     , A.ADDRE1                 /* 영문주소                     		*/
 		     , A.COMPANY                /* 고객 직장명                   		*/
-		     , A.ADDRE2                 /* 영문상세주소                   	*/
+		     , A.ADDRE2                 /* 영문상세주소                   		*/
 		     , A.BUSINESS_NUM           /* 사업자번호                    		*/
 		     , A.JIKGUB                 /* 고객직급                     		*/
 		     , A.JOB                    /* 고객하는일                    		*/
-		     , A.COMPANY_ZIPCD          /* 고객직장주소우편번호 		*/
-		     , A.COMPANY_ADDR1          /* 고객직장주소                   	*/
-		     , A.COMPANY_ADDR2          /* 고객직장상세주소          		*/
-		     , A.COMPANY_ADDRE1         /* 고객직장영문주소          		*/
-		     , A.COMPANY_ADDRE2         /* 고객직장영문상세주소        	*/
+		     , A.COMPANY_ZIPCD          /* 고객직장주소우편번호 				*/
+		     , A.COMPANY_ADDR1          /* 고객직장주소                   		*/
+		     , A.COMPANY_ADDR2          /* 고객직장상세주소          			*/
+		     , A.COMPANY_ADDRE1         /* 고객직장영문주소          			*/
+		     , A.COMPANY_ADDRE2         /* 고객직장영문상세주소        			*/
 		     , A.BANK                   /* 고객은행                     		*/
-		     , A.BK_ID                  /* 고객계좌번호                   	*/
-		     , A.BK_START_YMD           /* 고객계좌개설일          		*/
-		     , A.CARD_NO                /* 고객카드번호                   	*/
-			 , A.CARD_END_YY      		/* 고객카드유효기간(년)		*/
-			 , A.CARD_END_MM      		/* 고객카드유효기간 (월)		*/
-		     , A.CARD_CVS               /* 고객카드CVS코드         		*/
+		     , A.BK_ID                  /* 고객계좌번호                   		*/
+		     , A.BK_START_YMD           /* 고객계좌개설일          				*/
+		     , A.CARD_NO                /* 고객카드번호                   		*/
+			 , A.CARD_END_YY      		/* 고객카드유효기간(년)					*/
+			 , A.CARD_END_MM      		/* 고객카드유효기간 (월)				*/
+		     , A.CARD_CVS               /* 고객카드CVS코드         				*/
 		     , A.TALL                   /* 고객키                             	*/
 		     , A.WEIGHT                 /* 고객몸무게                    		*/
-		     , A.MEMO                   /* 메모                       		*/
+		     , A.MEMO                   /* 메모                       			*/
 		     , A.IN_EMP_CD              /* 입력자 사번                   		*/
 		     , A.IN_DTM                 /* 입력일자                     		*/
 		     , A.UP_EMP_CD              /* 수정자 사번                   		*/
 		     , A.UP_DTM                 /* 수정일자                     		*/
-		     , CM1.CD_VL_NM AS GNDR_NM  /* 성별구분 				*/
+		     , CM1.CD_VL_NM AS GNDR_NM  /* 성별구분 							*/
   		FROM TBCS_CUSTOMER A
 	  LEFT OUTER JOIN TBIN_EMPMST C
 	    ON A.MB_ID = C.MB_ID
@@ -60,85 +59,64 @@ SELECT AA.*
 	  LEFT OUTER JOIN (SELECT * FROM TBCM_COMMON_CODE WHERE GRP_CMM_CD = 'GNDR_CD') CM1
 	    ON A.MB_ID = CM1.MB_ID
 	   AND A.GNDR_CD = CM1.CD_VL
-	 WHERE A.MB_ID = #{MB_ID} ) AA
+	 WHERE A.MB_ID = 'YNG' ) AA
 <where>
-	<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_SCD)">
-		AND AA.SCD = #{SRCH_SCD}
+	<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_nm)">
+		AND AA.CUST_NM = #{cust_nm}
 	</if>
-	<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_CUS_WORD)">
-		AND (
-				AA.CUST_NM LIKE '%'||#{SRCH_CUS_WORD}||'%'
-			OR  AA.CUST_NME LIKE '%'||#{SRCH_CUS_WORD}||'%'
-			OR  AA.PASSPORT_NUM LIKE '%'||#{SRCH_CUS_WORD}||'%'
-			OR  AA.CUST_CELL LIKE '%'||#{SRCH_CUS_WORD}||'%'
-			)
+	<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(ssn)">
+		AND AA.SSM = #{ssn}
 	</if>
-	<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(SRCH_EMP_WORD)">
-		AND (
-				AA.MO_CD LIKE '%'||#{SRCH_EMP_WORD}||'%'
-			OR  AA.MO_NM LIKE '%'||#{SRCH_EMP_WORD}||'%'
-			)
+	<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_cell)">
+		AND AA.CUST_CELL = #{cust_cell}
 	</if>
-	<if test='@kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS, "ROLE_SUPER") and @kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS, "ROLE_ADMIN") and @kr.co.fw.common.util.CommUtil@isNotEquals(USER_ROLE_IDS, "ROLE_STAFF")' >
-		AND AA.MO_CD = #{IN_EMP_CD}
+	<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_id)">
+		AND AA.CUST_ID = #{cust_id}
 	</if>
 </where>
-</sql>
-
-<select id="selectCustomerList" parameterType="kr.co.fw.customer.CustomerVO" resultType="Hmap">
-/* customer-mapper.xml id="selectCustomerList" 고객 리스트 */
-<include refid="selectCustomerListSql"/>
 ORDER BY AA.CUST_ID DESC
-</select>
-
-<select id="selectCustomerListPaging" parameterType="kr.co.fw.customer.CustomerVO" resultType="Hmap">
-/* customer-mapper.xml id="selectCustomerListPaging" 고객 리스트 */
-<include refid="Common.PagingStart"/>
-<include refid="selectCustomerListSql"/>
-ORDER BY AA.CUST_ID DESC
-<include refid="Common.PagingEnd"/>
 </select>
 
 <select id="getCustomerDetail" parameterType="kr.co.fw.customer.CustomerVO" resultType="Hmap">
 /* customer-mapper.xml id="getCustomerDetail" 고객 상세조회	*/
 SELECT A.MB_ID              	/* 회사코드                     		*/
-     , A.CUST_ID                /* 고객 ID            	*/
-     , A.MO_CD                  /* 소개인사원코드          	 	*/
-     , C.EMP_NM AS MO_NM        /* 소개인사원이름          	 	*/
-     , A.CUST_NM                /* 고객명                      		*/
+     , A.CUST_ID                /* 고객 ID            					*/
+     , A.MO_CD                  /* 소개인사원코드          	 			*/
+     , C.EMP_NM AS MO_NM        /* 소개인사원이름          	 			*/
+     , A.CUST_NM                /* 고객명                      			*/
      , A.CUST_NME               /* 영문고객명                    		*/
-     , A.PASSPORT_NUM        	/* 여권번호                  		*/
-     , A.PASSPORT_END_YMD    	/* 여권말료일                 		*/
-     , A.SSN                    /* 주민등록번호                   	*/
-     , A.GNDR_CD                /* 성별구분코드(GRP_CMM_CD = GNDR_CD) */
+     , A.PASSPORT_NUM        	/* 여권번호                  			*/
+     , A.PASSPORT_END_YMD    	/* 여권말료일                 			*/
+     , A.SSN                    /* 주민등록번호                   		*/
+     , A.GNDR_CD                /* 성별구분코드(GRP_CMM_CD = GNDR_CD)   */
      , A.FOREIGN_YN             /* 외국인코드                    		*/
      , A.EMAIL                  /* 이메일                             	*/
      , A.CUST_CELL              /* 핸드폰번호                    		*/
      , A.TELNO                  /* 추가연락처                    		*/
      , A.ZIPCD                  /* 우편번호                     		*/
      , A.ADDR1                  /* 한글주소                     		*/
-     , A.ADDR2                  /* 한글상세주소                   	*/
+     , A.ADDR2                  /* 한글상세주소                   		*/
      , A.ADDRE1                 /* 영문주소                     		*/
      , A.COMPANY                /* 고객 직장명                   		*/
-     , A.ADDRE2                 /* 영문상세주소                   	*/
+     , A.ADDRE2                 /* 영문상세주소                   		*/
      , A.BUSINESS_NUM           /* 사업자번호                    		*/
      , A.JIKGUB                 /* 고객직급                     		*/
      , A.JOB                    /* 고객하는일                    		*/
-     , A.COMPANY_ZIPCD          /* 고객직장주소우편번호 		*/
-     , A.COMPANY_ADDR1          /* 고객직장주소                   	*/
-     , A.COMPANY_ADDR2          /* 고객직장상세주소          		*/
-     , A.COMPANY_ADDRE1         /* 고객직장영문주소          		*/
-     , A.COMPANY_ADDRE2         /* 고객직장영문상세주소        	*/
+     , A.COMPANY_ZIPCD          /* 고객직장주소우편번호 				*/
+     , A.COMPANY_ADDR1          /* 고객직장주소                   		*/
+     , A.COMPANY_ADDR2          /* 고객직장상세주소          			*/
+     , A.COMPANY_ADDRE1         /* 고객직장영문주소          			*/
+     , A.COMPANY_ADDRE2         /* 고객직장영문상세주소        			*/
      , A.BANK                   /* 고객은행                     		*/
-     , A.BK_ID                  /* 고객계좌번호                   	*/
-     , A.BK_START_YMD           /* 고객계좌개설일          		*/
-     , A.CARD_NO                /* 고객카드번호                   	*/
-	 , A.CARD_END_YY      		/* 고객카드유효기간(년)		*/
-	 , A.CARD_END_MM      		/* 고객카드유효기간 (월)		*/
-     , A.CARD_CVS               /* 고객카드CVS코드         		*/
+     , A.BK_ID                  /* 고객계좌번호                   		*/
+     , A.BK_START_YMD           /* 고객계좌개설일          				*/
+     , A.CARD_NO                /* 고객카드번호                   		*/
+	 , A.CARD_END_YY      		/* 고객카드유효기간(년)					*/
+	 , A.CARD_END_MM      		/* 고객카드유효기간 (월)				*/
+     , A.CARD_CVS               /* 고객카드CVS코드         				*/
      , A.TALL                   /* 고객키                             	*/
      , A.WEIGHT                 /* 고객몸무게                    		*/
-     , A.MEMO                   /* 메모                       		*/
+     , A.MEMO                   /* 메모                       			*/
      , A.IN_EMP_CD              /* 입력자 사번                   		*/
      , A.IN_DTM                 /* 입력일자                     		*/
      , A.UP_EMP_CD              /* 수정자 사번                   		*/
@@ -163,92 +141,79 @@ SELECT TO_CHAR(SYSDATE,'YYYYMMDD')||LPAD(NVL(MAX(SUBSTR(NVL(CUST_ID,'00000'), -5
   	 WHERE TO_CHAR(IN_DTM,'YYYYMMDD')=TO_CHAR(SYSDATE,'YYYYMMDD')
 </select>
 
-<insert id="customerInsert" parameterType="kr.co.fw.customer.CustomerVO">
-/* customer-mapper.xml id="customerInsert" 고객 입력 */
+<insert id="insertCustomer" parameterType="kr.co.fw.customer.CustomerVO">
+/* customer-mapper.xml id="insertCustomer" 고객 입력 */
 INSERT
   INTO TBCS_CUSTOMER
-  	 ( MB_ID              	 /* 회사코드                     		*/
-     , CUST_ID                /* 고객 ID            	*/
-     , MO_CD                  /* 소개인사원코드          	 	*/
+  	 ( MB_ID              	  /* 회사코드                     		*/
+     , CUST_ID                /* 고객 ID            	            */
+     , MO_CD                  /* 소개인사원코드          	 	    */
      , CUST_NM                /* 고객명                      		*/
-     , CUST_NME               /* 영문고객명                    		*/
-     , PASSPORT_NUM        	  /* 여권번호                  		*/
-     , PASSPORT_END_YMD    	  /* 여권말료일                 		*/
      , SSN                    /* 주민등록번호                   	*/
      , GNDR_CD                /* 성별구분코드(GRP_CMM_CD = GNDR_CD) */
      , FOREIGN_YN             /* 외국인코드                    		*/
-     , EMAIL                  /* 이메일                             	*/
      , CUST_CELL              /* 핸드폰번호                    		*/
-     , TELNO                  /* 추가연락처                    		*/
-     , ZIPCD                  /* 우편번호                     		*/
-     , ADDR1                  /* 한글주소                     		*/
-     , ADDR2                  /* 한글상세주소                   	*/
-     , ADDRE1                 /* 영문주소                     		*/
-     , COMPANY                /* 고객 직장명                   		*/
-     , ADDRE2                 /* 영문상세주소                   	*/
-     , BUSINESS_NUM           /* 사업자번호                    		*/
-     , JIKGUB                 /* 고객직급                     		*/
-     , JOB                    /* 고객하는일                    		*/
-     , COMPANY_ZIPCD          /* 고객직장주소우편번호 		*/
-     , COMPANY_ADDR1          /* 고객직장주소                   	*/
-     , COMPANY_ADDR2          /* 고객직장상세주소          		*/
-     , COMPANY_ADDRE1         /* 고객직장영문주소          		*/
-     , COMPANY_ADDRE2         /* 고객직장영문상세주소        	*/
-     , BANK                   /* 고객은행                     	*/
-     , BK_ID                  /* 고객계좌번호                   	*/
-     , BK_START_YMD           /* 고객계좌개설일          		*/
-     , CARD_NO                /* 고객카드번호                   	*/
-	 , CARD_END_YY      	  /* 고객카드유효기간(년)		*/
-	 , CARD_END_MM      	  /* 고객카드유효기간 (월)		*/
-     , CARD_CVS               /* 고객카드CVS코드         	*/
-     , TALL                   /* 고객키                             	*/
-     , WEIGHT                 /* 고객몸무게                    	*/
-     , MEMO                   /* 메모                       		*/
-     , IN_EMP_CD              /* 입력자 사번                   	*/
-     , IN_DTM                 /* 입력일자                     	*/
+     , IN_EMP_CD              /* 입력자 사번                   	    */
+     , IN_DTM                 /* 입력일자                     	    */
   	 )
 VALUES
-	 ( #{MB_ID }                  /* 회사코드                                  */
-     , #{CUST_ID }                /* 고객 ID                  */
-     , #{MO_CD }                  /* 소개인사원코드                       */
-     , #{CUST_NM }                /* 고객명                                  */
-     , #{CUST_NME }               /* 영문고객명                                */
-     , #{PASSPORT_NUM }           /* 여권번호                          */
-     , #{PASSPORT_END_YMD }       /* 여권말료일                         */
-     , #{SSN }                    /* 주민등록번호                        */
-     , #{GNDR_CD }                /* 성별구분코드(GRP_CMM_CD = GNDR_CD) */
-     , #{FOREIGN_YN }             /* 외국인코드                                */
-     , #{EMAIL }                  /* 이메일                                  */
-     , #{CUST_CELL }              /* 핸드폰번호                                */
-     , #{TELNO }                  /* 추가연락처                                */
-     , #{ZIPCD }                  /* 우편번호                                 */
-     , #{ADDR1 }                  /* 한글주소                                 */
-     , #{ADDR2 }                  /* 한글상세주소                        */
-     , #{ADDRE1 }                 /* 영문주소                                 */
-     , #{COMPANY }                /* 고객 직장명                               */
-     , #{ADDRE2 }                 /* 영문상세주소                        */
-     , #{BUSINESS_NUM }           /* 사업자번호                                */
-     , #{JIKGUB }                 /* 고객직급                                 */
-     , #{JOB }                    /* 고객하는일                                */
-     , #{COMPANY_ZIPCD }          /* 고객직장주소우편번호             */
-     , #{COMPANY_ADDR1 }          /* 고객직장주소                        */
-     , #{COMPANY_ADDR2 }          /* 고객직장상세주소                      */
-     , #{COMPANY_ADDRE1 }         /* 고객직장영문주소                      */
-     , #{COMPANY_ADDRE2 }         /* 고객직장영문상세주소             */
-     , #{BANK }                   /* 고객은행                                 */
-     , #{BK_ID }                  /* 고객계좌번호                        */
-     , #{BK_START_YMD }           /* 고객계좌개설일                       */
-     , #{CARD_NO }                /* 고객카드번호                        */
-	 , #{CARD_END_YY }      	  /* 고객카드유효기간(년)		*/
-	 , #{CARD_END_MM }      	  /* 고객카드유효기간 (월)		*/
-     , #{CARD_CVS }               /* 고객카드CVS코드                     */
-     , #{TALL }                   /* 고객키                                  */
-     , #{WEIGHT }                 /* 고객몸무게                                */
-     , #{MEMO }                   /* 메모                                   */
-     , #{IN_EMP_CD }              /* 입력자 사번                               */
-     , SYSDATE                 /* 입력일자                                 */
+	 ( 'YNG'                 	  /* 회사코드                           */
+     , #{cust_id }                /* 고객 ID                  			*/
+     , #{mo_cd }                  /* 소개인사원코드                     */
+     , #{cust_nm }                /* 고객명                             */
+     , #{ssn }                    /* 주민등록번호                       */
+     , #{gndr_cd }                /* 성별구분코드(GRP_CMM_CD = GNDR_CD) */
+     , #{foreign_yn }             /* 외국인코드                         */
+     , #{cust_cell }              /* 핸드폰번호                         */
+     , 'ADMIN'              	  /* 입력자 사번                        */
+     , SYSDATE                 	  /* 입력일자                           */
 	 )
 </insert>
+
+<update id="updateCustomer" parameterType="kr.co.fw.customer.CustomerVO">
+/* customer-mapper.xml id="updateCustomer" 고객 입력 */
+UPDATE TBCS_CUSTOMER
+   SET MB_ID      = 'YNG'               /* 회사코드                           */
+     , UP_EMP_CD  = 'ADMIN'             /* 입력자 사번                        */
+     , UP_DTM 	  = SYSDATE             /* 입력일자                           */
+     <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_id)">
+     , CUST_ID    = #{cust_id }         /* 고객 ID                  		  */
+     </if>
+     <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(mo_cd)">
+     , MO_CD      = #{mo_cd }           /* 소개인사원코드                     */
+     </if>
+     <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_nm)">
+     , CUST_NM    = #{cust_nm }         /* 고객명                             */
+     </if>
+     <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(ssn)">
+     , SSN        = #{ssn }             /* 주민등록번호                       */
+     </if>
+     <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(gndr_cd)">
+     , GNDR_CD    = #{gndr_cd }         /* 성별구분코드(GRP_CMM_CD = GNDR_CD) */
+     </if>
+     <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(foreign_yn)">
+     , FOREIGN_YN = #{foreign_yn }      /* 외국인코드                         */
+     </if>
+     <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_cell)">
+     , CUST_CELL  = #{cust_cell }       /* 핸드폰번호                         */
+     </if>
+ WHERE CUST_ID 	  = #{cust_id}
+</update>
+
+<delete id="deleteCustomer" parameterType="kr.co.fw.customer.CustomerVO">
+/* customer-mapper.xml id="deleteCustomer" 고객 삭제 */
+DELETE
+  FROM TBCS_CUSTOMER
+ WHERE MB_ID = #{MB_ID}
+   AND CUST_ID = #{CUST_ID}
+</delete>
+
+
+
+
+
+
+
 
 <insert id="customerChangeHistInsert" parameterType="kr.co.fw.customer.CustomerVO">
 <selectKey order="BEFORE" resultType="String" keyProperty="SORT_NO">
@@ -289,49 +254,6 @@ VALUES
 	 )
 </insert>
 
-<update id="customerUpdate" parameterType="kr.co.fw.customer.CustomerVO">
-/* customer-mapper.xml id="customerUpdate" 고객 수정 */
-UPDATE TBCS_CUSTOMER
-   SET MO_CD = #{MO_CD }                  /* 소개인사원코드                       */
-     , CUST_NM = #{CUST_NM }                /* 고객명                                  */
-     , CUST_NME = #{CUST_NME }               /* 영문고객명                                */
-     , PASSPORT_NUM = #{PASSPORT_NUM }           /* 여권번호                          */
-     , PASSPORT_END_YMD = #{PASSPORT_END_YMD }       /* 여권말료일                         */
-     , SSN = #{SSN }                    /* 주민등록번호                        */
-     , GNDR_CD = #{GNDR_CD }                /* 성별구분코드(GRP_CMM_CD = GNDR_CD) */
-     , FOREIGN_YN = #{FOREIGN_YN }             /* 외국인코드                                */
-     , EMAIL = #{EMAIL }                  /* 이메일                                  */
-     , CUST_CELL = #{CUST_CELL }              /* 핸드폰번호                                */
-     , TELNO = #{TELNO }                  /* 추가연락처                                */
-     , ZIPCD = #{ZIPCD }                  /* 우편번호                                 */
-     , ADDR1 = #{ADDR1 }                  /* 한글주소                                 */
-     , ADDR2 = #{ADDR2 }                  /* 한글상세주소                        */
-     , ADDRE1 = #{ADDRE1 }                 /* 영문주소                                 */
-     , COMPANY = #{COMPANY }                /* 고객 직장명                               */
-     , ADDRE2 = #{ADDRE2 }                 /* 영문상세주소                        */
-     , BUSINESS_NUM = #{BUSINESS_NUM }           /* 사업자번호                                */
-     , JIKGUB = #{JIKGUB }                 /* 고객직급                                 */
-     , JOB = #{JOB }                    /* 고객하는일                                */
-     , COMPANY_ZIPCD = #{COMPANY_ZIPCD }          /* 고객직장주소우편번호             */
-     , COMPANY_ADDR1 = #{COMPANY_ADDR1 }          /* 고객직장주소                        */
-     , COMPANY_ADDR2 = #{COMPANY_ADDR2 }          /* 고객직장상세주소                      */
-     , COMPANY_ADDRE1 = #{COMPANY_ADDRE1 }         /* 고객직장영문주소                      */
-     , COMPANY_ADDRE2 = #{COMPANY_ADDRE2 }         /* 고객직장영문상세주소             */
-     , BANK = #{BANK }                   /* 고객은행                                 */
-     , BK_ID = #{BK_ID }                  /* 고객계좌번호                        */
-     , BK_START_YMD = #{BK_START_YMD }           /* 고객계좌개설일                       */
-     , CARD_NO = #{CARD_NO }                /* 고객카드번호                        */
-	 , CARD_END_YY = #{CARD_END_YY }      	  /* 고객카드유효기간(년)		*/
-	 , CARD_END_MM = #{CARD_END_MM }      	  /* 고객카드유효기간 (월)		*/
-     , CARD_CVS = #{CARD_CVS }               /* 고객카드CVS코드                     */
-     , TALL = #{TALL }                   /* 고객키                                  */
-     , WEIGHT = #{WEIGHT }                 /* 고객몸무게                                */
-     , MEMO = #{MEMO }                   /* 메모                                   */
-     , UP_EMP_CD = #{UP_EMP_CD }              /* 수정자 사번                               */
-     , UP_DTM = SYSDATE                 /* 수정일자                                 */
- WHERE MB_ID = #{MB_ID}
-   AND CUST_ID = #{CUST_ID}
-</update>
 
 <delete id="deleteCustomerMepibs" parameterType="kr.co.fw.customer.CustomerVO">
 /* customer-mapper.xml id="deleteCustomerMepibs" 고객 메핍스 삭제 */
@@ -369,14 +291,6 @@ DELETE
 /* customer-mapper.xml id="deleteCustomerEmail" 고객 이메일 삭제 */
 DELETE
   FROM TBCS_ELECTRONIC_ADDRESS
- WHERE MB_ID = #{MB_ID}
-   AND CUST_ID = #{CUST_ID}
-</delete>
-
-<delete id="deleteCustomer" parameterType="kr.co.fw.customer.CustomerVO">
-/* customer-mapper.xml id="deleteCustomer" 고객 삭제 */
-DELETE
-  FROM TBCS_CUSTOMER
  WHERE MB_ID = #{MB_ID}
    AND CUST_ID = #{CUST_ID}
 </delete>

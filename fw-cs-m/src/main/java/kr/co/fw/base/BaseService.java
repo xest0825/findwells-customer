@@ -10,6 +10,7 @@ import kr.co.fw.common.sms.SmsDAO;
 import kr.co.fw.consultant.ConsultantDAO;
 import kr.co.fw.customer.CustomerDAO;
 import kr.co.fw.product.ProductDAO;
+import kr.co.fw.system.auth.AuthDAO;
 import kr.co.fw.system.log.LogDAO;
 import kr.co.fw.system.login.LoginDAO;
 import kr.co.fw.system.user.UserDAO;
@@ -39,6 +40,9 @@ public class BaseService {
 	
 	@Autowired
 	private UserDAO userDAO;
+	
+	@Autowired
+	private AuthDAO authDAO;
 	
 	
 	/* Biz 영역 */

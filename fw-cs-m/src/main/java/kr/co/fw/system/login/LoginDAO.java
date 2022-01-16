@@ -1,5 +1,6 @@
 package kr.co.fw.system.login;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.stereotype.Repository;
@@ -20,6 +21,11 @@ public class LoginDAO extends BaseDAO {
 	public User getUser(User paramvo) {
 		log.info("LoginDAO.getUser");
 		return getSqlSession().selectOne(getUserMapper() + "getUser", paramvo);
+	}
+	
+	public HashMap<String, Object> getUserMap(User paramvo) {
+		log.info("LoginDAO.getUser");
+		return getSqlSession().selectOne(getUserMapper() + "getUserMap", paramvo);
 	}
 
 	public List<String> getRoleList(User paramvo) {

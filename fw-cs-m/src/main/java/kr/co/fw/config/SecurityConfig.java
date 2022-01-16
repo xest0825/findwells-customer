@@ -84,6 +84,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers("/login").permitAll()
 				.antMatchers("/mobile/**").permitAll()
 				.antMatchers("/m/**").permitAll()
+				.antMatchers("/cs/**").permitAll()
 				.antMatchers("/fc/**").permitAll()
 				.antMatchers("/sms/**").permitAll()
 				.antMatchers("/customer/**").permitAll()
