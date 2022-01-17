@@ -37,15 +37,15 @@
 	        <button id="btn_search" class="b_search btnLayer" data-target="#search_person" style="margin-left: 10px;" onclick="openPopup('search_person')">찾기</button>
 	      </div>
 	      <div class="input_text_wrap no_flex mt25">
-	        <input type="text" id="login_id" class="text_box" placeholder="로그인 아이디" />
+	        <input type="text" id="login_id" class="text_box" placeholder="로그인 아이디" autocomplete="off"/>
 	        <p id="err_msg_id" class="error_msg" style="display:none;">로그인 아이디 입력해주세요.</p>
 	      </div>
 	      <div class="input_text_wrap no_flex mt25">
-	        <input type="password" id="login_pw" class="text_box" placeholder="비밀번호" />
+	        <input type="password" id="login_pw" class="text_box" placeholder="비밀번호" autocomplete="off"/>
 	        <p id="err_msg_pw" class="error_msg" style="display:none;">비밀번호를 입력해주세요.</p>
 	      </div>
 	      <div class="input_text_wrap no_flex mt25">
-	        <input type="password" id="login_pw2" class="text_box" placeholder="비밀번호 확인" />
+	        <input type="password" id="login_pw2" class="text_box" placeholder="비밀번호 확인" autocomplete="off"/>
 	        <p id="err_msg_pw2" class="error_msg" style="display:none;">비밀번호 확인을 입력해주세요.</p>
 	      </div>
 	      <div class="input_text_wrap no_flex mt25">
@@ -54,27 +54,31 @@
 	      </div>
 	      <div class="input_text_wrap no_flex mt25" style="display:inline-block">
 	        <input type="tel" id="perno1" class="text_box" style="width:48%" placeholder="주민번호앞자리" maxlength="6"/>
-	        <input type="password" id="perno2" class="text_box" style="width:50%;letter-spacing:10px;" placeholder="주민번호뒷자리" maxlength="7"/>
+	        <input type="password" id="perno2" class="text_box" style="width:50%;float:right;letter-spacing:8px;" placeholder="주민번호뒷자리" maxlength="7"/>
 	        <p id="err_msg_2"  class="error_msg" style="display:none;">주민번호를 입력해주세요.</p>
 	      </div>
 	      <div class="input_text_wrap no_flex mt25">
-	        <input type="text" id="customer_hpno" class="text_box" placeholder="휴대전화" value="01046933692" />
+	        <input type="tel" id="customer_hpno" class="text_box" placeholder="휴대전화" value="" maxlength="11"/>
 	        <p id="err_msg_3" class="error_msg" style="display:none;">휴대전화번호를 입력해주세요.</p>
 	      </div>
 	      <div class="input_text_wrap mt25">
-	        <button class="b_search" style="margin-right: 10px;" onclick="sendAuthNum();">
-	          인증번호 받기
+	        <button id="btn_send_authno" class="b_search" style="margin-right: 10px;font-size:13px;" onclick="sendAuthNum();">
+	          인증번호받기
 	        </button>
-	        <input type="text" class="text_box t_c" placeholder="" id="auth_no"/>
+	        <button class="b_search" style="margin-right: 10px;" onclick="checkAuthNo();">확인</button>
+	        <input type="tel" class="text_box t_c" placeholder="" id="auth_no" maxlength="6"/>
 	        <span class="timer" id="sp_timer">00:00</span>
+	        <!-- 
+	         -->
+	     </div>
+	     <div>    
+	        <p id="err_msg_4" class="error_msg" style="display:none;">인증번호가 일치하지 않습니다.</p>
 	      </div>
 	    </section>
 	    <div class="btn_wrap">
 	      <button class="b_point" id="bt_join">가입하기</button>
 	    </div>
 	  </div>
-	
-	
 	
 	
 	  <!-- 모달팝업 -->
@@ -95,7 +99,7 @@
 	        
 	      </div>
 	      <div class="btn_wrap">
-	        <a href="javascript:closePopup('search_person');" class="layerClose cancle">취소</a>
+	        <a href="#" class="layerClose cancle">취소</a><!-- javascript:closePopup('search_person'); -->
 	        <a href="javascript:selectIntroducer();" class="ok">확인</a>
 	      </div>
 	    </div>
@@ -105,15 +109,20 @@
 	
 	<script>
 	var emplist = [];
+	var authenticated = false;
     $(document).ready(function(){
     	
+    	$('#emp_nm_hp').on('click', function(){
+    		$('#search_person').show();
+    	})
     	
-		$('#bt_join').on('click', function(){
+    	
+		$('#bt_join2').on('click', function(){
 			// checkAuthNo();
 			join();
 		});
 		
-		$('#bt_join2').on('click', function(){
+		$('#bt_join').on('click', function(){
 			// console.log($('#emp_nm').val());
 			if ($('#emp_nm').val() == '') {
 				alert('소개인을 입력하세요.');
@@ -122,6 +131,21 @@
 			
 			if ($('#customer_nm').val() == '') {
 				alert('고객님의 이름을 입력하세요.');
+				return;
+			}
+			
+			if (id_checked == false) {
+				alert('로그인 ID를 확인하세요.');
+				return;
+			}
+			
+			if (pw_checked == false) {
+				alert('비밀번호를 확인하세요.');
+				return;
+			}
+			
+			if (pw2_checked == false) {
+				alert('확인 비밀번호를 확인하세요.');
 				return;
 			}
 			
@@ -150,17 +174,13 @@
 				return;
 			}
 			
+			join();
 			
 			// location.href = '/m/P05';
 		});
 		
 		$('#login_id').on('keyup', function(){
-			if ($(this).val().length <= 6) {
-				console.log('로그인id는 영문과 숫자가 포함하고 6자 이상이어야 합니다.');
-			} else {
-				console.log('아이디중복을 체크합니다.')
-				checkIdDuplicated();
-			}
+			checkIdDuplicated();
 		})
 		
 		$('#login_pw').on('keyup', function(){
@@ -207,7 +227,9 @@
     
     function openPopup(id) {
     	console.log('openPopup' + id);
+    	$('#emp_nm_hp').val('');
     	$('#'+id).show();
+    	//$('#'+id).attr('display', 'inline-block');
     	$('.search_person_wrap').empty();
     	
 		$.ajax({
@@ -222,6 +244,8 @@
 			success : function(data) {
 				console.log(data);
 				emplist = data;
+				
+				$('#emp_nm_hp').trigger('keyup');
 				/*
 				if (data.length > 0) {
 			    	var html = '';
@@ -302,47 +326,84 @@
     }
     
     // 아이디 중복 확인
+    var id_checked = false;
     function checkIdDuplicated(){
-    	var param = {
+    	console.log($('#login_id').val().length);
+    	$('#err_msg_id').hide();
+		if ($('#login_id').val().length > 0 && $('#login_id').val().length < 6) {
+			console.log('로그인id는 영문과 숫자 포함, 6자 이상');
+			$('#err_msg_id').text('로그인id는 영문과 숫자 포함, 6자 이상').css('color', 'red');
+			$('#err_msg_id').show();
+			id_checked = false;
+		} else {
+			console.log('아이디중복을 체크합니다.')
+			var param = {
     			login_id : $('#login_id').val(),
-    	}
-    	$.ajax({
-			url : "/cs/join/login-accounts",
-			type : "GET",
-			dataType : "json",
-			data : param,
-			//async : false,
-			contentType : 'application/json; charset=UTF-8',
-			success : function(data) {
-				console.log(data);
-				if (data.res_cd == 'OK') {
-					console.log('로그인 ID 중복, 사용불가');
-				} else {
-					console.log('로그인 ID 사용가능')
+    		}
+	    	$.ajax({
+				url : "/cs/join/login-accounts",
+				type : "GET",
+				dataType : "json",
+				data : param,
+				//async : false,
+				contentType : 'application/json; charset=UTF-8',
+				success : function(data) {
+					console.log(data);
+					if (data.res_cd == 'OK') {
+						console.log('로그인 ID 중복, 사용불가');
+						
+						$('#err_msg_id').text('이미 등록된 ID입니다.').css('color', 'red');
+						$('#err_msg_id').show();
+						id_checked = false;
+						
+					} else {
+						console.log('로그인 ID 사용가능')
+						$('#err_msg_id').text('사용가능한 ID입니다.').css('color', 'green');
+						$('#err_msg_id').show();
+						id_checked = true;
+					}
+				},
+				error : function() {
+					console.log('error');
+					$('#err_msg_id').text('등록할 수 없는 ID 입니다').css('color', 'red');
+					$('#err_msg_id').show();
+					id_checked = false;
 				}
-			},
-			error : function() {
-				console.log('error');
-			}
-    	})
+	    	})
+		}
     	
     }
     
+    var pw_checked = false;
     function checkPassword(){
+		$('#err_msg_pw').hide();    		
     	var pw = $('#login_pw').val();
     	if (pw.length < 6 ) {
-    		console.log('로그인 비밀번호는 영문자와 숫자를 포함하여 6자 이상이어야 합니다.')
+    		$('#err_msg_pw').text('로그인id는 영문과 숫자 포함, 6자 이상').css('color', 'red');
+			$('#err_msg_pw').show();
+			pw_checked = false;
+    	} else {
+			$('#err_msg_pw').hide();    
+			pw_checked = true;
     	}
     }
     
+    var pw2_checked = false;
     function checkPasswordConfirm(){
+    	$('#err_msg_pw2').hide();
     	var pw = $('#login_pw').val();
     	var pw2 = $('#login_pw2').val();
     	if (pw.length >= 6) {
     		if (pw != pw2) {
     			console.log('비밀번호와 비밀번호 확인이 같지 않습니다.')
+    			$('#err_msg_pw2').text('비밀번호와 비밀번호 확인이 같지 않습니다.').css('color', 'red');
+    			$('#err_msg_pw2').show();
+    			pw2_checked = false;
     		} else {
     			console.log('비밀번호와 비밀번호 확인 일치')
+    			$('#err_msg_pw2').text('비밀번호와 비밀번호 확인이 일치합니다').css('color', 'green');
+    			$('#err_msg_pw2').show();
+    			pw2_checked = true;
     		}
     	}
     }
@@ -350,10 +411,15 @@
     var msg_seq = '0';
     function sendAuthNum(){
     	console.log('sendAuthNo');
-    	
+    	clearInterval(timerId);
+		timersec = 300;
+		timermin = 0;
+		timersecond = 0;
+		timerrunning = false;
+		
     	var param = {
     			MB_ID : 'YNG',
-				call_to : $('#customer_hpno').val(),
+				call_to : $('#customer_hpno').val().replace(/-/ig, '').trim(),
 				receiver_nm : $('#customer_nm').val(),
     		};
 		$.ajax({
@@ -369,13 +435,14 @@
 					msg_seq = data.msg_seq;
 					console.log(msg_seq);
 				}
+				startTimer();
+				$('#btn_send_authno').text('다시 받기');
 			},
 			error : function() {
 				console.log('error');
 			}
 		});
 		
-		startTimer();
     	
     }
     
@@ -398,12 +465,21 @@
 				console.log(data);
 				if (data.res_cd == 'OK'){
 					console.log('OK Authenticated');
+					authenticated = true;
+					$('#err_msg_4').text('인증번호가 확인되었습니다.').css('color', 'green');
+					$('#err_msg_4').show();
 				} else {
 					console.log('NOT Authenticated');
+					authenticated = false;
+					$('#err_msg_4').text('인증번호가 올바르지 않거나 인증되지 않았습니다.').css('color', 'red');
+					$('#err_msg_4').show();
 				}
 			},
 			error : function() {
 				console.log('error');
+				authenticated = false;
+				$('#err_msg_4').text('인증번호가 올바르지 않거나 인증되지 않았습니다.').css('color', 'red');
+				$('#err_msg_4').show();
 			}
 		});
     	
@@ -446,16 +522,23 @@
 	}
 	
 	function join(){
-		var cust_cell = $('#customer_hpno').val();
+		
+		if (authenticated == false){
+			$('#err_msg_4').text('인증번호가 올바르지 않거나 인증되지 않았습니다.');
+			$('#err_msg_4').show();
+			return;
+		}
+		
+		var cust_cell = $('#customer_hpno').val().replace(/-/ig, '');
 		cust_cell = cust_cell.substr(0, 3) +'-' + cust_cell.substring(cust_cell.length-8, cust_cell.length-4) + '-' + cust_cell.substr(-4)
     	var param = {
     			MB_ID : 'YNG',
-				login_id : $('#login_id').val(),
-				login_pw : $('#login_pw').val(),
-				cust_nm : $('#customer_nm').val(),
-				ssn : $('#perno1').val() + '-' + $('#perno2').val(),
-				cust_cell : cust_cell,
-				mo_cd : $('#user_id').val(),
+				login_id : $('#login_id').val().trim(),
+				login_pw : $('#login_pw').val().trim(),
+				cust_nm : $('#customer_nm').val().trim(),
+				ssn : $('#perno1').val() + '-' + $('#perno2').val().trim(),
+				cust_cell : cust_cell.trim(),
+				mo_cd : $('#user_id').val().trim(),
     		};
     	console.log(param)
     	
