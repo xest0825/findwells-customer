@@ -311,6 +311,17 @@ public class CustomerMobilePageController {
 		mav.addObject("user_id", user_id);
 		return mav;
 	}
+	
+	/**
+	 * @descriptio 유학서비스 - 미국
+	 */
+	@GetMapping(value = "/m/PM17/{user_id}")
+	public ModelAndView pm17(HttpServletRequest req, @PathVariable("user_id") String user_id) throws Exception {
+		log.info("/m/PM15_1");
+		ModelAndView mav = new ModelAndView("customer/PM17");
+		mav.addObject("user_id", user_id);
+		return mav;
+	}
 
 	
 

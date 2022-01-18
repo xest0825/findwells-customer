@@ -46,10 +46,12 @@
 }
 @font-face {
     font-family: NotoSansCJKkr;
-    src: local(NotoSansCJKkr-Medium),
+    src: local(NotoSansCJKkr-Medium);
+    	/*
         url('../font/NotoSansCJKkr-Medium.woff2') format("woff2"),
         url('../font/NotoSansCJKkr-Medium.woff') format("woff"),
         url('../font/NotoSansCJKkr-Medium.ttf') format("truetype");
+        */
     font-weight: 500;
     font-style: normal;
     font-stretch: normal;
@@ -118,10 +120,12 @@
 }
 @font-face {
     font-family: Roboto;
-    src: local(Roboto-Medium),
+    src: local(Roboto-Medium);
+    /*
         url('../font/Roboto-Medium.woff2') format("woff2"),
         url('../font/Roboto-Medium.woff') format("woff"),
         url('../font/Roboto-Medium.ttf') format("truetype");
+        */
     font-weight: 500;
     font-style: normal;
     font-stretch: normal;

@@ -27,7 +27,7 @@
     }
     
     function goInsuranceCompany(){
-    	location.href = '/m/PM10/' + user_id;
+    	location.href = '/m/PM17/' + user_id;
     }
 
     function goHealthCare(){
