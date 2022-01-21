@@ -30,6 +30,10 @@ public class CustomerDAO extends BaseDAO {
 		return getSqlSession().delete(getCustomerMapper() + "deleteCustomer", paramvo);
 	}
 	
+	public List<HashMap<String, Object>> getContractListByCustomer(CustomerVO paramvo) {
+		return getSqlSession().selectList(getCustomerMapper() + "getContractListByCustomer", paramvo);
+	}
+	
 	/* user-mapper */
 	/* 
 	public List<HashMap<String, Object>> getCustomerAccountList(CustomerVO paramvo) {

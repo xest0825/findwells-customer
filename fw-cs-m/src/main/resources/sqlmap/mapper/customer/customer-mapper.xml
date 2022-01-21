@@ -592,4 +592,141 @@ SELECT COUNT(*)
   WHERE MB_ID = #{MB_ID}
  	AND CUST_ID=#{CUST_ID}
 </select>
+
+	<select id="getContractListByCustomer" parameterType="kr.co.fw.customer.CustomerVO" resultType="hmap">
+		SELECT A.MB_ID             /* 회원사ID                                                                       VARCHAR2(20)   */
+	     , A.SEQ               /* 일련번호(TBCN_CONTRACT_SEQ)                                                    NUMBER(22)     */
+	     , A.INSPOL_NO         /* 증권번호                                                                       VARCHAR2(40)   */
+	     , A.IFA_CD
+	     , A.INSCO_CD          /* 원수사코드                                                                     VARCHAR2(3)    */
+	     , C.INSCO_NM          /* 원수사명 */
+	     , C.CI_URL
+	     , A.PROD_SEQ          /* 상품 일련번호                                                                  NUMBER(22)     */
+	     , A.PROD_NM           /* 상품명                                                                         VARCHAR2(100)  */
+	     , E.PROD_KIND1        /* 상품구분1 */
+	     , A.PROD_KIND2        /* 상품구분2                                                                      VARCHAR2(20)   */
+	     , A.CONT_DATE         /* 계약일자                                                                       VARCHAR2(10)   */
+	     , A.CONT_STATUS       /* 계약상태(GRP_CMM_CD = CONT_STATUS)                                             VARCHAR2(4)    */
+	     , A.NAPCNT            /* 납입회차                                                                        NUMBER    */
+	     , A.SUGUM_STATUS      /* 수금상태                                                                       VARCHAR2(20)    */
+	     , A.NAP_MONTH         /* 납입월                                                                         VARCHAR2(10)    */
+	     , A.NAP_DATE          /* 납입일자                                                                       VARCHAR2(10)    */
+	     , A.STATUS_DATE       /* 상태변경일                                                                      VARCHAR2(10)    */
+	     , A.GIJUN_DATE        /* 데이터기준일                                                                     VARCHAR2(10)    */
+	     , A.NAPMETHOD         /* 납입방법(GRP_CMM_CD = NAPMETHOD)                                               VARCHAR2(20)   */
+	     , A.NAPGI             /* 납입기간                                                                       VARCHAR2(10)   */
+	     , A.NAPGI_GBN         /* 납입기간구분(GRP_CMM_CD = NAPGI_GBN)                                           VARCHAR2(10)   */
+	     , CM1.CD_VL_NM AS NAPGI_GBN_NM
+	     , A.PREM_AMT          /* 보험료                                                                         NUMBER(22)     */
+	     , A.CREDIT			   /* 크레딧                                                                         NUMBER(22)     */
+	     , NVL(A.UPREM_AMT,0) AS    UPREM_AMT   
+	     , NVL(A.HPREM_AMT,0) AS    HPREM_AMT   
+	     , A.MON_PREM_AMT      /* 월납보험료                                                                     NUMBER(22)     */
+	     , A.INSU_STRT_DATE    /* 보험시작일                                                                     VARCHAR2(10)   */
+	     , A.INSU_END_DATE     /* 보험종료일                                                                     VARCHAR2(10)   */
+	     , A.ACCOUNT_END_DATE  /* 초기계좌만기일                                                               VARCHAR2(10)   */
+	     , A.MO_CD             /* 모집인코드                                                                     VARCHAR2(20)   */
+	     , B.EMP_NM AS MO_NM   /* 모집인명 */
+	     , A.YU_CD             /* 유지FP코드                                                                     VARCHAR2(20)   */
+	     , F.EMP_NM AS YU_NM   /* 유지FP명 */
+	     , A.ISSUE             /* 이슈사항                                                                       VARCHAR2(1000) */
+	     , A.MEMO              /* 메모                                                                           VARCHAR2(4000) */
+		 , A.AUTO_TRANS_YN         /* 자동이체여부(GRP_CMM_CD = AUTO_TRANS_YN) VARCHAR2(1)   */
+		 , A.BANK                  /* 은행코드(GRP_CMM_CD = BANK)              VARCHAR2(50)  */
+		 , A.OWNER                 /* 예금주                                   VARCHAR2(30)  */
+		 , A.BK_ID                 /* 계좌번호                                 VARCHAR2(50)  */
+		 , A.REGI_AUTO_TRANS_YN    /* 자동송금등록여부                         VARCHAR2(1)   */
+	     , A.IN_EMP_CD         /* 입력자사번                                                                     VARCHAR2(20)   */
+	     , A.IN_DTM            /* 입력일시                                                                       DATE(7)        */
+	     , A.IN_IP             /* 입력 IP                                                                        VARCHAR2(15)   */
+	     , A.UP_EMP_CD         /* 수정자사번                                                                     VARCHAR2(20)   */
+	     , A.UP_DTM            /* 수정일시                                                                       DATE(7)        */
+	     , G.CUST_ID AS GEAJA			     /* 계약자ID */
+	     , G.CUST_NM AS GEAJA_NM		     /* 계약자이름 */
+	     , H.CUST_ID AS PIABO			     /* 피보험자ID */
+	     , H.CUST_NM AS PIABO_NM		     /* 피보험자이름 */
+	     , I.CUST_ID AS BENEFICIARY		     /* 수익자ID */
+	     , I.CUST_NM AS BENEFICIARY_NM	     /* 수익자이름 */
+	     , A.USD_NAP_MONTH 					 /* USD 월납화 */
+	     , A.HKD_NAP_MONTH 					 /* HKD 월납화 */
+	  FROM TBCN_CONTRACT A /* [CN][계약] 계약관리 */
+	  LEFT OUTER JOIN TBIN_EMPMST B	/* 사원(모집인)조회 */
+	    ON A.MB_ID = B.MB_ID
+	   AND A.MO_CD = B.EMP_CD
+	  LEFT OUTER JOIN TBCM_INSCO C	/* 원수사조회 */
+	    ON A.MB_ID = C.MB_ID
+	   AND A.INSCO_CD = C.INSCO_CD
+	  LEFT OUTER JOIN TBCN_PRODUCT_GROUP E	/* 상품군 조회 */
+	    ON A.MB_ID = E.MB_ID
+	   AND A.PROD_KIND2 = E.PROD_KIND2
+	  LEFT OUTER JOIN TBIN_EMPMST F	/* 사원(유지FP)조회 */
+	    ON A.MB_ID = F.MB_ID
+	   AND A.YU_CD = F.EMP_CD
+	  LEFT JOIN (SELECT CD_VL
+	                  , CD_VL_NM
+	               FROM TBCM_COMMON_CODE
+	              WHERE MB_ID = 'YNG'
+	                AND GRP_CMM_CD = 'NAPGI_GBN') CM1	/* 납기구분 공통코드 */
+	    ON A.NAPGI_GBN = CM1.CD_VL
+	  LEFT OUTER JOIN (  SELECT MB_ID,
+	                             SEQ,
+	                             GUBUN,
+	                             LISTAGG (CUST_ID, ',') WITHIN GROUP (ORDER BY CUST_ID) AS CUST_ID,
+	                             LISTAGG (CUST_NM, ',') WITHIN GROUP (ORDER BY CUST_ID) AS CUST_NM
+	                        FROM (SELECT A.SEQ,
+	                                     A.GUBUN,
+	                                     A.CUST_ID,
+	                                     A.MB_ID,
+	                                     B.CUST_NM
+	                                FROM TBCN_CONTRACT_CUSTOMER A
+	                                     LEFT JOIN TBCS_CUSTOMER B
+	                                        ON A.CUST_ID = B.CUST_ID AND A.MB_ID = B.MB_ID)
+	                           WHERE GUBUN='GEAJA'
+	                    GROUP BY SEQ, GUBUN, MB_ID) G  /* 계약자 조회 */
+	    ON A.MB_ID = G.MB_ID
+	   AND A.SEQ = G.SEQ
+	 LEFT OUTER JOIN (  SELECT MB_ID,
+	                             SEQ,
+	                             GUBUN,
+	                             LISTAGG (CUST_ID, ',') WITHIN GROUP (ORDER BY CUST_ID) AS CUST_ID,
+	                             LISTAGG (CUST_NM, ',') WITHIN GROUP (ORDER BY CUST_ID) AS CUST_NM
+	                        FROM (SELECT A.SEQ,
+	                                     A.GUBUN,
+	                                     A.CUST_ID,
+	                                     A.MB_ID,
+	                                     B.CUST_NM
+	                                FROM TBCN_CONTRACT_CUSTOMER A
+	                                     LEFT JOIN TBCS_CUSTOMER B
+	                                        ON A.CUST_ID = B.CUST_ID AND A.MB_ID = B.MB_ID)
+	                           WHERE GUBUN='PIABO'
+	                    GROUP BY SEQ, GUBUN, MB_ID) H  /* 피보험자 조회 */
+	    ON A.MB_ID = H.MB_ID
+	   AND A.SEQ = H.SEQ   
+	 LEFT OUTER JOIN (  SELECT MB_ID,
+	                             SEQ,
+	                             GUBUN,
+	                             LISTAGG (CUST_ID, ',') WITHIN GROUP (ORDER BY CUST_ID) AS CUST_ID,
+	                             LISTAGG (CUST_NM, ',') WITHIN GROUP (ORDER BY CUST_ID) AS CUST_NM
+	                        FROM (SELECT A.SEQ,
+	                                     A.GUBUN,
+	                                     A.CUST_ID,
+	                                     A.MB_ID,
+	                                     B.CUST_NM
+	                                FROM TBCN_CONTRACT_CUSTOMER A
+	                                     LEFT JOIN TBCS_CUSTOMER B
+	                                        ON A.CUST_ID = B.CUST_ID AND A.MB_ID = B.MB_ID)
+	                           WHERE GUBUN='BENEFICIARY'
+	                    GROUP BY SEQ, GUBUN, MB_ID) I   /* 수익자 조회 */
+	    ON A.MB_ID = I.MB_ID
+	   AND A.SEQ = I.SEQ     
+	 WHERE A.MB_ID = 'YNG'
+	   AND A.MO_CD NOT IN ('SADMIN', 'ADMIN', 'INSCOM')
+	    <![CDATA[AND NVL(A.DATA_DCD,'I') <> 'D']]>
+
+	<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_id)'>
+	   AND ( I.CUST_ID = #{cust_id} OR H.CUST_ID = #{cust_id} OR G.CUST_ID = #{cust_id}
+		)
+	</if>
+
+	</select>
 </mapper>

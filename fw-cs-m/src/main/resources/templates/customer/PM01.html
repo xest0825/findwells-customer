@@ -42,7 +42,8 @@
 
       <!-- 각 로고 슬라이드 -->
       <div class="swiper-container mySwiper2">
-        <div class="swiper-wrapper">
+        <div class="swiper-wrapper" id="contracts">
+
           <div class="swiper-slide">
             <div class="logo">
               <img src="/images/logo_metis.png" />
@@ -64,6 +65,7 @@
               </p>
             </div>
           </div>
+          
           <div class="swiper-slide">
             <div class="logo">
               <img src="/images/logo_Generali.png" />
@@ -85,6 +87,7 @@
               </p>
             </div>
           </div>
+          
         </div>
         <div class="swiper-button-next"></div>
         <div class="swiper-button-prev"></div>
@@ -205,9 +208,64 @@
 	<script>
 	var user_id = "[[${user_id}]]" 
     $(document).ready(function(){
-
+		console.log(user_id);
+		
+		getContractList();
     });
 	
+	
+	function getContractList() {
+		var param = {cust_id: user_id};
+		
+		$.get({
+			url: '/cs/contracts'
+			, type: 'GET'
+			, async: false
+			, data : param
+			, contentType: 'application/json; charset=UTF-8'
+			, headers: {
+				// "Authorization": "bearer" + ACCESS_TOKEN,
+			}
+			, success: function (data) {
+				console.log(data);
+				//console.log(data + "");
+				//     fconsole.log(data.substring(data.indexOf("uid") + 4, data.indexOf("mid") - 2));   //uid 만 파싱
+				var list = data.result;
+				var html = '';
+				$('#contracts').empty();
+				for (var i = 0; i < list.length; i++) {
+					html += '<div class="swiper-slide">'
+					html += '	<div class="logo" style="background:gray">'
+					html += list[i].CI_URL != '' ? '<img src="http://f-ims.com' + list[i].CI_URL + '">': '		<img src="/images/logo_Generali.png" />'
+					html += '	</div>'
+					html += '	<div class="txt">'
+					html += '		<p class="logo_txt">'
+					html += list[i].PROD_NM
+					html += '		<br />'
+					//html += '두줄일때'
+					html += '		</p>'
+					html += '		<p class="name">'
+					html += list[i].GEAJA_NM + ' / ' + list[i].PIABO_NM
+					html += '		</p>'
+					html += '		<p class="amount">'
+					html += (list[i].HPREM_AMT > 0 ?'HKD $' +  list[i].HPREM_AMT: 'USD $' + list[i].UPREM_AMT)
+					html += '		</p>'
+					html += '		<p class="date">'
+					html += list[i].CONT_DATE
+					html += '		</p>'
+					html += '	</div>'
+					html += '</div>';
+				}
+		          
+				$('#contracts').html(html);
+				
+			}
+			, error: function (req, status, error) {
+				console.log(req + ", " + status + ", " + error);
+				
+			}
+		});
+	}
 
     </script>
 

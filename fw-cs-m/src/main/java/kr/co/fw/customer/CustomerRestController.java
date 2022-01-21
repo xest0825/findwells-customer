@@ -197,6 +197,26 @@ public class CustomerRestController extends BaseController {
 		ResponseEntity<HashMap<String, Object>> entity = new ResponseEntity<>(retMap, HttpStatus.OK);
 		return entity;
 	}
+	
+	@GetMapping("/cs/contracts")
+	public ResponseEntity<HashMap<String, Object>> getContractListByCustomer(CustomerVO paramvo) {
+		log.info("getContractListByCustomer");
+		List<HashMap<String, Object>> retList = new ArrayList<HashMap<String, Object>>();
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+
+		retList = getCustomerService().getContractListByCustomer(paramvo);
+		if (CommUtil.isNotEmpty(retList)) {
+			retMap.put("res_cd","OK");
+			retMap.put("result", retList);
+		} else {
+			retMap.put("res_cd","FAIL");
+			retMap.put("result", "");
+		}
+
+		ResponseEntity<HashMap<String, Object>> entity = new ResponseEntity<>(retMap, HttpStatus.OK);
+		return entity;
+	}
 
 
 

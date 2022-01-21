@@ -58,4 +58,8 @@ public class CustomerService extends BaseService {
 		return retMap;
 	}
 	
+	public List<HashMap<String, Object>> getContractListByCustomer(CustomerVO paramvo) {
+		return getCustomerDAO().getContractListByCustomer(paramvo);
+	}
+	
 }
