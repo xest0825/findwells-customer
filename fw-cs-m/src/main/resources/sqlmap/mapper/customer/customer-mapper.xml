@@ -736,9 +736,11 @@ SELECT COUNT(*)
 					 , TB1.CUST_ID 			cust_id		/* VARCHAR2(20) */
 					 , TB1.MO_CD 			mo_cd		/* VARCHAR2(20) */
 					 , TB1.INSCO_CD 		insco_cd	/* VARCHAR2(5)  */
-					 , TB1.INSPOL_NO 		inspol_no	/* VARCHAR2(40) */
+					 , TB4.INSCO_NM			insco_nm
+					 , TB5.INSPOL_NO 		inspol_no	/* VARCHAR2(40) */
 					 , TB1.CONT_SEQ			cont_seq
 					 , TB1.PROD_SEQ 		prod_seq	/* VARCHAR2(22) */
+					 , TB%.PROD_NM			prod_nm
 					 , TB1.WITHDRAWAL_DT 	withdrawal_dt	/* VARCHAR2(20)  */
 					 , TB1.AMT 				amt				/* INT */
 					 , TB1.AMT_SUM 			amt_sum			/* INT */
@@ -753,6 +755,10 @@ SELECT COUNT(*)
 	   				ON TB1.CUST_ID = TB2.CUST_ID
 	   LEFT OUTER JOIN TBIN_EMPMST_FSB TB3
 	   				ON TB1.MO_CD = TB3.EMP_CD
+	   LEFT OUTER JOIN TBCM_INSCO TB4
+	   				ON TB1.INSCO_CD = TB4.INSCO_CD
+	   LEFT OUTER JOIN TBCN_CONTRACT TB5
+	   				ON TB1.CONT_SEQ = TB5.SEQ
 				 WHERE 1 = 1
 				   <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(cust_id)">
 				   AND TB1.CUST_ID = #{cust_id}
@@ -865,18 +871,22 @@ SELECT COUNT(*)
 	
 	<select id="getAssetPlanList" parameterType="kr.co.fw.customer.CustomerVO" resultType="hmap">
 				/* customer-mapper.xml getAssetPlanList 자산 사용계획 조회 */
-				SELECT TB1.SEQ 				seq	/* NUMBER PRIMARY KEY * /
-					 , TB1.CUST_ID 			cust_id	/* VARCHAR2(20) */
-					 , TB1.MO_CD 			mo_cd	/* VARCHAR2(20) */
+				SELECT TB1.SEQ 				seq			/* NUMBER PRIMARY KEY * /
+					 , TB1.CUST_ID 			cust_id		/* VARCHAR2(20) */
+					 , TB1.MO_CD 			mo_cd		/* VARCHAR2(20) */
 					 , TB1.CONT_SEQ			cont_seq
+					 , TB4.INSPOL_NO		inspol_no
+					 , TB4.INSCO_CD			insco_cd
+					 , TB5.INSCO_NM			insco_nm
+					 , TB4.PROD_NM			prod_nm
 					 , TB1.USE_YEAR 		use_year	/* VARCHAR(4) */
-					 , TB1.PURPOSE 			purpose	/* VARCHAR(20) */
-					 , TB1.AGE 				age	/* INT */
-					 , TB1.AMT 				amt	/* INT */
+					 , TB1.PURPOSE 			purpose		/* VARCHAR(20) */
+					 , TB1.AGE 				age			/* INT */
+					 , TB1.AMT 				amt			/* INT */
 					 , TB1.USE_MEAN 		use_mean	/* VARCHAR(20) */
-					 , TB1.MEMO 			memo	/* VARCHAR2(400) */
-					 , TB1.IN_EMP_CD 		in_emp_cd		/* VARCHAR2(20)  */
-					 , TB1.UP_EMP_CD 		up_emp_cd		/* VARCHAR2(20) */
+					 , TB1.MEMO 			memo		/* VARCHAR2(400) */
+					 , TB1.IN_EMP_CD 		in_emp_cd	/* VARCHAR2(20)  */
+					 , TB1.UP_EMP_CD 		up_emp_cd	/* VARCHAR2(20) */
 					 , TO_CHAR(TB1.IN_DTM, 'YYYY-MM-DD HH24:MI:SS') in_dtm /* TIMESTAMP */
 					 , TO_CHAR(TB1.UP_DTM, 'YYYY-MM-DD HH24:MI:SS') up_dtm /* TIMESTAMP */
 				  FROM TBCS_ASSET_PLAN TB1
@@ -884,6 +894,10 @@ SELECT COUNT(*)
 	   				ON TB1.CUST_ID = TB2.CUST_ID
 	   LEFT OUTER JOIN TBIN_EMPMST_FSB TB3
 	   				ON TB1.MO_CD = TB3.EMP_CD
+	   LEFT OUTER JOIN TBCN_CONTRACT TB4
+	   				ON TB1.CONT_SEQ = TB5.SEQ
+	   LEFT OUTER JOIN TBCM_INSCO TB5
+	   				ON TB4.INSCO_CD = TB5.INSCO_CD
 				 WHERE 1 = 1
 				   <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(cust_id)">
 				   AND TB1.CUST_ID = #{cust_id}

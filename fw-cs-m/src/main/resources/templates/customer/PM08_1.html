@@ -18,6 +18,7 @@
   <script type="text/javascript" src="/js/common_added.js"></script>
   <script type="text/javascript" src="/js/app.js"></script>
   <script type="text/javascript" src="/js/navigation.js"></script>
+  <script type="text/javascript" src="/js/common_util.js"></script>
 </head>
 
 <body>
@@ -244,35 +245,35 @@
 					for (var i = 0; i < list.length; i++) {
 						html += '<div class="output_table">'
 						html += '	<h2>'
-						html += '	인테리젼스 (R01021000)'
+						html += list[i].insco_nm + ' / ' + list[i].prod_nm + '(' + list[i].inspol_no + ')'
 				        html += '	</h2>'
 				        html += '	<table>'
 				        html += '		<colgroup>'
+				        html += '			<col width="10%;">'
+				        html += '			<col width="20%;">'
 				        html += '			<col width="*">'
-				        html += '			<col width="26%">'
-				        html += '			<col width="26%">'
-				        html += '			<col width="30%">'
+				        html += '			<col width="*">'
 				        html += '		</colgroup>'
 				        html += '		<thead>'
 				        html += '			<tr>'
-				        html += '				<td>날 짜</td>'
+				        html += '				<td>사용연도</td>'
 				        html += '				<td>인출금액</td>'
-				        html += '				<td>입금계좌</td>'
-				        html += '				<td>인출누적금액</td>'
+				        html += '				<td>목적</td>'
+				        html += '				<td>사용방법</td>'
 				        html += '			</tr>'
 				        html += '		</thead>'
 				        html += '		<tbody>'
 				        html += '			<tr>'
-				        html += '				<td>2021.9.8</td>'
-				        html += '				<td>500</td>'
-				        html += '				<td>신한</td>'
-				        html += '				<td>5,000,0</td>'
+				        html += '				<td>' + list[i].use_year + '</td>'
+				        html += '				<td>' + formatComma(list[i].amt) + '</td>'
+				        html += '				<td>' + list[i].purpose + '</td>'
+				        html += '				<td>' + list[i].use_mean + '</td>'
 				        html += '			</tr>'
 				        html += '		</tbody>'
 				        html += '	</table>'
 				        html += '	<p class="memo">'
 				        html += '		<span>MEMO.</span>'
-				        html += '		<span>- 이번 인출한건 이렇게 쓰였습니다.</span>'
+				        html += '		<span>- '+ list[i].memo +'</span>'
 				        html += '	</p>'
 				        html += '</div>'
 
