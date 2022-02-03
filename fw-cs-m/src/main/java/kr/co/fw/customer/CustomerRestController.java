@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import kr.co.fw.base.BaseController;
+import kr.co.fw.board.BoardItemVO;
 import kr.co.fw.common.file.FileVO;
 import kr.co.fw.common.msg.MessageVO;
 import kr.co.fw.common.util.CommUtil;
@@ -284,6 +285,58 @@ public class CustomerRestController extends BaseController {
 			retMap.put("result", "");
 		}
 
+		ResponseEntity<HashMap<String, Object>> entity = new ResponseEntity<>(retMap, HttpStatus.OK);
+		return entity;
+	}
+	
+	/**
+	 * 메시지 이력 조회
+	 * @param paramvo
+	 * @return
+	 */
+	@GetMapping("/cs/notice-items")
+	public ResponseEntity<HashMap<String, Object>> getNoticeItemList(BoardItemVO paramvo) {
+		log.info("getMessageLogList");
+		List<BoardItemVO> retList = new ArrayList<BoardItemVO>();
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		try {
+			retList = getBoardService().selectBoardItemList2(paramvo);
+			retMap.put("res_cd","OK");
+			retMap.put("result", retList);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			retMap.put("res_cd","FAIL");
+			retMap.put("result", "");
+		}
+
+		ResponseEntity<HashMap<String, Object>> entity = new ResponseEntity<>(retMap, HttpStatus.OK);
+		return entity;
+	}
+	
+	/**
+	 * 메시지 이력 조회
+	 * @param paramvo
+	 * @return
+	 */
+	@GetMapping("/cs/notice-item")
+	public ResponseEntity<HashMap<String, Object>> getNoticeItem(BoardItemVO paramvo) {
+		log.info("getMessageLogList");
+		BoardItemVO retvo = new BoardItemVO();
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		try {
+			retvo = getBoardService().selectBoardItem(paramvo);
+			retMap.put("res_cd","OK");
+			retMap.put("result", retvo);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			retMap.put("res_cd","FAIL");
+			retMap.put("result", "");
+		}
+		
 		ResponseEntity<HashMap<String, Object>> entity = new ResponseEntity<>(retMap, HttpStatus.OK);
 		return entity;
 	}

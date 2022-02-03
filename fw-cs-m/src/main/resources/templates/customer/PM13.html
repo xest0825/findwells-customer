@@ -28,12 +28,12 @@
     </div>
     <section class="self_certification">
       <div class="notice_search_bar">
-        <input type="text" name="search" id="" class="input_notice" value="" placeholder="검색어를 입력해주세요" />
-        <button class="b_input_notice" value="">검색</button>
+        <input type="text" name="search" id="search_word" class="input_notice" value="" placeholder="검색어를 입력해주세요" />
+        <button class="b_input_notice" value="" onclick="getNoticeItemList()">검색</button>
       </div>
 
       <div class="notice_list">
-        <ul>
+        <ul id="items">
           <li>
             <a href="">
               <div>뉴욕의 투자자들은 무엇을 겁내는가요뉴욕의 투자자들은 무엇을 겁내는가요뉴욕의 투자자들은 무엇을 겁내는가요 <span class="new">new</span></div>
@@ -136,7 +136,7 @@
         </ul>
 
         <p class="end_list" style="display: none;">마지막 목록입니다.</p>
-        <a href="" class="b_notice_more">더보기</a>
+        <!-- <a href="" class="b_notice_more">더보기</a> -->
 
 
       </div>
@@ -150,7 +150,82 @@
 	var user_id =  '[[${user_id}]]';
 	$(document).ready(function(){
 
+		getNoticeItemList();
+
     });
+	
+	function getNoticeItemList(){
+		var param = {
+				BD_NO : '62',
+				MB_ID : 'YNG',
+				SRCH_WORD : $('#search_word').val(),
+				SRCH_TYPE : 2,
+				limit_cnt : 10,
+		}
+		
+		$.get({
+			url: '/cs/notice-items'
+			, type: 'GET'
+			, async: false
+			, data : param
+			, contentType: 'application/json; charset=UTF-8'
+			, headers: {
+			}
+			, success: function (data) {
+				console.log(data);
+				var list = data.result;
+				//list = [];
+				var html = '';
+				//list = [];
+				$('#items').empty();
+				if (list.length == 0){
+
+					html += '<li>'
+					html += '	<a href="">'
+					html += '		<div>등록된 공지사항이 없습니다.</div>'
+					html += '		<div>'
+					html += '			<p>'
+					html += '			<span></span>ㅣ<span></span>'
+					html += '			</p>'
+					html += '			<p></p>'
+					html += '		</div>'
+					html += '	</a>'
+					html += '</li>';
+				
+				} else {
+					//console.log('list');
+					for (var i = 0; i < list.length; i++) {
+						//console.log(list[i])
+						html += '<li>'
+						html += '	<a href="javascript:goNoticeItem('+list[i].item_NO+')">'
+						html += '		<div>'+list[i].titl+'</div>'
+						html += '		<div>'
+						html += '			<p>'
+						html += '			<span>'+list[i].bd_NM+'</span>ㅣ<span>'+list[i].author_NM+'</span>'
+						html += '			</p>'
+						html += '			<p>'+list[i].in_DTM+'</p>'
+						html += '		</div>'
+						html += '	</a>'
+						html += '</li>';
+	
+					}					
+				}
+				//console.log(html);
+				$('#items').html(html);
+				
+			}
+			, error: function (req, status, error) {
+				console.log(req + ", " + status + ", " + error);	
+				
+			}
+		});
+		
+	}
+	
+	function goNoticeItem(item_no){
+		console.log(item_no);
+		location.href = '/m/PM14/' + user_id + '/' + item_no;
+	}
     
     function goBack(){
     	location.href = '/m/PM01/'+ user_id;

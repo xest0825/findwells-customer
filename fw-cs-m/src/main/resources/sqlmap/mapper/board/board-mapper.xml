@@ -659,13 +659,14 @@ DELETE TBBD_OPEN
 <!-- ********** 게시글 ********** -->
  
 <!-- 게시글 목록 조회 -->
-<select id="selectBoardItemList" parameterType = "kr.co.fw.board.BoardItemMngVO" resultType="kr.co.fw.board.BoardItemVO">
+<select id="selectBoardItemList" parameterType = "kr.co.fw.board.BoardItemVO" resultType="kr.co.fw.board.BoardItemVO">
+<include refid="Common.LimitStart"></include>
 /* board-mapper.xml selectBoardItemList 아이템 목록    */
 SELECT A.BD_NO          /* 게시판번호     NUMBER(15)    */
      , A.ITEM_NO        /* 게시글번호     NUMBER(15)    */
      , B.BD_NM AS BD_NM /* 게시판이름 */
      , A.TITL           /* 제목           VARCHAR2(300) */
-     , A.CONT           /* 내용           CLOB          */
+     , A.CONT			/* 내용           CLOB          */
      , A.ORGN_WRTN_NO   /* 원글번호       NUMBER(15)    */
      , A.PRNT_WRTN_NO   /* 부모글번호     NUMBER(15)    */
      , A.SORT_NO        /* 정렬순서       NUMBER(7)     */
@@ -691,6 +692,7 @@ SELECT A.BD_NO          /* 게시판번호     NUMBER(15)    */
      , A.OPEN_YN        /* 오픈여부       VARCHAR2(3)   */
      , A.SIDELINK       /* 사이드링크     VARCHAR2(100) */
      , A.IN_EMP_CD AS AUTHOR      /* 작성자 이름 */
+     , TO_CHAR(A.IN_DTM, 'YY-MM-DD') IN_DTM
      , C.EMP_NM AS AUTHOR_NM      /* 작성자 이름 */
      , A.CATEGORY AS CATEGORY_NM  /* 카테고리 */
      , CASE WHEN (SELECT COUNT(FILE_NO) 
@@ -702,19 +704,8 @@ SELECT A.BD_NO          /* 게시판번호     NUMBER(15)    */
        END  AS ATCH_YN
      , A.START_DATE
      , A.END_DATE
-     , A.SCHEDULE_YN
-  FROM (SELECT TB2.*
-      	  FROM (SELECT DISTINCT BD_NO 
-      			  FROM TBBD_AUTH_SET 
-      			 WHERE MB_ID = #{MB_ID} 
-      			   AND BD_AUTH_GRP_CD = '03'
-      		       AND AUTH_GRP_CD IN 
-      		       	   (SELECT BOARD_ROLE_ID 
-      		    		  FROM TBIN_EMPMST 
-      		    	 	 WHERE MB_ID = #{MB_ID} AND EMP_CD = #{EMP_CD})) TB1
-      		 , (SELECT * FROM TBBD_ITEM WHERE MB_ID = #{MB_ID}) TB2 
-      	 WHERE TB1.BD_NO = TB2.BD_NO 
-       ) A
+     , A.SCHEDULE_YN 
+  FROM TBBD_ITEM A
        LEFT OUTER JOIN 
        TBBD_BOARD B
        ON  A.MB_ID = B.MB_ID
@@ -737,7 +728,7 @@ SELECT A.BD_NO          /* 게시판번호     NUMBER(15)    */
 <![CDATA[   AND A.TITL LIKE '%'||#{SRCH_WORD}||'%']]>
 </if>
 <if test= 'SRCH_TYPE == 2'>
-<![CDATA[   AND ( A.TITL LIKE '%'||#{SRCH_WORD}||'%' OR DBMS_LOB.INSTR(A.CONT, #{SRCH_WORD}) > 0]]>
+<![CDATA[   AND ( A.TITL LIKE '%'||#{SRCH_WORD}||'%' OR DBMS_LOB.INSTR(A.CONT, #{SRCH_WORD}) > 0 )]]>
 </if>
 <if test= 'SRCH_TYPE == 3'>
 <![CDATA[   DBMS_LOB.INSTR(A.CONT, #{SRCH_WORD}) > 0 ]]>
@@ -747,6 +738,7 @@ SELECT A.BD_NO          /* 게시판번호     NUMBER(15)    */
 </if>
 </if> 	
  ORDER BY A.IN_DTM DESC
+ <include refid="Common.LimitEnd"></include>
 </select>
 
 <!-- 게시글 목록 -->
@@ -1007,9 +999,10 @@ SELECT A.BD_NO          /* 게시판번호     NUMBER(15)    */
        TBIN_EMPMST C
        ON  A.MB_ID     = C.MB_ID
        AND A.IN_EMP_CD = C.EMP_CD
- WHERE A.MB_ID    = #{MB_ID} 
+ WHERE A.MB_ID    = 'YNG' 
    AND A.BD_NO    = #{BD_NO}
    AND A.ITEM_NO  = #{ITEM_NO}
+ ORDER BY A.IN_DTM
 </select>
  
 <!--  게시글 입력 -->

@@ -2190,7 +2190,7 @@ input[type='checkbox']:checked+label:before {
   font-size: 12px;
 }
 .notice_list ul li {
-  display: none;
+  /* display: none; */
   margin-bottom: 20px;
 }
 .notice_list .b_notice_more, .message_wrap .b_notice_more {

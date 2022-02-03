@@ -50,7 +50,27 @@ public class BoardDAO extends BaseDAO {
 	 * @return : List<BoardItemVO>
 	 * @throws : Exception
 	 */
-	public List<BoardItemVO> selectBoardItemList(BoardItemMngVO paramvo) throws Exception {
+	public List<HashMap<String, Object>> selectBoardItemList(BoardItemVO paramvo) throws Exception {
+		log.info("BoardMngDAO selectBoardItemList");
+		List<HashMap<String, Object>> resultList = new ArrayList<HashMap<String, Object>>();
+		try {
+			resultList = getSqlSession().selectList(SQL_PREFIX + "selectBoardItemList", paramvo);
+			log.info("selectBoardItemList resultList size : " + resultList.size());
+		} catch (Exception e) {
+			log.error(e.getMessage());
+			throw e;
+		}
+		return resultList;
+	}
+	/**
+	 * @desc   : 게시글 목록 조회 
+	 * @author : choiys
+	 * @date   : 2015-01-21
+	 * @param  : BoardItemMngVO
+	 * @return : List<BoardItemVO>
+	 * @throws : Exception
+	 */
+	public List<BoardItemVO> selectBoardItemList2(BoardItemVO paramvo) throws Exception {
 		log.info("BoardMngDAO selectBoardItemList");
 		List<BoardItemVO> resultList = new ArrayList<BoardItemVO>();
 		try {

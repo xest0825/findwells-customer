@@ -231,21 +231,17 @@
 	
 	
 	/*
-	
 	AXA - 
 	MetisHK - 
-	Metlife
-	MM
+	Metlife - 
+	MM - 
 	Sunlife - 
 	Fubon - 
-	YF
+	YF - 
 	RL360 - 
 	AIA - 
 	FWD - 
 	ITA - 
-	
-	
-	
 	*/
 	
 	
@@ -270,7 +266,7 @@
 				if (list.length == 0) {
 					
 					html += '<div class="swiper-slide">'
-					html += '	<div class="logo" style="background:gray">'
+					html += '	<div class="logo">'
 					html += '		<img src="/images/logo_FW.png" />'
 					html += '	</div>'
 					html += '	<div class="txt">'
@@ -291,7 +287,8 @@
 				} else {
 					for (var i = 0; i < list.length; i++) {
 						html += '<div class="swiper-slide">'
-						html += '	<div class="logo" style="background:gray">'
+						html += '	<div class="logo">'
+						//html += '<img src="/images/logo_ITA.png">'
 						html += list[i].INSCO_CD != '' ? '<img src="/images/logo_' + list[i].INSCO_CD + '.png">': '		<img src="/images/logo_FW.png" />'
 						html += '	</div>'
 						html += '	<div class="txt">'
@@ -383,8 +380,8 @@
 						} else if ( list[i].REF_ID == '') {
 						html += '		'
 						} else {
-						//html += '		<img src="/images/logo_'+list[i].INSCO_CD + '.png">'
-						html += '		<img src="/images/logo_FWD.png">'
+						html += '		<img src="/images/logo_'+list[i].INSCO_CD + '.png">'
+						//html += '		<img src="/images/logo_FWD.png">'
 						}
 						html += '	</div>'
 						html += '	<div class="inner">'
@@ -415,8 +412,4 @@
 
     </script>
     
-     
-    
-
-
 </html>

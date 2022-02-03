@@ -128,11 +128,12 @@ public class CustomerMobilePageController {
 	/**
 	 * @description 공지사항 내용보기
 	 */
-	@GetMapping(value = "/m/PM03/{user_id}")
-	public ModelAndView pm03(HttpServletRequest req, @PathVariable("user_id") String user_id) throws Exception {
+	@GetMapping(value = "/m/PM03/{user_id}/{item_no}")
+	public ModelAndView pm03(HttpServletRequest req, @PathVariable("user_id") String user_id, @PathVariable("item_no") String item_no) throws Exception {
 		log.info("/m/PM03");
 		ModelAndView mav = new ModelAndView("customer/PM03");
 		mav.addObject("user_id", user_id);
+		mav.addObject("item_no", item_no);
 		return mav;
 	}
 	
@@ -294,11 +295,12 @@ public class CustomerMobilePageController {
 	/**
 	 * @descriptio 리포트2 
 	 */
-	@GetMapping(value = "/m/PM14/{user_id}")
-	public ModelAndView pm14(HttpServletRequest req, @PathVariable("user_id") String user_id) throws Exception {
+	@GetMapping(value = "/m/PM14/{user_id}/{item_no}")
+	public ModelAndView pm14(HttpServletRequest req, @PathVariable("user_id") String user_id, @PathVariable("item_no") String item_no) throws Exception {
 		log.info("/m/PM14");
 		ModelAndView mav = new ModelAndView("customer/PM14");
 		mav.addObject("user_id", user_id);
+		mav.addObject("item_no", item_no);
 		return mav;
 	}
 	
