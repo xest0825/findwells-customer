@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import kr.co.fw.board.BoardDAO;
 import kr.co.fw.common.code.CodeDAO;
 import kr.co.fw.common.file.FileDAO;
+import kr.co.fw.common.msg.MessageDAO;
 import kr.co.fw.common.sms.SmsDAO;
 import kr.co.fw.consultant.ConsultantDAO;
 import kr.co.fw.customer.CustomerDAO;
@@ -43,6 +44,9 @@ public class BaseService {
 	
 	@Autowired
 	private AuthDAO authDAO;
+	
+	@Autowired
+	private MessageDAO messageDAO;
 	
 	
 	/* Biz 영역 */

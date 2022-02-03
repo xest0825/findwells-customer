@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:tm="http://www.thymeleaf.org" 
+	  xmlns:th="http://www.thymeleaf.org" 
+	  xmlns:layout="http://www.thymeleaf.org/layout">
+
+    <!-- gnb -->
+    <header>
+      <div id="menu-container">
+        <div id="menu-wrapper">
+          <div id="hamburger-menu">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <!-- hamburger-menu -->
+        </div>
+        <!-- menu-wrapper -->
+        <ul class="menu-list accordion">
+          <p class="welcome">
+            <span>
+              <img src="/images/lnb_person.png">
+              <em>홍길동</em>
+            </span>
+          </p>
+          <li id="nav1" class="toggle accordion-toggle" onclick="goNotices();">
+            <span class="icon-plus">
+              <img src="/images/icon_menu_notice.png">
+            </span>
+            <a class="menu-link" href="#">
+              공지사항
+            </a>
+          </li>
+          <li id="nav2" class="toggle accordion-toggle" onclick="goContractList();">
+            <span class="icon-plus">
+              <img src="/images/icon_menu_join_list.png">
+            </span>
+            <a class="menu-link" href="#">
+              가입내역
+            </a>
+          </li>
+          <li id="nav3" class="toggle accordion-toggle" onclick="goMessages();">
+            <span class="icon-plus">
+              <img src="/images/icon_menu_message.png">
+            </span>
+            <a class="menu-link" href="#">
+              메세지
+            </a>
+          </li>
+          <li id="nav4" class="toggle accordion-toggle" onclick="goWithdrawalLog();">
+            <span class="icon-plus">
+              <img src="/images/icon_menu_out.png">
+            </span>
+            <a class="menu-link" href="#">
+              인출내역
+            </a>
+          </li>
+          <li id="nav5" class="toggle accordion-toggle" onclick="goAssetPlan();">
+            <span class="icon-plus">
+              <img src="/images/icon_menu_plan.png">
+            </span>
+            <a class="menu-link" href="#">
+              자산계획
+            </a>
+          </li>
+          <li id="nav6" class="toggle accordion-toggle" onclick="goIntroducing();">
+            <span class="icon-plus">
+              <img src="/images/icon_menu_company.png">
+            </span>
+            <a class="menu-link" href="#">
+              회사소개
+            </a>
+          </li>
+          <li id="nav7" class="toggle accordion-toggle" onclick="goInsuranceCompany();">
+            <span class="icon-plus">
+              <img src="/images/icon_menu_link.png">
+            </span>
+            <a class="menu-link" href="#">
+              제휴사링크
+            </a>
+          </li>
+
+          <div class="btn">
+            <a href="javascript:logout()" class="b_logout">
+              <img src="/images/b_lnb_logout.png">
+              로그아웃
+            </a>
+            <a href="javascript:goSimplePw()" class="b_lock">
+              <img src="/images/b_lnb_pw.png">
+              잠금 비밀번호
+            </a>
+          </div>
+          <!-- 2depth 
+            <ul class="menu-submenu accordion-content">
+              <li><a class="head" href="#">Submenu1</a></li>
+              <li><a class="head" href="#">Submenu2</a></li>
+              <li><a class="head" href="#">Submenu3</a></li>
+            </ul>
+            -->
+        </ul>
+        <h1>
+          <a href="#none" class="logo_findwell">
+            <img src="/images/logo_findwell.png" />
+          </a>
+        </h1>
+        <button class="go_home" onclick="goMain();">
+          <img src="/images/home.png" />
+        </button>
+      </div>
+    </header>
+   
+
+</html>

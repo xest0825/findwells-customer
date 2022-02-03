@@ -78,6 +78,7 @@
       $layerPopup.removeClass('active');
 
       // 2017.11.27 layerContainer가 여러개일 때 해당하는 Container내부의 layerpop만 계산하도록 수정.
+      /*
       if ($container.find('.layerPopup.active').size() <= 0) {
           $('.layerDim').removeClass('active');
           $close.closest('.layerContainer').removeClass('active');
@@ -87,6 +88,7 @@
       } else {
           $('html').css('overflow-y', 'auto');
       }
+      */
   },
 
   /**
@@ -207,7 +209,7 @@ $(document).ready(function() {
 
 
 /****************************  체크박스 전체선택 *******************************/
-console.clear()
+//console.clear()
 
 // 최상단 체크박스 클릭 시 하단 체크박스 활성, 비활성화 (동기화안됨)
 

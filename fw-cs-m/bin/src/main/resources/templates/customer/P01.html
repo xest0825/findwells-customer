@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html xmlns:tm="http://www.thymeleaf.org" 
+	  xmlns:th="http://www.thymeleaf.org" 
+	  xmlns:layout="http://www.thymeleaf.org/layout">
+
+<head>
+  <meta charset="utf-8" />
+  <title>P01</title>
+  <meta name="viewport" content="user-scalable=yes, initial-scale=1, width=device-width, target-densitydpi=medium-dpi" />
+  <meta name="format-detection" content="telephone=no" />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="/css/bootstrap.css" type="text/css"  />
+
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/js/common_added.js"></script>
+  <!-- <script type="text/javascript" src="/js/app.js"></script> -->
+</head>
+
+<body>
+  <!-- 모달팝업 -->
+  <div class="layerPopup login_guide" id="noticePopup" data-backdrop="true" data-target="#noticePopup">
+    <div class="content login_guide_wrap">
+      <h2>어플 설명</h2>
+      <div class="layerBody">
+        <p class="desc">
+          본 어플은 파인드웰스 고객을 위한 앱으로 파인드웰스의 승인을 받아야만
+          사용가능 한 앱 입니다.
+          <br />
+          먼저 회원 가입을 해주세요.
+          <br />
+          회원가입이 되면 푸시 알람으로 알려 드립니다.
+        </p>
+      </div>
+      <div class="btn_wrap">
+        <!-- <a href="javascript:closePopup('noticePopup');" class="layerClose cancle">취소</a> -->
+        <a href="javascript:closePopup('noticePopup')" class="ok">확인</a>
+      </div>
+    </div>
+    <div class="layerDim keep"></div>
+  </div>
+
+  <div class="wrapper_lock">
+    <div class="top_wrapper">
+      <!-- <a href="javascript:goBack();" class="go_back">뒤로가기</a> -->
+    </div>
+    <section class="self_certification lock">
+      <h2>잠금 비밀번호 입력</h2>
+      <p class="desc">
+        잠금 비밀번호 4자리를 입력하세요.
+      </p>
+
+      <div class="pad_wrap">
+        <!-- 핀패드 시작 -->
+        <div id="pinpad">
+
+            <div class="password_wrap">
+              <input type="password" name="password" id="password" class="pinpad" inputmode="numeric" minlength="4"
+                maxlength="4" size="4" value="" />
+            </div>
+
+            <input type="button" value="1" id="1" class="pinButton calc" onclick="field('1');"/>
+            <input type="button" value="2" id="2" class="pinButton calc" onclick="field('2');"/>
+            <input type="button" value="3" id="3" class="pinButton calc" onclick="field('3');"/>
+            <br />
+            <input type="button" value="4" id="4" class="pinButton calc" onclick="field('4');"/>
+            <input type="button" value="5" id="5" class="pinButton calc" onclick="field('5');"/>
+            <input type="button" value="6" id="6" class="pinButton calc" onclick="field('6');"/>
+            <br />
+            <input type="button" value="7" id="7" class="pinButton calc" onclick="field('7');"/>
+            <input type="button" value="8" id="8" class="pinButton calc" onclick="field('8');"/>
+            <input type="button" value="9" id="9" class="pinButton calc" onclick="field('9');"/>
+            <br />
+            <input type="button" value="clear" id="clear" class="pinButton clear1" onclick="clearPassword();" style="background-color: #bbb;" />
+            <input type="button" value="0" id="0 " class="pinButton calc" onclick="field('0');"/>
+            <input type="button" value="clear" id="delete" class="pinButton clear" onclick="deleteOne();"/>
+
+        </div>
+        <!-- 
+        <script src="/js/app.js"></script>
+         -->
+        <!-- 핀패드 끝 -->
+      </div>
+    </section>
+    <div class="btn_wrap">
+      <button class="b_cancle" id="bt_join">회원가입</button>
+      <button class="b_ok" id="bt_find_pw">비밀번호 찾기</button>
+    </div>
+  </div>
+  <script>
+    //메인에 공지팝업 자동노출
+    $(document).ready(function(){
+    	common.autoPopup('noticePopup');
+    	$('#password').val('');
+    	$('#bt_join').on('click', function(){
+    		location.href= '/m/P02';
+    	});
+    	$('#bt_find_pw').on('click', function(){
+    		location.href= '/m/PE01';
+    	});
+    	
+    });
+    
+    function field(value) {
+        var input_value = $('#password');
+    	input_value.val(input_value.val() + value);
+    	console.log(input_value.val());
+        if (input_value.val().length == 4 ){
+    		  location.href = '/m/PM01'
+    	  }
+    }
+    
+    function deleteOne(){
+    	 var val = $('#password').val();
+      	  console.log('val : ' + val);
+      	  console.log('val.length : ' + val.length);
+      	  console.log('val -1 char : ' +  val.substr(0, val.length-1));
+      	  
+      	$('#password').val(val.substr(0, val.length-1));
+    }
+    
+    function clearPassword() {
+    	console.log('clearPassword');
+    	 $('#password').val('');
+    }
+    
+
+    
+    // 회원가입이 되면 팝업이 뜨지 않아야 한다. 
+    // 회원가입 전까지는 계속 뜬다. 
+    // 
+    
+    function closePopup(id){
+    	$('#' + id).hide();
+    }
+  </script>
+</body>
+
+</html>

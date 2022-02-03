@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Code">
+    
+    
+<!-- 공통 구룹코드 조회 -->
+<select id="getCommonCodeGroupList" resultType="kr.co.fw.common.code.CodeVO" parameterType="kr.co.fw.common.code.CodeVO" >  
+/* code-mapper.xml getCommonCodeGroupList 공통 그룹공통 코드 조회 */
+SELECT GRP_CMM_CD         /* 그룹공통코드     VARCHAR2(100)    */
+     , GRP_CMM_CD_NM      /* 그룹공통코드명   VARCHAR2(150)    */
+     , GRP_CMM_CD_DESC    /* 그룹공통코드설명 VARCHAR2(300)    */
+     , IN_EMP_CD          /* 입력자사번       VARCHAR2(20)     */
+     , IN_DTM             /* 입력일시         TIMESTAMP(6)(11) */
+     , UP_EMP_CD          /* 수정자사번       VARCHAR2(20)     */
+     , UP_DTM             /* 수정일시         TIMESTAMP(6)(11) */
+     , MB_ID              /* 회원사ID         VARCHAR2(20)     */
+     , SYSTEM_GUBUN		  /* 시스템구분       VARCHAR2(10)	   */
+  FROM TBCM_COMMON_CODE_GROUP /* [CM][공통]그룹공통코드 */
+<where>
+   AND MB_ID = #{MB_ID}
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(GRP_CMM_CD)'>
+   AND UPPER(GRP_CMM_CD) =<![CDATA[ UPPER(#{GRP_CMM_CD}) ]]>
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(SEARCH_WORD)'>
+   AND ( UPPER(GRP_CMM_CD) LIKE '%'||<![CDATA[ UPPER(#{SEARCH_WORD}) ]]> ||'%' 
+   	  OR GRP_CMM_CD_NM LIKE '%'||<![CDATA[ UPPER(#{SEARCH_WORD}) ]]> ||'%')
+</if>
+</where>
+ ORDER BY GRP_CMM_CD_NM
+</select>
+
+<!-- 공통 구룹코드 저장 --> 
+<insert id="insertCommonGroupCode" parameterType="kr.co.fw.common.code.CodeVO" >
+<![CDATA[
+/* code-mapper.xml insertCommonGroupCode 공통 그룹코드 입력 */
+INSERT
+  INTO TBCM_COMMON_CODE_GROUP /* [CM][공통]그룹공통코드 */
+     ( GRP_CMM_CD         /* 그룹공통코드     VARCHAR2(100)    */
+     , GRP_CMM_CD_NM      /* 그룹공통코드명   VARCHAR2(150)    */
+     , GRP_CMM_CD_DESC    /* 그룹공통코드설명 VARCHAR2(300)    */
+     , IN_EMP_CD          /* 입력자사번       VARCHAR2(20)     */
+     , IN_DTM             /* 입력일시         TIMESTAMP(6)(11) */
+     , MB_ID              /* 회사ID */
+     , SYSTEM_GUBUN		  /* 시스템구분 */
+     )
+VALUES
+     ( #{GRP_CMM_CD}        /* 그룹공통코드     VARCHAR2(100)    */
+     , #{GRP_CMM_CD_NM}     /* 그룹공통코드명   VARCHAR2(150)    */
+     , #{GRP_CMM_CD_DESC}   /* 그룹공통코드설명 VARCHAR2(300)    */
+     , #{IN_EMP_CD}         /* 입력자사번       VARCHAR2(20)     */
+     , SYSDATE              /* 입력일시         TIMESTAMP(6)(11) */
+     , #{MB_ID}				/* 회사ID */
+     , 'COMMON'				/* 시스템구분 */
+     )
+]]>
+</insert>
+    
+<!-- 공통 구룹코드 수정 --> 
+<update id="updateCommonGroupCode" parameterType="kr.co.fw.common.code.CodeVO">
+/* code-mapper.xml updateCommonGroupCode 공통 구룹코드 수정 */
+<![CDATA[
+UPDATE TBCM_COMMON_CODE_GROUP /* [CM][공통]그룹공통코드 */
+   SET GRP_CMM_CD      = #{GRP_CMM_CD}         /* 그룹공통코드     VARCHAR2(100)    */
+     , GRP_CMM_CD_NM   = #{GRP_CMM_CD_NM}      /* 그룹공통코드명   VARCHAR2(150)    */
+     , GRP_CMM_CD_DESC = #{GRP_CMM_CD_DESC}    /* 그룹공통코드설명 VARCHAR2(300)    */
+     , SYSTEM_GUBUN    = #{SYSTEM_GUBUN}	   /* 시스템구분 */
+     , UP_EMP_CD       = #{UP_EMP_CD}          /* 수정자사번       VARCHAR2(20)     */
+     , UP_DTM          = SYSDATE               /* 수정일시         TIMESTAMP(6)(11) */
+ WHERE MB_ID      = #{MB_ID} 	  /* 회사ID */
+   AND GRP_CMM_CD = #{GRP_CMM_CD} /* 그룹공통코드 VARCHAR2(100) */
+]]>
+</update>
+
+<!-- 공통 구룹코드 삭제 -->
+<delete id="deleteCommonGroupCode" parameterType="kr.co.fw.common.code.CodeVO">
+/* code-mapper.xml deleteCommonGroupCode 공통그룹코드 삭제 */
+<![CDATA[
+DELETE TBCM_COMMON_CODE_GROUP 		/* [CM][공통]그룹공통코드 */
+ WHERE MB_ID      = #{MB_ID} 		/* 회사ID */
+   AND GRP_CMM_CD = #{GRP_CMM_CD} 	/* 그룹공통코드 VARCHAR2(100) */
+]]>
+</delete>
+    
+<!-- 공통코드 조회 -->  
+<select id="getCommonCodeList" resultType="kr.co.fw.common.code.CodeVO" parameterType="kr.co.fw.common.code.CodeVO" >  
+/* code-mapper.xml getCommonCodeList 공통코드 조회 */
+SELECT GRP_CMM_CD    /* 그룹공통코드 VARCHAR2(100)    */
+     , CD_VL         /* 코드값       VARCHAR2(100)    */
+     , CD_VL_NM      /* 코드값명     VARCHAR2(150)    */
+     , SORT_NO    	 /* 정렬순서     NUMBER(3,0)      */
+     , USE_YN		 /* 사용여부	 VARCHAR2(2)      */
+     , MB_ID         /* 회원사ID     VARCHAR2(20)     */
+     , IN_EMP_CD     /* 입력자사번   VARCHAR2(20)     */
+     , IN_DTM        /* 입력일시     TIMESTAMP 		  */
+     , UP_EMP_CD     /* 수정자사번   VARCHAR2(20)     */
+     , UP_DTM        /* 수정일시     TIMESTAMP  	  */     
+  FROM TBCM_COMMON_CODE /* [CM][공통]공통코드 */
+<where>
+   	   MB_ID = #{MB_ID} AND UPPER(GRP_CMM_CD) =<![CDATA[  UPPER(#{GRP_CMM_CD}) ]]> /* 그룹공통코드 VARCHAR2(100) */
+        <!-- AND USE_YN = 'Y' -->
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(USE_YN)'>
+   AND USE_YN = #{USE_YN}
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(CD_VL_ARR)'>
+   AND UPPER(CD_VL) IN <foreach collection="CD_VL_ARR"  item="item" open="("  separator="," close=")"><![CDATA[  UPPER(#{item}) ]]></foreach>
+</if>
+<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(CON)'>
+   AND SUBSTR(CD_VL,0,1) = #{CON}
+</if>
+</where>
+ ORDER BY SORT_NO
+</select>
+
+    
+<!-- 공통코드 저장 --> 
+<insert id="insertCommonCode" parameterType="kr.co.fw.common.code.CodeVO" >
+/* code-mapper.xml "insertCommonCode" 공통코드 저장 */
+<![CDATA[
+INSERT
+  INTO TBCM_COMMON_CODE /* [CM][공통]공통코드 */
+     ( GRP_CMM_CD    /* 그룹공통코드	VARCHAR2(100)    */
+     , CD_VL         /* 코드값	VARCHAR2(100)    */
+     , CD_VL_NM      /* 코드값명	VARCHAR2(150)    */
+     , USE_YN		 /* 사용여부	VARCHAR2(2)		 */
+     , SORT_NO    	 /* 정렬순서	NUMBER(3,0)      */   
+     , IN_EMP_CD     /* 입력자사번	VARCHAR2(20)     */
+     , IN_DTM        /* 입력일시	TIMESTAMP(6)(11) */
+     , MB_ID		 /* 회사ID */
+     )
+VALUES
+     ( #{GRP_CMM_CD}   /* 그룹공통코드 VARCHAR2(100)    */
+     , #{CD_VL}        /* 코드값       VARCHAR2(100)    */
+     , #{CD_VL_NM}     /* 코드값명     VARCHAR2(150)    */
+     , #{USE_YN}	   /* 사용여부	 VARCHAR2(2)	  */
+     , #{SORT_NO}      /* 정렬순서     NUMBER(3,0)      */
+     , #{IN_EMP_CD}    /* 입력자사번   VARCHAR2(20)     */
+     , SYSDATE         /* 입력일시     TIMESTAMP(6)(11) */
+     , #{MB_ID}		   /* 회사ID */
+     )
+]]>
+</insert>
+    
+<!-- 공통 코드 수정 --> 
+<update id="updateCommonCode" parameterType="kr.co.fw.common.code.CodeVO">
+/* code-mapper.xml "updateCommonCode" 공통코드 수정 */
+<![CDATA[
+UPDATE TBCM_COMMON_CODE /* [CM][공통]공통코드 */
+   SET GRP_CMM_CD = #{GRP_CMM_CD}    /* 그룹공통코드 VARCHAR2(100)    */
+     , CD_VL      = #{CD_VL}         /* 코드값       VARCHAR2(100)    */
+     , CD_VL_NM   = #{CD_VL_NM}      /* 코드값명     VARCHAR2(150)    */
+     , SORT_NO    = #{SORT_NO}    	 /* 정렬순서     NUMBER(3,0)      */
+     , UP_EMP_CD  = #{UP_EMP_CD}     /* 수정자사번   VARCHAR2(20)     */
+     , UP_DTM     = SYSDATE          /* 수정일시     TIMESTAMP(6)(11) */
+     , USE_YN	  = #{USE_YN}		 /* 사용여부   VARCHAR2(2)		*/
+ WHERE MB_ID 	  = #{MB_ID} 	  	 /* 회사ID */	
+   AND GRP_CMM_CD = #{GRP_CMM_CD} 	 /* 그룹공통코드 VARCHAR2(100) */
+   AND CD_VL      = #{CD_VL}      	 /* 코드값       VARCHAR2(100) */
+]]>
+</update>
+
+<!-- 공통 코드 삭제 -->
+<delete id="deleteCommonCode" parameterType="kr.co.fw.common.code.CodeVO">
+/* code-mapper.xml "deleteCommonCode" 공통코드 삭제 */
+<![CDATA[
+DELETE TBCM_COMMON_CODE /* [CM][공통]공통코드 */
+ WHERE MB_ID = #{MB_ID} AND GRP_CMM_CD = #{GRP_CMM_CD} /* 그룹공통코드 VARCHAR2(100) */
+]]>
+ <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(CD_VL)'>
+<![CDATA[
+   AND CD_VL = #{CD_VL} /* 코드값       VARCHAR2(100) */
+]]>
+</if>
+</delete>
+
+<!--처리 엑셀코드 조회 -->  
+<select id="getPrclList" resultType="kr.co.fw.common.code.CodeVO" parameterType="kr.co.fw.common.code.CodeVO" >  
+/* code-mapper.xml getPrclList 처리 엑셀코드 조회 */
+SELECT DISTINCT CD_VL_NM, CD_VL
+ FROM TBCM_COMMON_CODE
+WHERE GRP_CMM_CD LIKE 'CN_ST%' 
+  AND MB_ID = #{MB_ID}
+ORDER BY CD_VL
+</select>
+
+<!--납입 엑셀코드 조회 -->  
+<select id="getNaplList" resultType="kr.co.fw.common.code.CodeVO" parameterType="kr.co.fw.common.code.CodeVO" >  
+/* code-mapper.xml getNaplList 납입 엑셀코드 조회 */
+SELECT DISTINCT CD_VL AS CD_VL_NM, CD_VL
+  FROM TBCM_COMMON_CODE
+ WHERE GRP_CMM_CD LIKE 'NAPMETHOD%' 
+   AND MB_ID = #{MB_ID}
+ ORDER BY CD_VL
+</select>
+
+</mapper>

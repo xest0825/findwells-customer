@@ -159,6 +159,18 @@ public class CustomerMobilePageController {
 	}
 	
 	/**
+	 * @descriptio 가입내역 상세
+	 */
+	@GetMapping(value = "/m/PM05/{user_id}/{seq}")
+	public ModelAndView pm05(HttpServletRequest req, @PathVariable("user_id") String user_id, @PathVariable("seq") String seq) throws Exception {
+		log.info("/m/PM05");
+		ModelAndView mav = new ModelAndView("customer/PM05");
+		mav.addObject("user_id", user_id);
+		mav.addObject("cont_seq", seq);
+		return mav;
+	}
+	
+	/**
 	 * @descriptio 메시지함
 	 */
 	@GetMapping(value = "/m/PM06/{user_id}")

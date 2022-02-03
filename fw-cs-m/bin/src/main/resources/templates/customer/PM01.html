@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns:tm="http://www.thymeleaf.org" 
+	  xmlns:th="http://www.thymeleaf.org" 
+	  xmlns:layout="http://www.thymeleaf.org/layout">
+
+<head>
+  <meta charset="utf-8" />
+  <title>메인</title>
+  <meta name="viewport" content="user-scalable=yes, initial-scale=1, width=device-width, target-densitydpi=medium-dpi" />
+  <meta name="format-detection" content="telephone=no" />
+  <link type="text/css" rel="stylesheet" href="/css/style.css" />
+  <link type="text/css" rel="stylesheet" href="/css/bootstrap.css" />
+  <link type="text/css" rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+  <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" />
+
+  <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+  <script type="text/javascript" src="/js/common_added.js"></script>
+  <script type="text/javascript" src="/js/app.js"></script>
+  <script type="text/javascript" src="/js/navigation.js"></script>
+
+</head>
+
+<body>
+  <div class="wrapper_main">
+  
+  	<!-- header start -->
+	<th:block th:include="customer/header"></th:block>
+    <!-- header end -->
+
+    <section class="main">
+      <!-- 메인배너 슬라이드 -->
+      <div class="swiper-container mySwiper">
+        <div class="swiper-wrapper">
+          <div class="swiper-slide" ></div>
+          <div class="swiper-slide" ></div>
+          <div class="swiper-slide" ></div>
+          <div class="swiper-slide" ></div>
+        </div>
+        <div class="swiper-pagination"></div>
+      </div>
+
+      <!-- 각 로고 슬라이드 -->
+      <div class="swiper-container mySwiper2">
+        <div class="swiper-wrapper" id="contracts">
+
+          <div class="swiper-slide">
+            <div class="logo">
+              <img src="/images/logo_metis.png" />
+            </div>
+            <div class="txt">
+              <p class="logo_txt">
+                Intelligence Pro Plan
+                <br />
+                두줄일때
+              </p>
+              <p class="name">
+                홍길동 / 김길순
+              </p>
+              <p class="amount">
+                HKD $8000
+              </p>
+              <p class="date">
+                2021-07-01
+              </p>
+            </div>
+          </div>
+          
+          <div class="swiper-slide">
+            <div class="logo">
+              <img src="/images/logo_Generali.png" />
+            </div>
+            <div class="txt">
+              <p class="logo_txt">
+                Intelligence Pro Plan
+                <br />
+                두줄일때
+              </p>
+              <p class="name">
+                홍길동 / 김길순
+              </p>
+              <p class="amount">
+                HKD $8000
+              </p>
+              <p class="date">
+                2021-07-01
+              </p>
+            </div>
+          </div>
+          
+        </div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+        <div class="swiper-pagination"></div>
+      </div>
+
+      <script type="text/javascript" src="/js/common_added_main.js"></script>
+
+      <!-- message -->
+      <div class="message_wrap">
+        <p class="tit">MESSAGE</p>
+        <ul>
+          <li>
+            <div class="logo">
+              Man
+            </div>
+            <div class="inner">
+              <div class="tit">
+                <span>Manulife</span>
+                <span>20201-11-21 6:10</span>
+              </div>
+              <div class="txt">
+                아이보시 대사는 최 차관에게 소마공사의 부적절한 발언에 유감을
+                표명하고 말줄임 말줄임 말줄임
+              </div>
+            </div>
+          </li>
+          <li>
+            <div class="logo">
+              Man
+            </div>
+            <div class="inner">
+              <div class="tit">
+                <span>Manulife</span>
+                <span>20201-11-21 6:10</span>
+              </div>
+              <div class="txt">
+                아이보시 대사는 최 차관에게 소마공사의 부적절한 발언에 유감을
+                표명하고 말줄임 말줄임 말줄임
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- quick -->
+      <div class="quick_wrap">
+
+        <ul>
+          <li>
+            <span>
+              <a href="javascript:goContractList();">
+                <img src="/images/icon_join_list.png">
+                가입
+                내역
+              </a>
+            </span>
+            <span>
+              <a href="javascript:goWithdrawalLog();">
+                <img src="/images/icon_out_list.png">
+                인출
+                내역
+              </a>
+            </span>
+            <span>
+              <a href="javascript:goAssetPlan();">
+                <img src="/images/icon_account.png">
+                자산
+                계획
+              </a>
+            </span>
+            <span>
+              <a href="javascript:goIntroducing();">
+                <img src="/images/icon_company.png">
+                회사
+                소개
+              </a>
+            </span>
+          </li>
+          <li>
+            <span>
+              <a href="javascript:goStudyAbroad();">
+                <img src="/images/icon_flying.png">
+                유학
+                서비스
+              </a>
+            </span>
+            <span>
+              <a href="javascript:goHealthCare();">
+                <img src="/images/icon_health.png">
+                헬스
+                케어
+              </a>
+            </span>
+            <span>
+              <a href="javascript:goPasswordManage();">
+                <img src="/images/icon_pw.png">
+                PW
+                관리
+              </a>
+            </span>
+            <span>
+              <a href="javascript:goReport();">
+                <img src="/images/icon_report.png">
+                리포트
+              </a>
+            </span>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </div>
+  <footer>
+    copyright 2021@findwell
+  </footer>
+</body>
+
+	<script>
+	var user_id = "[[${user_id}]]" 
+    $(document).ready(function(){
+		console.log(user_id);
+		
+		getContractList();
+    });
+	
+	
+	function getContractList() {
+		var param = {cust_id: user_id};
+		
+		$.get({
+			url: '/cs/contracts'
+			, type: 'GET'
+			, async: false
+			, data : param
+			, contentType: 'application/json; charset=UTF-8'
+			, headers: {
+				// "Authorization": "bearer" + ACCESS_TOKEN,
+			}
+			, success: function (data) {
+				console.log(data);
+				//console.log(data + "");
+				//     fconsole.log(data.substring(data.indexOf("uid") + 4, data.indexOf("mid") - 2));   //uid 만 파싱
+				var list = data.result;
+				var html = '';
+				$('#contracts').empty();
+				for (var i = 0; i < list.length; i++) {
+					html += '<div class="swiper-slide">'
+					html += '	<div class="logo" style="background:gray">'
+					html += list[i].CI_URL != '' ? '<img src="http://f-ims.com' + list[i].CI_URL + '">': '		<img src="/images/logo_Generali.png" />'
+					html += '	</div>'
+					html += '	<div class="txt">'
+					html += '		<p class="logo_txt">'
+					html += list[i].PROD_NM
+					html += '		<br />'
+					//html += '두줄일때'
+					html += '		</p>'
+					html += '		<p class="name">'
+					html += list[i].GEAJA_NM + ' / ' + list[i].PIABO_NM
+					html += '		</p>'
+					html += '		<p class="amount">'
+					html += (list[i].HPREM_AMT > 0 ?'HKD $' +  list[i].HPREM_AMT: 'USD $' + list[i].UPREM_AMT)
+					html += '		</p>'
+					html += '		<p class="date">'
+					html += list[i].CONT_DATE
+					html += '		</p>'
+					html += '	</div>'
+					html += '</div>';
+				}
+		          
+				$('#contracts').html(html);
+				
+			}
+			, error: function (req, status, error) {
+				console.log(req + ", " + status + ", " + error);
+				
+			}
+		});
+	}
+
+    </script>
+
+</html>

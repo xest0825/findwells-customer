@@ -1,0 +1,100 @@
+<!doctype html>
+<html xmlns:tm="http://www.thymeleaf.org" 
+	  xmlns:th="http://www.thymeleaf.org" 
+	  xmlns:layout="http://www.thymeleaf.org/layout">
+<head>
+  <meta charset="utf-8">
+  <title>로그인-팝업</title>
+  <meta name="viewport" content="user-scalable=yes, initial-scale=1, width=device-width, target-densitydpi=medium-dpi">
+  <meta name="format-detection" content="telephone=no">
+  <link rel="stylesheet" href="/css/style.css">
+  <link href="css/bootstrap.css" type="text/css" rel="stylesheet">
+
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script type="text/javascript" src="/js/common_added.js"></script>
+
+</head>
+
+<body>
+
+
+
+
+  <!-- 모달팝업 -->
+  <div class="layerPopup login_guide" id="noticePopup" data-backdrop="true" data-target="#noticePopup">
+    <div class="content login_guide_wrap">
+      <h2>로그인 안내</h2>
+      <div class="layerBody">
+        <p class="desc">
+          구글로 가입하셨네요<br>
+          구글로 로그인 하시겠습니까?
+        </p>
+      </div>
+      <div class="btn_wrap">
+        <a href="javascript:;" class="layerClose cancle">취소</a>
+        <a href="" class="ok">확인</a>
+      </div>
+    </div>
+    <div class="layerDim keep"></div>
+  </div>
+
+
+
+
+
+
+  <div class="wrapper center">
+
+    <section class="login_wrapper">
+      <div class="tit_wrap">
+        <h2>로그인</h2>
+        <a href="" class="b_join">회원가입</a>
+      </div>
+
+      <div class="input_wrap">
+        <input type="email" class="one_line login" placeholder="이메일">
+        <input type="password" class="one_line login" placeholder="비밀번호">
+      </div>
+
+      <div class="checks login">
+        <input type="checkbox" id="ex_chk">
+        <label for="ex_chk">로그인상태 유지</label>
+      </div>
+
+      <div class="btn_wrap login">
+
+        <input type="button" class="btn login" value="로그인">
+
+        </script>
+      </div>
+
+      <div class="btn_wrap right login">
+        <a href="" class="b_find_email">이메일찾기</a>
+        <a href="" class="b_cs">고객센터</a>
+      </div>
+
+      <p class="etc_login_txt">
+        또는 다른 서비스 계정으로 로그인
+      </p>
+
+      <div class="login_sns">
+        <a href="" class="naver">네이버</a>
+        <a href="" class="kakao">카카오</a>
+        <a href="" class="google">구글</a>
+      </div>
+
+
+    </section>
+
+
+  </div>
+
+
+
+  <script>
+    //메인에 공지팝업 자동노출
+    common.autoPopup('noticePopup');
+  </script>
+</body>
+
+</html>

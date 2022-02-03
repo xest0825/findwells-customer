@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html xmlns:tm="http://www.thymeleaf.org" 
+	  xmlns:th="http://www.thymeleaf.org" 
+	  xmlns:layout="http://www.thymeleaf.org/layout">
+
+	<head>
+	  <meta charset="utf-8" />
+	  <title>P03</title>
+	  <meta name="viewport"
+	    content="user-scalable=yes, initial-scale=1, width=device-width, target-densitydpi=medium-dpi" />
+	  <meta name="format-detection" content="telephone=no" />
+	  <link rel="stylesheet" href="/css/style.css" />
+	  <link href="/css/bootstrap.css" type="text/css" rel="stylesheet" />
+	
+	  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+	  <script type="text/javascript" src="/js/common_added.js"></script>
+	  <script type="text/javascript" src="/js/app.js"></script>
+	  <script type="text/javascript" src="/js/common_util.js"></script>
+	</head>
+	
+	<body>
+	  <div class="wrapper_lock">
+	    <div class="top_wrapper">
+	      <a href="javascript:goBack();" class="go_back">뒤로가기</a>
+	      <a href="#none" class="logo_findwell" >
+	        <img src="/images/logo_findwell.png" />
+	      </a>
+	    </div>
+	    <section class="self_certification">
+	      <h2>회원가입</h2>
+	      <p class="desc"></p>
+	
+	      <div class="input_text_wrap">
+	        <input type="text" class="text_box" id="emp_nm_hp" placeholder="소개인 이름" readOnly data-target="#search_person" onclick="clickBtnSearch();"/>
+	        <input type="hidden" id="emp_nm" >
+	        <input type="hidden" id="user_id" >
+	        <button id="btn_search" class="b_search btnLayer" data-target="#search_person" style="margin-left: 10px;" onclick="openPopup('search_person')">찾기</button>
+	      </div>
+	      <div class="input_text_wrap no_flex mt25">
+	        <input type="text" id="login_id" class="text_box" placeholder="로그인 아이디" autocomplete="off"/>
+	        <p id="err_msg_id" class="error_msg" style="display:none;">로그인 아이디 입력해주세요.</p>
+	      </div>
+	      <div class="input_text_wrap no_flex mt25">
+	        <input type="password" id="login_pw" class="text_box" placeholder="비밀번호" autocomplete="off"/>
+	        <p id="err_msg_pw" class="error_msg" style="display:none;">비밀번호를 입력해주세요.</p>
+	      </div>
+	      <div class="input_text_wrap no_flex mt25">
+	        <input type="password" id="login_pw2" class="text_box" placeholder="비밀번호 확인" autocomplete="off"/>
+	        <p id="err_msg_pw2" class="error_msg" style="display:none;">비밀번호 확인을 입력해주세요.</p>
+	      </div>
+	      <div class="input_text_wrap no_flex mt25">
+	        <input type="text" id="customer_nm" class="text_box" placeholder="이름" />
+	        <p id="err_msg_1" class="error_msg" style="display:none;">이름을 입력해주세요.</p>
+	      </div>
+	      <div class="input_text_wrap no_flex mt25" style="display:inline-block">
+	        <input type="tel" id="perno1" class="text_box" style="width:48%" placeholder="주민번호앞자리" maxlength="6"/>
+	        <input type="password" id="perno2" class="text_box" style="width:50%;float:right;letter-spacing:8px;" placeholder="주민번호뒷자리" maxlength="7"/>
+	        <p id="err_msg_2"  class="error_msg" style="display:none;">주민번호를 입력해주세요.</p>
+	      </div>
+	      <div class="input_text_wrap no_flex mt25">
+	        <input type="tel" id="customer_hpno" class="text_box" placeholder="휴대전화" value="" maxlength="11"/>
+	        <p id="err_msg_3" class="error_msg" style="display:none;">휴대전화번호를 입력해주세요.</p>
+	      </div>
+	      <div class="input_text_wrap mt25">
+	        <button id="btn_send_authno" class="b_search" style="margin-right: 10px;font-size:13px;" onclick="sendAuthNum();">
+	          인증번호받기
+	        </button>
+	        <button class="b_search" style="margin-right: 10px;" onclick="checkAuthNo();">확인</button>
+	        <input type="tel" class="text_box t_c" placeholder="" id="auth_no" maxlength="6"/>
+	        <span class="timer" id="sp_timer">00:00</span>
+	        <!-- 
+	         -->
+	     </div>
+	     <div>    
+	        <p id="err_msg_4" class="error_msg" style="display:none;">인증번호가 일치하지 않습니다.</p>
+	      </div>
+	    </section>
+	    <div class="btn_wrap">
+	      <button class="b_point" id="bt_join">가입하기</button>
+	    </div>
+	  </div>
+	
+	
+	  <!-- 모달팝업 -->
+	  <div class="layerPopup login_guide" id="search_person" style="display:none;">
+	    <div class="content login_guide_wrap">
+	      <h2>소개인 선택</h2>
+	      <div class="layerBody">
+	      	 <div style="">
+		      	 <input type="text" id="emp_nm2" class="text_box" style="width:98%;float:left;height:32px;margin-bottom:16px;border: 1px solid gray;padding-left:5px;"
+		      	 		placeholder="소개인이름" onkeyup="filterIntroducer();">
+		      	 <!-- <button class="b_search btnLayer" style="width: 26%;height:32px;float:right;margin-bottom:16px;" >찾기</button> -->
+	      	 </div>
+	         <div class="v_scroll" style="clear:both;">
+	            <ul class="search_person_wrap">
+	            
+	            </ul>
+	          </div>
+	        
+	      </div>
+	      <div class="btn_wrap">
+	        <a href="#" class="layerClose cancle">취소</a><!-- javascript:closePopup('search_person'); -->
+	        <a href="javascript:selectIntroducer();" class="ok">확인</a>
+	      </div>
+	    </div>
+	    <div class="layerDim keep"></div>
+	  </div>
+	</body>
+	
+	<script>
+	var emplist = [];
+	var authenticated = false;
+    $(document).ready(function(){
+    	
+    	$('#emp_nm_hp').on('click', function(){
+    		$('#search_person').show();
+    	})
+    	
+    	
+		$('#bt_join2').on('click', function(){
+			// checkAuthNo();
+			join();
+		});
+		
+		$('#bt_join').on('click', function(){
+			// console.log($('#emp_nm').val());
+			if ($('#emp_nm').val() == '') {
+				alert('소개인을 입력하세요.');
+				return;
+			}
+			
+			if ($('#customer_nm').val() == '') {
+				alert('고객님의 이름을 입력하세요.');
+				return;
+			}
+			
+			if (id_checked == false) {
+				alert('로그인 ID를 확인하세요.');
+				return;
+			}
+			
+			if (pw_checked == false) {
+				alert('비밀번호를 확인하세요.');
+				return;
+			}
+			
+			if (pw2_checked == false) {
+				alert('확인 비밀번호를 확인하세요.');
+				return;
+			}
+			
+			if ($('#perno1').val() == '') {
+				alert('고객님의 주민번호 앞자리를 입력하세요.');
+				return;
+			}
+			
+			if ($('#perno1').val().length != 6) {
+				alert('고객님의 주민번호 앞자리 형식이 올바르지 않습니다');
+				return;
+			}
+			
+			if ($('#perno2').val() == '') {
+				alert('고객님의 주민번호 뒷자리를 입력하세요.');
+				return;
+			}
+			
+			if ($('#perno2').val().length != 7) {
+				alert('고객님의 주민번호 뒷자리 형식이 올바르지 않습니다');
+				return;
+			}
+			
+			if ($('#customer_hpno').val() == '') {
+				alert('고객님의 휴대폰번호를 입력해주세요.');
+				return;
+			}
+			
+			join();
+			
+			// location.href = '/m/P05';
+		});
+		
+		$('#login_id').on('keyup', function(){
+			checkIdDuplicated();
+		})
+		
+		$('#login_pw').on('keyup', function(){
+			checkPassword();
+		})
+		
+		$('#login_pw2').on('keyup', function(){
+			checkPasswordConfirm();
+		})
+
+    });
+    
+    function closePopup(id) {
+    	$('#' + id).hide();
+    }
+    
+    function clickBtnSearch(){
+    	$('#btn_search').trigger('click');
+    }
+    
+    function selectIntroducer(){
+    	console.log('selectIntroducer()');
+    	var selected_cnt = 0 ;
+    	$('input[name=cc]').each(function(i,e){
+    		//console.log($(this).is(':checked'));
+    		//console.log($(this).attr('id'));
+    		if ($(this).is(':checked')) {
+    			console.log($(this).parent().find('input[name=emp_nm]').val());
+    			console.log($(this).parent().find('input[name=hpno]').val());
+    			console.log( $(this).attr('id'));
+    			$('#emp_nm_hp').val($(this).parent().find('input[name=emp_nm]').val() + ' ' + $(this).parent().find('input[name=hpno]').val());
+    			$('#emp_nm').val($(this).parent().find('input[name=emp_nm]').val());
+    			$('#user_id').val($(this).attr('id'));
+    			selected_cnt = 1;
+    		}
+    	});
+    	if (selected_cnt == 0){
+    		alert('소개인을 선택해주세요.');
+    		return;
+    	}
+    	$('#search_person').hide();
+    	
+    }
+    
+    function openPopup(id) {
+    	console.log('openPopup' + id);
+    	$('#emp_nm_hp').val('');
+    	$('#'+id).show();
+    	//$('#'+id).attr('display', 'inline-block');
+    	$('.search_person_wrap').empty();
+    	
+		$.ajax({
+			url : "/fc/introducers",
+			type : "GET",
+			dataType : "json",
+			data : {
+				MB_ID : 'YNG'
+			},
+			//async : false,
+			contentType : 'application/json; charset=UTF-8',
+			success : function(data) {
+				console.log(data);
+				emplist = data;
+				
+				$('#emp_nm_hp').trigger('keyup');
+				/*
+				if (data.length > 0) {
+			    	var html = '';
+			    	for (var i = 0; i< data.length; i++){
+			    		html += '<li>'
+			    		html += '	<div class="radio_wrap" style="height:30px;">'
+			            html += '		<input type="radio" id="'+ data[i].USER_ID +'" name="cc" />'
+			            html += '		<label for="'+ data[i].USER_ID + '" style="margin-bottom:-3px;text-align:bottom;">' + data[i].EMP_NM + '&nbsp;&nbsp;' + data[i].HPNO + '</label>'
+			          	html += '		<input type="hidden" name="emp_nm" value="'+ data[i].EMP_NM +'">'
+			          	html += '		<input type="hidden" name="hpno" value="'+ data[i].HPNO +'">'
+			            html += '	</div>'
+			        	html += '</li>'
+			    	}
+			    	$('.search_person_wrap').html(html);
+				}
+				*/
+			},
+			error : function() {
+				console.log('error');
+			}
+		});
+    	
+    }
+    
+    function filterIntroducer(){
+    	var emp_nm = $('#emp_nm2').val();
+    	console.log(emp_nm);
+    	var templist = [];
+    	
+
+    	if (emp_nm.length >= 2){
+        	for (var i = 0; i<emplist.length; i++) {
+        		if (emp_nm.length > 0 && emplist[i].EMP_NM.indexOf(emp_nm) != -1) {
+        			console.log('match!!!!!!' + emplist[i].EMP_NM)
+        			templist.push(emplist[i]);
+        		} 
+        	}
+        	console.log(templist.length);
+        	if (templist.length > 0) {
+    	    	var html = '';
+    	    	$('.search_person_wrap').empty();
+    	    	var data = templist;
+    	    	for (var i = 0; i< data.length; i++){
+		    		html += '<li>'
+		    		html += '	<div class="radio_wrap" style="height:30px;">'
+		            html += '		<input type="radio" id="'+ data[i].USER_ID +'" name="cc" />'
+		            html += '		<label for="'+ data[i].USER_ID + '" style="margin-bottom:-3px;text-align:bottom;">' + data[i].EMP_NM + '&nbsp;&nbsp;' + data[i].HPNO + '</label>'
+		          	html += '		<input type="hidden" name="emp_nm" value="'+ data[i].EMP_NM +'">'
+		          	html += '		<input type="hidden" name="emp_cd" value="'+ data[i].EMP_CD +'">'
+		          	html += '		<input type="hidden" name="hpno" value="'+ data[i].HPNO +'">'
+		            html += '	</div>'
+		        	html += '</li>'
+    	    	}
+    	    	$('.search_person_wrap').html(html);
+        	}
+    	}
+    	else {
+    		console.log('emp_nm is null');
+    		var html = '';
+	    	$('.search_person_wrap').empty();
+	    	/*
+	    	var data = emplist;
+	    	for (var i = 0; i< data.length; i++){
+	    		html += '<li>'
+		    		html += '	<div class="radio_wrap" style="height:30px;">'
+		            html += '		<input type="radio" id="'+ data[i].USER_ID +'" name="cc" />'
+		            html += '		<label for="'+ data[i].USER_ID + '" style="margin-bottom:-3px;text-align:bottom;">' + data[i].EMP_NM + '&nbsp;&nbsp;' + data[i].HPNO + '</label>'
+		          	html += '		<input type="hidden" name="emp_nm" value="'+ data[i].EMP_NM +'">'
+		          	html += '		<input type="hidden" name="hpno" value="'+ data[i].HPNO +'">'
+		            html += '	</div>'
+		        	html += '</li>'
+	    	}
+	    	$('.search_person_wrap').html(html);
+	    	*/
+    	} 
+
+    	
+    }
+    
+    // 아이디 중복 확인
+    var id_checked = false;
+    function checkIdDuplicated(){
+    	console.log($('#login_id').val().length);
+    	$('#err_msg_id').hide();
+		if ($('#login_id').val().length > 0 && $('#login_id').val().length < 6) {
+			console.log('로그인id는 영문과 숫자 포함, 6자 이상');
+			$('#err_msg_id').text('로그인id는 영문과 숫자 포함, 6자 이상').css('color', 'red');
+			$('#err_msg_id').show();
+			id_checked = false;
+		} else {
+			console.log('아이디중복을 체크합니다.')
+			var param = {
+    			login_id : $('#login_id').val(),
+    		}
+	    	$.ajax({
+				url : "/cs/join/login-accounts",
+				type : "GET",
+				dataType : "json",
+				data : param,
+				//async : false,
+				contentType : 'application/json; charset=UTF-8',
+				success : function(data) {
+					console.log(data);
+					if (data.res_cd == 'OK') {
+						console.log('로그인 ID 중복, 사용불가');
+						
+						$('#err_msg_id').text('이미 등록된 ID입니다.').css('color', 'red');
+						$('#err_msg_id').show();
+						id_checked = false;
+						
+					} else {
+						console.log('로그인 ID 사용가능')
+						$('#err_msg_id').text('사용가능한 ID입니다.').css('color', 'green');
+						$('#err_msg_id').show();
+						id_checked = true;
+					}
+				},
+				error : function() {
+					console.log('error');
+					$('#err_msg_id').text('등록할 수 없는 ID 입니다').css('color', 'red');
+					$('#err_msg_id').show();
+					id_checked = false;
+				}
+	    	})
+		}
+    	
+    }
+    
+    var pw_checked = false;
+    function checkPassword(){
+		$('#err_msg_pw').hide();    		
+    	var pw = $('#login_pw').val();
+    	if (pw.length < 6 ) {
+    		$('#err_msg_pw').text('로그인id는 영문과 숫자 포함, 6자 이상').css('color', 'red');
+			$('#err_msg_pw').show();
+			pw_checked = false;
+    	} else {
+			$('#err_msg_pw').hide();    
+			pw_checked = true;
+    	}
+    }
+    
+    var pw2_checked = false;
+    function checkPasswordConfirm(){
+    	$('#err_msg_pw2').hide();
+    	var pw = $('#login_pw').val();
+    	var pw2 = $('#login_pw2').val();
+    	if (pw.length >= 6) {
+    		if (pw != pw2) {
+    			console.log('비밀번호와 비밀번호 확인이 같지 않습니다.')
+    			$('#err_msg_pw2').text('비밀번호와 비밀번호 확인이 같지 않습니다.').css('color', 'red');
+    			$('#err_msg_pw2').show();
+    			pw2_checked = false;
+    		} else {
+    			console.log('비밀번호와 비밀번호 확인 일치')
+    			$('#err_msg_pw2').text('비밀번호와 비밀번호 확인이 일치합니다').css('color', 'green');
+    			$('#err_msg_pw2').show();
+    			pw2_checked = true;
+    		}
+    	}
+    }
+    
+    var msg_seq = '0';
+    function sendAuthNum(){
+    	console.log('sendAuthNo');
+    	clearInterval(timerId);
+		timersec = 300;
+		timermin = 0;
+		timersecond = 0;
+		timerrunning = false;
+		
+    	var param = {
+    			MB_ID : 'YNG',
+				call_to : $('#customer_hpno').val().replace(/-/ig, '').trim(),
+				receiver_nm : $('#customer_nm').val(),
+    		};
+		$.ajax({
+			url : "/sms/send-authnum-to-custoemr",
+			type : "POST",
+			dataType : "json",
+			data : JSON.stringify(param),
+			//async : false,
+			contentType : 'application/json; charset=UTF-8',
+			success : function(data) {
+				console.log(data);
+				if (data.res_cd = 'OK'){
+					msg_seq = data.msg_seq;
+					console.log(msg_seq);
+				}
+				startTimer();
+				$('#btn_send_authno').text('다시 받기');
+			},
+			error : function() {
+				console.log('error');
+			}
+		});
+		
+    	
+    }
+    
+    function checkAuthNo(){
+    	var param = {
+    			MB_ID : 'YNG',
+				seq : msg_seq,
+				auth_no : $('#auth_no').val(),
+    		};
+    	console.log(param)
+    	
+		$.ajax({
+			url : "/cs/auth/check-auth-no",
+			type : "POST",
+			dataType : "json",
+			data : JSON.stringify(param),
+			//async : false,
+			contentType : 'application/json; charset=UTF-8',
+			success : function(data) {
+				console.log(data);
+				if (data.res_cd == 'OK'){
+					console.log('OK Authenticated');
+					authenticated = true;
+					$('#err_msg_4').text('인증번호가 확인되었습니다.').css('color', 'green');
+					$('#err_msg_4').show();
+				} else {
+					console.log('NOT Authenticated');
+					authenticated = false;
+					$('#err_msg_4').text('인증번호가 올바르지 않거나 인증되지 않았습니다.').css('color', 'red');
+					$('#err_msg_4').show();
+				}
+			},
+			error : function() {
+				console.log('error');
+				authenticated = false;
+				$('#err_msg_4').text('인증번호가 올바르지 않거나 인증되지 않았습니다.').css('color', 'red');
+				$('#err_msg_4').show();
+			}
+		});
+    	
+    	
+    }
+    
+ // 2차 인증팝업 타이머
+	var timersec = 300;
+	var timermin = 0;
+	var timersecond = 0;
+	var timerrunning = false;
+	var timerId;
+	var res_cd = '';
+	function startTimer() {
+		console.log('timer started >>');
+		// timersec 세팅
+		setTimeout(function () {
+			timerId = setInterval(function () {
+
+				if (timersec <= 0) {
+					clearInterval(timerId);
+					timersec = 300;
+					timermin = 0;
+					timersecond = 0;
+					timerrunning = false;
+					console.log('<< timer stopped');
+					console.log('인증번호 입력시간이 경과하였습니다. 다시 요청해주세요.');
+				}
+				timersec = timersec - 1;
+				// console.log(timersec);
+				timermin = Math.floor(timersec / 60, 0);
+				timersecond = timersec - (timermin * 60);
+				console.log(timermin + ":" + lpad(timersecond, 2, '0'));
+				$('#sp_timer').text(timermin + ":" + lpad(timersecond, 2, '0'));
+				timerrunning = true;
+			}, 1000);
+
+		}, 0);
+
+	}
+	
+	function join(){
+		
+		if (authenticated == false){
+			$('#err_msg_4').text('인증번호가 올바르지 않거나 인증되지 않았습니다.');
+			$('#err_msg_4').show();
+			return;
+		}
+		
+		var cust_cell = $('#customer_hpno').val().replace(/-/ig, '');
+		cust_cell = cust_cell.substr(0, 3) +'-' + cust_cell.substring(cust_cell.length-8, cust_cell.length-4) + '-' + cust_cell.substr(-4)
+    	var param = {
+    			MB_ID : 'YNG',
+				login_id : $('#login_id').val().trim(),
+				login_pw : $('#login_pw').val().trim(),
+				cust_nm : $('#customer_nm').val().trim(),
+				ssn : $('#perno1').val() + '-' + $('#perno2').val().trim(),
+				cust_cell : cust_cell.trim(),
+				mo_cd : $('#user_id').val().trim(),
+    		};
+    	console.log(param)
+    	
+    	
+		$.ajax({
+			url : "/cs/join/join-customer",
+			type : "POST",
+			dataType : "json",
+			data : JSON.stringify(param),
+			//async : false,
+			contentType : 'application/json; charset=UTF-8',
+			success : function(data) {
+				console.log(data);
+				if (data.res_cd == 'OK'){
+					console.log('Join Success');
+					localStorage.setItem("JOIN_YN", "Y");
+					alert('가입신청이 완료되었습니다. 승인이 완료되면 SMS를 통해 알려드리겠습니다.');
+					location.href = '/m/P00';
+				} else {
+					console.log('Join Failed');
+				}
+			},
+			error : function() {
+				console.log('error');
+			}
+		});
+    	
+		
+	}
+    
+    function goBack(){
+    	location.href = '/m/P02';
+    }
+    
+    </script>
+
+</html>

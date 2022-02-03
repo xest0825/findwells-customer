@@ -49,6 +49,9 @@ public class BaseDAO {
 	@Getter
 	private static final String AuthMapper		= "Auth.";
 	
+	@Getter
+	private static final String MessageMapper		= "Message.";
+	
 	/* Biz 영역 */
 	@Getter
 	private static final String ConsultantMapper	= "Consultant.";

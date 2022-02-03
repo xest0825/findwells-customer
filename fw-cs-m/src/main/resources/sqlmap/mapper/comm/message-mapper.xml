@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Message">
+
+	<select id="getMessageLogList" parameterType="kr.co.fw.common.msg.MessageVO" resultType="hmap">
+		/* message-mapper.xml getMessageLogList 메시지 이력 조회 */
+	  <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(limit_cnt)">
+      <include refid="Common.LimitStart"></include>
+      </if>	 
+				SELECT TB1.MSG_SEQ 		/* NUMBER PRIMARY KEY */
+					 , TB1.MSG_TYP 		/* VARCHAR2(10) */
+					 , TB1.RECEIVER 	/* VARCHAR2(100) */
+					 , TB1.SENDER 		/* VARCHAR2(100) */
+					 , TB1.CC 			/* VARCHAR2(1000) */
+					 , TB1.TITLE 		/* VARCHAR2(100) */
+					 , TB1.CONTENT 		/* VARCHAR2(4000) */
+					 , TB1.SEND_STS 	/* VARCHAR2(10) */
+					 , TB1.REF_ID 		/* VARCHAR2(32) */
+					 , TB1.REF_TYP 		/* VARCHAR2(20) */
+					 , TB1.CHK_STS 		/* VARCHAR2(10) */
+					 , TO_CHAR(TB1.IN_DTM, 'YYYY-MM-DD HH24:MI:SS') IN_DTM /* TIMESTAMP DEFAULT SYSDATE */
+					 , TO_CHAR(TB1.UP_DTM, 'YYYY-MM-DD HH24:MI:SS') UP_DTM /* TIMESTAMP DEFAULT SYSDATE */
+					 , NVL(TB4.INSCO_CD, '') AS INSCO_CD
+					 , NVL((CASE WHEN TB1.REF_TYP = 'FW' THEN '파인드웰스' 
+					 			 ELSE TB4.INSCO_NM END), '') INSCO_NM
+					 , NVL((CASE WHEN TB1.REF_TYP = 'FW' THEN '/images/logo_findwell.png' 
+					 			 ELSE TB4.CI_URL END), '') CI_URL
+			      FROM TBCM_MSG_LOG TB1 /* 메시지 이력 */
+	   LEFT OUTER JOIN TBCS_CUSTOMER_FSB TB2
+	   				ON TB1.RECEIVER = TB2.CUST_ID
+	   LEFT OUTER JOIN TBIN_EMPMST_FSB TB3
+	   				ON TB1.SENDER = TB3.EMP_CD
+	   LEFT OUTER JOIN TBCM_INSCO TB4
+	   				ON TB1.REF_TYP = 'INSCO'
+	   			   AND TB1.REF_ID = TB4.INSCO_CD
+				 WHERE 1 = 1
+				   <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(msg_typ)">
+				   AND TB1.MSG_TYP = #{msg_typ}
+				   </if>	 
+				   <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(receiver)">
+				   AND TB1.RECEIVER = #{receiver}
+				   </if>	 
+				   <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(sender)">
+				   AND TB1.SENDER = #{sender}
+				   </if>	 
+				   <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(srch_word)">
+				   AND TB1.CONTENT LIKE '%'||#{srch_word}||'%'
+				   </if>	 
+				   <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(ref_id)">
+				   AND TB1.REF_ID = #{ref_id}
+				   </if>	 
+				   <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(ref_typ)">
+				   AND TB1.REF_TYP = #{ref_typ}
+				   </if>
+		      ORDER BY TB1.UP_DTM DESC 
+		     <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(limit_cnt)">
+		      ) A
+		      WHERE ROWNUM <![CDATA[ <= ]]> ${limit_cnt}
+		     </if>	 
+	</select>
+	
+	<insert id="insertMessageLog" parameterType="kr.co.fw.common.msg.MessageVO" >
+		<selectKey keyProperty="msg_seq" order="BEFORE" resultType="String">
+		SELECT TBCM_MSG_LOG_SEQ.NEXVAL AS msg_seq FROM DUAL
+		</selectKey>
+		/* message-mapper.xml insertMessageLog 메시지데이터 입력 */
+		INSERT 
+		  INTO TBCM_MSG_LOG
+		     ( MSG_SEQ 		/* NUMBER PRIMARY KEY */
+			 , MSG_TYP 		/* VARCHAR2(10) */
+			 , RECEIVER 	/* VARCHAR2(100) */
+			 , SENDER 		/* VARCHAR2(100) */
+			 , CC 			/* VARCHAR2(1000) */
+			 , TITLE 		/* VARCHAR2(100) */
+			 , CONTENT 		/* VARCHAR2(4000) */
+			 , SEND_STS 	/* VARCHAR2(10) */
+			 , REF_ID 		/* VARCHAR2(32) */
+			 , REF_TYP 		/* VARCHAR2(20) */
+			 , CHK_STS 		/* VARCHAR2(10) *
+			 , IN_DTM 		/* TIMESTAMP DEFAULT SYSDATE */
+			 , UP_DTM 		/* TIMESTAMP DEFAULT SYSDATE */
+		     )
+		VALUES
+			 ( #{msg_seq} 		/* NUMBER PRIMARY KEY */
+			 , #{msg_typ} 		/* VARCHAR2(10) */
+			 , #{receiver} 		/* VARCHAR2(100) */
+			 , #{sender} 		/* VARCHAR2(100) */
+			 , #{cc} 			/* VARCHAR2(1000) */
+			 , #{title} 		/* VARCHAR2(100) */
+			 , #{content} 		/* VARCHAR2(4000) */
+			 , #{send_sts} 		/* VARCHAR2(10) */
+			 , #{ref_id} 		/* VARCHAR2(32) */
+			 , #{ref_typ} 		/* VARCHAR2(20) */
+			 , #{chk_sts} 		/* VARCHAR2(10) *
+			 , SYSDATE 			/* TIMESTAMP DEFAULT SYSDATE */
+			 , SYSDATE 			/* TIMESTAMP DEFAULT SYSDATE */
+			 )
+	</insert>
+	
+	<update id="updateMessageLog" parameterType="kr.co.fw.common.msg.MessageVO" >
+		/* message-mapper.xml updateMessageLog 메시지데이터 수정 */
+		UPDATE TBCM_MSG_LOG
+		   SET UP_DTM   = SYSDATE		/* TIMESTAMP DEFAULT SYSDATE */
+		    <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(msg_typ)">
+			 , MSG_TYP  = #{msg_typ} 		/* VARCHAR2(10) */
+			 </if>
+		     <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(receiver)">
+			 , RECEIVER = #{receiver} 		/* VARCHAR2(100) */
+			 </if>
+		     <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(sender)">
+			 , SENDER   = #{sender} 		/* VARCHAR2(100) */
+			 </if>
+		     <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cc)">
+			 , CC       = #{cc} 			/* VARCHAR2(1000) */
+			 </if>
+		     <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(title)">
+			 , TITLE    = #{title} 		/* VARCHAR2(100) */
+			 </if>
+		     <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(content)">
+			 , CONTENT  = #{content} 		/* VARCHAR2(4000) */
+			 </if>
+		     <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(send_sts)">
+			 , SEND_STS = #{send_sts} 		/* VARCHAR2(10) */
+			 </if>
+		     <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(ref_id)">
+			 , REF_ID   = #{ref_id} 		/* VARCHAR2(32) */
+			 </if>
+		     <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(ref_typ)">
+			 , REF_TYP  = #{ref_typ} 		/* VARCHAR2(20) */
+			 </if>
+		     <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(chk_sts)">
+			 , CHK_STS  = #{chk_sts} 		/* VARCHAR2(10) *
+			 </if>
+	     WHERE MSG_SEQ  = #{msg_seq} 		/* NUMBER PRIMARY KEY */
+	</update>
+	
+	<delete id="deleteMessageLog" parameterType="kr.co.fw.common.msg.MessageVO" >
+		/* message-mapper.xml deleteMessageLog 메시지데이터 삭제 */
+		DELETE TBCM_MSG_LOG
+	     WHERE MSG_SEQ  = #{msg_seq} 		/* NUMBER PRIMARY KEY */
+	</delete>
+
+
+
+
+</mapper>

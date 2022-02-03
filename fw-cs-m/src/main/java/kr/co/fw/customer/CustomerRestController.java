@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import kr.co.fw.base.BaseController;
+import kr.co.fw.common.file.FileVO;
+import kr.co.fw.common.msg.MessageVO;
 import kr.co.fw.common.util.CommUtil;
 import kr.co.fw.common.util.CryptoUtil;
 import kr.co.fw.system.auth.AuthVO;
@@ -26,6 +28,11 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 public class CustomerRestController extends BaseController {
 
+	/**
+	 * 로그인 계정 중복 확인
+	 * @param paramvo
+	 * @return
+	 */
 	@GetMapping("/cs/join/login-accounts")
 	public ResponseEntity<HashMap<String, Object>> checkLoginIdDuplicated(CustomerVO paramvo) {
 		log.info("checkLoginIdDuplicated");
@@ -47,6 +54,11 @@ public class CustomerRestController extends BaseController {
 		return entity;
 	}
 	
+	/**
+	 * 인증번호 확인
+	 * @param paramvo
+	 * @return
+	 */
 	@PostMapping("/cs/auth/check-auth-no")
 	public ResponseEntity<HashMap<String, Object>> joinCustomer(@RequestBody AuthVO paramvo) {
 		log.info("[POST] /cs/auth/check-auth-no");
@@ -72,6 +84,11 @@ public class CustomerRestController extends BaseController {
 		return entity;
 	}
 	
+	/**
+	 * 고객 가입 
+	 * @param paramvo
+	 * @return
+	 */
 	@PostMapping("/cs/join/join-customer")
 	public ResponseEntity<HashMap<String, Object>> checkAuthNo(@RequestBody CustomerVO paramvo) {
 		log.info("[POST] /cs/join/join-customer");
@@ -198,15 +215,68 @@ public class CustomerRestController extends BaseController {
 		return entity;
 	}
 	
+	/**
+	 * 고객 계약 목록 조회
+	 * @param paramvo
+	 * @return
+	 */
 	@GetMapping("/cs/contracts")
 	public ResponseEntity<HashMap<String, Object>> getContractListByCustomer(CustomerVO paramvo) {
 		log.info("getContractListByCustomer");
 		List<HashMap<String, Object>> retList = new ArrayList<HashMap<String, Object>>();
 		HashMap<String, Object> retMap = new HashMap<String, Object>();
 		
-
 		retList = getCustomerService().getContractListByCustomer(paramvo);
 		if (CommUtil.isNotEmpty(retList)) {
+			retMap.put("res_cd","OK");
+			retMap.put("result", retList);
+		} else {
+			retMap.put("res_cd","FAIL");
+			retMap.put("result", "");
+		}
+
+		ResponseEntity<HashMap<String, Object>> entity = new ResponseEntity<>(retMap, HttpStatus.OK);
+		return entity;
+	}
+	
+	/**
+	 * 계약 파일 목록 조회 
+	 * @param paramvo
+	 * @return
+	 */
+	@GetMapping("/cs/contract/files")
+	public ResponseEntity<HashMap<String, Object>> getContractFileList(CustomerVO paramvo) {
+		log.info("getContractListByCustomer");
+		List<HashMap<String, Object>> retList = new ArrayList<HashMap<String, Object>>();
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		FileVO file  = new FileVO();
+		//retList = getFileService().getFileInfoList(file);
+		if (CommUtil.isNotEmpty(retList)) {
+			retMap.put("res_cd","OK");
+			retMap.put("result", retList);
+		} else {
+			retMap.put("res_cd","FAIL");
+			retMap.put("result", "");
+		}
+
+		ResponseEntity<HashMap<String, Object>> entity = new ResponseEntity<>(retMap, HttpStatus.OK);
+		return entity;
+	}
+	
+	/**
+	 * 메시지 이력 조회
+	 * @param paramvo
+	 * @return
+	 */
+	@GetMapping("/cs/messages")
+	public ResponseEntity<HashMap<String, Object>> getMessageLogList(MessageVO paramvo) {
+		log.info("getMessageLogList");
+		List<HashMap<String, Object>> retList = new ArrayList<HashMap<String, Object>>();
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		retList = getMessageService().getMessageLogList(paramvo);
+		if (retList.size() > 0) {
 			retMap.put("res_cd","OK");
 			retMap.put("result", retList);
 		} else {

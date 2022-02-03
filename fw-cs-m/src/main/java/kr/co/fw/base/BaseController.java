@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import kr.co.fw.board.BoardService;
 import kr.co.fw.common.code.CodeService;
 import kr.co.fw.common.file.FileService;
+import kr.co.fw.common.msg.MessageService;
 import kr.co.fw.consultant.ConsultantService;
 import kr.co.fw.customer.CustomerService;
 import kr.co.fw.product.ProductService;
@@ -37,6 +38,9 @@ public class BaseController {
 	
 	@Autowired
 	AuthService authService;
+	
+	@Autowired
+	MessageService messageService;
 	
 	
 	/* Biz 영역 */

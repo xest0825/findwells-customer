@@ -30,6 +30,17 @@
 	<sql id="CountEnd">
 			   ) A
 	</sql>
+	
+	<!-- 리밋 -->
+	<sql id="LimitStart">
+		SELECT A.*
+		  FROM (
+	</sql>
+	
+	<sql id="LimitEnd">
+			   ) A
+		 WHERE ROWNUM <![CDATA[ <= ]]> ${limit_cnt}
+	</sql>
 
 	<select id="fasooFinal" resultType="int">
 	SELECT FSPLUGIN.SPXDB.FINAL

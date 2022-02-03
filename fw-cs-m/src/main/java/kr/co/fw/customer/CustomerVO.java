@@ -31,5 +31,7 @@ public class CustomerVO extends BaseVO{
 	private String accnt_sts;
 	private String data_dcd;
 	private String approved_yn;
+	
+	private String cont_seq;
 
 }

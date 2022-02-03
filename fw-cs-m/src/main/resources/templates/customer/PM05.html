@@ -17,7 +17,7 @@
   <script type="text/javascript" src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
   <script type="text/javascript" src="/js/common_added.js"></script>
   <script type="text/javascript" src="/js/app.js"></script>
-  <script type="text/javascript" src="/js/navigation.js"></script>"/js/common_added.js"></script>
+  <script type="text/javascript" src="/js/navigation.js"></script>
   <script type="text/javascript" src="/js/app.js"></script>
 </head>
 
@@ -32,49 +32,49 @@
       <div class="join_list_view">
         <ul>
           <li>
-            <span>ITA</span>
-            <span>SNP_15Y</span>
+            <span id="insco_cd">ITA</span>
+            <span id="prod_nm">SNP_15Y</span>
           </li>
           <li>
             <span>이슈일자</span>
-            <span>2019-04-29</span>
+            <span id="cont_date">2019-04-29</span>
           </li>
           <li>
             <span>증서번호</span>
-            <span>T123W123456</span>
+            <span id="inspol_no">T123W123456</span>
           </li>
           <li>
             <span>납입정보</span>
-            <span>카드납, 월납, 15년 </span>
+            <span id="pay_info">카드납, 월납, 15년 </span>
           </li>
           <li>
             <span>계약기간</span>
-            <span>2019-04-29 ~ 2034-04-29</span>
+            <span id="cont_period">2019-04-29 ~ 2034-04-29</span>
           </li>
           <li>
             <span>납입금액</span>
-            <span>USD 300$</span>
+            <span id="prem_amt">USD $300</span>
           </li>
           
         </ul>
         <ul class="name">
           <li>
             <span>계약자</span>
-            <span>홍길동, 홍길순</span>
+            <span id="geaja">홍길동, 홍길순</span>
           </li>
           <li>
             <span>피보험자</span>
-            <span>홍길동, 홍길순</span>
+            <span id="piabo">홍길동, 홍길순</span>
           </li>
           <li>
             <span>수익자</span>
-            <span>홍길동, 홍길순</span>
+            <span id="beneficiary">홍길동, 홍길순</span>
           </li>
         </ul>
 
         <div class="file_wrap">
           <p class="tit_file">첨부파일</p>
-          <div class="file_list">
+          <div class="file_list" id="file_list">
             <p>
               <a href="">
                 홍길동_ITA결제카드.pdf
@@ -102,12 +102,90 @@
 
 	<script>
 	var user_id =  '[[${user_id}]]';
+	var cont_seq =  '[[${cont_seq}]]';
 	$(document).ready(function(){
-
+		getContractList();
+		getContractFileList();
     });
     
     function goBack(){
     	location.href = '/m/PM01/'+ user_id;
+    }
+    
+    function getContractList() {
+		var param = {cust_id: user_id, seq : cont_seq};
+		
+		$.get({
+			url: '/cs/contracts'
+			, type: 'GET'
+			, async: false
+			, data : param
+			, contentType: 'application/json; charset=UTF-8'
+			, headers: {
+				// "Authorization": "bearer" + ACCESS_TOKEN,
+			}
+			, success: function (data_) {
+				console.log(data_);
+				//console.log(data + "");
+				//     fconsole.log(data.substring(data.indexOf("uid") + 4, data.indexOf("mid") - 2));   //uid 만 파싱
+				var list = data_.result;
+				var data = {};
+				var html = '';
+
+				if (list.length > 0) {
+					data = list[0];
+					$('#insco_cd').text(data.INSCO_CD);
+					$('#prod_nm').text(data.PROD_NM);
+					$('#cont_date').text(data.CONT_DATE);
+					$('#inspol_no').text(data.INSPOL_NO);
+					$('#pay_info').text(data.AUTO_TRANS_YN + ', ' + data.NAPMETHOD + ', ' + data.NAPGI+ data.NAPGI_GBN);
+					$('#cont_period').text(data.INSU_STRT_DATE + ' ~ ' + data.INSU_END_DATE);
+					$('#prem_amt').text((data.HPREM_AMT > 0 ? 'HKD $' + data.HPREM_AMT : 'USD $' + data.UPREM_AMT));
+					$('#geaja').text(data.GEAJA_NM);
+					$('#piabo').text(data.PIABO_NM);
+					$('#beneficiary').text(data.BENEFICIARY_NM);
+					
+				} else {
+					data = {};
+				}
+
+		        
+				
+			}
+			, error: function (req, status, error) {
+				console.log(req + ", " + status + ", " + error);
+				
+			}
+		});
+	}
+    
+    function getContractFileList(){
+    	$('#file_list').empty();
+    	
+		$.get({
+			url: '/cs/contract/files'
+			, type: 'GET'
+			, async: false
+			, data : param
+			, contentType: 'application/json; charset=UTF-8'
+			, headers: {
+				// "Authorization": "bearer" + ACCESS_TOKEN,
+			}
+			, success: function (data_) {
+				console.log(data_);
+				var list = data_.result;
+				var data = {};
+				var html = '';
+				
+				$('#file_list').html(html);
+
+				
+			}
+			, error: function (req, status, error) {
+				console.log(req + ", " + status + ", " + error);
+				
+			}
+		});
     }
     </script>
 

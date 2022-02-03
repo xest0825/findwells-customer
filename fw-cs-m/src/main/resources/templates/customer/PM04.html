@@ -17,7 +17,8 @@
   <script type="text/javascript" src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
   <script type="text/javascript" src="/js/common_added.js"></script>
   <script type="text/javascript" src="/js/app.js"></script>
-  <script type="text/javascript" src="/js/navigation.js"></script>  <link href="/css/bootstrap.css" type="text/css" rel="stylesheet" />
+  <script type="text/javascript" src="/js/navigation.js"></script>  
+  <link href="/css/bootstrap.css" type="text/css" rel="stylesheet" />
 
   <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
   <script type="text/javascript" src="/js/common_added.js"></script>
@@ -32,10 +33,10 @@
     </div>
     <section class="self_certification">
       
-      <div class="join_list">
-        <ul>
+      <div class="join_list" >
+        <ul id="contractList">
           <li>
-            <a href="">
+            <a href="javascript:goContractDetail();">
               <div>
                 <img src="/images/logo_metis.png">
               </div>
@@ -113,12 +114,68 @@
 	<script>
 	var user_id =  '[[${user_id}]]';
 	$(document).ready(function(){
-
+		getContractList();
     });
     
     function goBack(){
     	location.href = '/m/PM01/'+ user_id;
     }
+    
+    function goContractDetail(seq){
+    	location.href = '/m/PM05/' + user_id + '/' + seq;
+    }
+    
+    function getContractList() {
+		var param = {cust_id: user_id};
+		
+		$.get({
+			url: '/cs/contracts'
+			, type: 'GET'
+			, async: false
+			, data : param
+			, contentType: 'application/json; charset=UTF-8'
+			, headers: {
+				// "Authorization": "bearer" + ACCESS_TOKEN,
+			}
+			, success: function (data) {
+				console.log(data);
+				// console.log(data + "");
+				//     fconsole.log(data.substring(data.indexOf("uid") + 4, data.indexOf("mid") - 2));   //uid 만 파싱
+				var list = data.result;
+				var html = '';
+				$('#contractList').empty();
+				
+				for (var i = 0; i < list.length; i++) {
+					html += '<li>'
+					html += '<a href="javascript:goContractDetail('+ list[i].SEQ +');">'
+					html += '<div>'
+					html += '<img src="http://f-ims.com'+list[i].CI_URL+'" '+ (list[i].INSCO_CD == 'ITA' ? 'style="background:gray;"' : '')+'>'
+					html += '</div>'
+					html += '<div>'
+					html += '<p class="company_name">'
+					html +=  list[i].PROD_NM
+					html += '</p>'
+					html += '<p class="name">'
+					html += '<span>' + list[i].GEAJA_NM+ '</span> / <span>' + list[i].PIABO_NM + '</span>'
+					html += '</p>'
+					html += '<p class="money">'+(list[i].HPREM_AMT > 0? 'HKD $' + list[i].HPREM_AMT : 'USD $' + list[i].UPREM_AMT ) + '</p>'
+					html += '<p class="date">'+ list[i].CONT_DATE+ '</p>'
+					html += '</div>'
+					html += '</a>'
+					html += '</li>'
+					;
+				}
+				
+		          
+				$('#contractList').html(html);
+				
+			}
+			, error: function (req, status, error) {
+				console.log(req + ", " + status + ", " + error);
+				
+			}
+		});
+	}
     </script>
 
 </html>

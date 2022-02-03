@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:tm="http://www.thymeleaf.org" 
+	  xmlns:th="http://www.thymeleaf.org" 
+	  xmlns:layout="http://www.thymeleaf.org/layout">
+
+	<head>
+	  <meta charset="utf-8" />
+	  <title>PE01</title>
+	  <meta name="viewport"
+	    content="user-scalable=yes, initial-scale=1, width=device-width, target-densitydpi=medium-dpi" />
+	  <meta name="format-detection" content="telephone=no" />
+	  <link rel="stylesheet" href="css/style.css" />
+	  <link rel="stylesheet" href="/css/style.css" />
+	  <link href="/css/bootstrap.css" type="text/css" rel="stylesheet" />
+	
+	  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+	  <script type="text/javascript" src="/js/common_added.js"></script>
+	  <script type="text/javascript" src="/js/app.js"></script>
+	</head>
+	
+	<body>
+	  <div class="wrapper_lock">
+	    <div class="top_wrapper">
+	      <a href="javascript:goBack();" class="go_back" id="bt_back">뒤로가기</a>
+	      <a href="#none" class="logo_findwell">
+	        <img src="/images/logo_findwell.png" />
+	      </a>
+	    </div>
+	    <section class="self_certification">
+	      <h2>페스워드 찾기</h2>
+	      <p class="desc"></p>
+	
+	      <div class="input_text_wrap">
+	        <input type="text" class="text_box" placeholder="담당 인트로듀스ID" />
+	        <button class="b_search" style="margin-left: 10px;">찾기</button>
+	      </div>
+	      <div class="input_text_wrap mt25">
+	        <input type="text" class="text_box" placeholder="이름" />
+	      </div>
+	      <div class="input_text_wrap mt25">
+	        <input type="text" class="text_box" placeholder="주민번호" />
+	      </div>
+	      <div class="input_text_wrap mt25">
+	        <input type="text" class="text_box" placeholder="휴대전화" />
+	      </div>
+	      <div class="input_text_wrap mt25">
+	        <button class="b_search" style="margin-right: 10px;">인증번호 받기</button>
+	        <input type="text" class="text_box t_c" placeholder="" />
+	      </div>
+	
+	      <div class="pw_view" style="display: none;">
+	        <p>나의 비밀번호</p>
+	        <p>1234</p>
+	      </div>
+	    </section>
+	    <div class="btn_wrap">
+	      <button class="b_point" id="bt_confirm">확인</button>
+	    </div>
+	  </div>
+	</body>
+	
+	<script>
+    $(document).ready(function(){
+
+    });
+    
+    function goBack(){
+    	location.href = '/m/P01';
+    }
+    </script>
+	
+	
+
+</html>

@@ -6,7 +6,7 @@
 <head>
   <meta charset="utf-8" />
   <title>메인</title>
-  <meta name="viewport" content="user-scalable=yes, initial-scale=1, width=device-width, target-densitydpi=medium-dpi" />
+  <meta name="viewport" content="user-scalable=no, initial-scale=1, width=device-width, target-densitydpi=medium-dpi" />
   <meta name="format-detection" content="telephone=no" />
   <link type="text/css" rel="stylesheet" href="/css/style.css" />
   <link type="text/css" rel="stylesheet" href="/css/bootstrap.css" />
@@ -14,10 +14,13 @@
   <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.0/css/all.min.css" />
 
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-  <script type="text/javascript" src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+
   <script type="text/javascript" src="/js/common_added.js"></script>
   <script type="text/javascript" src="/js/app.js"></script>
   <script type="text/javascript" src="/js/navigation.js"></script>
+  <script type="text/javascript" src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+  <script type="text/javascript" src="/js/common_added_main.js"></script>
+
 
 </head>
 
@@ -39,11 +42,20 @@
         </div>
         <div class="swiper-pagination"></div>
       </div>
+      
+       <script>
+		var swiper = new Swiper('.mySwiper', {
+			  spaceBetween: 30,
+			  pagination: {
+			    el: '.swiper-pagination',
+			    clickable: true,
+			  },
+			})
+       </script>
 
       <!-- 각 로고 슬라이드 -->
       <div class="swiper-container mySwiper2">
         <div class="swiper-wrapper" id="contracts">
-
           <div class="swiper-slide">
             <div class="logo">
               <img src="/images/logo_metis.png" />
@@ -65,7 +77,9 @@
               </p>
             </div>
           </div>
-          
+          <!-- 
+           -->
+          <!-- 
           <div class="swiper-slide">
             <div class="logo">
               <img src="/images/logo_Generali.png" />
@@ -87,19 +101,18 @@
               </p>
             </div>
           </div>
-          
+           -->
         </div>
         <div class="swiper-button-next"></div>
         <div class="swiper-button-prev"></div>
         <div class="swiper-pagination"></div>
       </div>
 
-      <script type="text/javascript" src="/js/common_added_main.js"></script>
-
       <!-- message -->
       <div class="message_wrap">
         <p class="tit">MESSAGE</p>
-        <ul>
+        <ul id="messages">
+        <!-- 
           <li>
             <div class="logo">
               Man
@@ -130,6 +143,7 @@
               </div>
             </div>
           </li>
+           -->
         </ul>
       </div>
 
@@ -211,7 +225,29 @@
 		console.log(user_id);
 		
 		getContractList();
+		
+		getMessageLogList();
     });
+	
+	
+	/*
+	
+	AXA - 
+	MetisHK - 
+	Metlife
+	MM
+	Sunlife - 
+	Fubon - 
+	YF
+	RL360 - 
+	AIA - 
+	FWD - 
+	ITA - 
+	
+	
+	
+	*/
+	
 	
 	
 	function getContractList() {
@@ -224,49 +260,163 @@
 			, data : param
 			, contentType: 'application/json; charset=UTF-8'
 			, headers: {
-				// "Authorization": "bearer" + ACCESS_TOKEN,
 			}
 			, success: function (data) {
 				console.log(data);
-				//console.log(data + "");
-				//     fconsole.log(data.substring(data.indexOf("uid") + 4, data.indexOf("mid") - 2));   //uid 만 파싱
 				var list = data.result;
+				//list = [];
 				var html = '';
 				$('#contracts').empty();
-				for (var i = 0; i < list.length; i++) {
+				if (list.length == 0) {
+					
 					html += '<div class="swiper-slide">'
 					html += '	<div class="logo" style="background:gray">'
-					html += list[i].CI_URL != '' ? '<img src="http://f-ims.com' + list[i].CI_URL + '">': '		<img src="/images/logo_Generali.png" />'
+					html += '		<img src="/images/logo_FW.png" />'
 					html += '	</div>'
 					html += '	<div class="txt">'
 					html += '		<p class="logo_txt">'
-					html += list[i].PROD_NM
+					html += '		가입된 계약이 없습니다. '
 					html += '		<br />'
 					//html += '두줄일때'
 					html += '		</p>'
 					html += '		<p class="name">'
-					html += list[i].GEAJA_NM + ' / ' + list[i].PIABO_NM
 					html += '		</p>'
 					html += '		<p class="amount">'
-					html += (list[i].HPREM_AMT > 0 ?'HKD $' +  list[i].HPREM_AMT: 'USD $' + list[i].UPREM_AMT)
 					html += '		</p>'
 					html += '		<p class="date">'
-					html += list[i].CONT_DATE
 					html += '		</p>'
 					html += '	</div>'
-					html += '</div>';
+					html += '</div>'
+					
+				} else {
+					for (var i = 0; i < list.length; i++) {
+						html += '<div class="swiper-slide">'
+						html += '	<div class="logo" style="background:gray">'
+						html += list[i].INSCO_CD != '' ? '<img src="/images/logo_' + list[i].INSCO_CD + '.png">': '		<img src="/images/logo_FW.png" />'
+						html += '	</div>'
+						html += '	<div class="txt">'
+						html += '		<p class="logo_txt">'
+						html += list[i].PROD_NM
+						html += '		<br />'
+						//html += '두줄일때'
+						html += '		</p>'
+						html += '		<p class="name">'
+						html += list[i].GEAJA_NM + ' / ' + list[i].PIABO_NM
+						html += '		</p>'
+						html += '		<p class="amount">'
+						html += (list[i].HPREM_AMT > 0 ?'HKD $' +  list[i].HPREM_AMT: 'USD $' + list[i].UPREM_AMT)
+						html += '		</p>'
+						html += '		<p class="date">'
+						html += list[i].CONT_DATE
+						html += '		</p>'
+						html += '	</div>'
+						html += '</div>'
+					}
+					
 				}
 		          
 				$('#contracts').html(html);
+
+
+				/* 각 로고 슬라이드 */
+				var swiper = new Swiper('.mySwiper2', {
+				  pagination: {
+				    el: '.swiper-pagination',
+				    type: 'progressbar',
+				  },
+				  navigation: {
+				    nextEl: '.swiper-button-next',
+				    prevEl: '.swiper-button-prev',
+				  },
+				})
 				
 			}
 			, error: function (req, status, error) {
-				console.log(req + ", " + status + ", " + error);
+				console.log(req + ", " + status + ", " + error);	
 				
 			}
 		});
 	}
+	
+	function getMessageLogList() {
+		
+		var param = {receiver: user_id, limit_cnt: 2};
+		
+		$.get({
+			url: '/cs/messages'
+			, type: 'GET'
+			, async: false
+			, data : param
+			, contentType: 'application/json; charset=UTF-8'
+			, headers: {
+				// "Authorization": "bearer" + ACCESS_TOKEN,
+			}
+			, success: function (data) {
+				console.log(data);
+				var list = data.result;
+				//list = [];
+				var html = '';
+				$('#messages').empty();
+				if (list.length == 0){
+					
+					html += '<li>'
+					html += '	<div class="logo">'
+					html += '		<img src="/images/logo_findwell.png">'
+					html += '	</div>'
+					html += '	<div class="inner">'
+					html += '		<div class="tit">'
+					html += '			<span>파인드웰스</span>'
+					html += '		</div>'
+					html += '		<div class="txt">'
+					html += '		수신한 메시지가 없습니다.'
+					html += '		</div>'
+					html += '	</div>'
+					html += '</li>'
+					
+					
+				} else {
+					for (var i = 0; i < list.length; i++) {
+						html += '<li>'
+						html += '	<div class="logo">'
+						if (list[i].REF_TYP == 'FW'){
+						html += '		<img src="/images/logo_findwell.png">'
+						} else if ( list[i].REF_ID == '') {
+						html += '		'
+						} else {
+						//html += '		<img src="/images/logo_'+list[i].INSCO_CD + '.png">'
+						html += '		<img src="/images/logo_FWD.png">'
+						}
+						html += '	</div>'
+						html += '	<div class="inner">'
+						html += '		<div class="tit">'
+						html += '			<span>'+list[i].INSCO_NM+'</span>'
+						html += '			<span>'+list[i].UP_DTM.substr(0, list[i].UP_DTM.length-3)+'</span>'
+						html += '		</div>'
+						html += '		<div class="txt">'
+						html += list[i].CONTENT
+						html += '		</div>'
+						html += '	</div>'
+						html += '</li>'
+	
+					}					
+				}
+		          
+				$('#messages').html(html);
+				
+			}
+			, error: function (req, status, error) {
+				console.log(req + ", " + status + ", " + error);	
+				
+			}
+		});
+		
+		
+	}
 
     </script>
+    
+     
+    
+
 
 </html>

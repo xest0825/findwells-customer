@@ -82,7 +82,7 @@
 	
 	
 	  <!-- 모달팝업 -->
-	  <div class="layerPopup login_guide" id="search_person" style="display:none;">
+	  <div class="layerPopup login_guide layerContainer" id="search_person" style="display:none;">
 	    <div class="content login_guide_wrap">
 	      <h2>소개인 선택</h2>
 	      <div class="layerBody">
@@ -228,7 +228,8 @@
     function openPopup(id) {
     	console.log('openPopup' + id);
     	$('#emp_nm_hp').val('');
-    	$('#'+id).show();
+    	//$('#'+id).show();
+    	$('#emp_nm2').val('');
     	//$('#'+id).attr('display', 'inline-block');
     	$('.search_person_wrap').empty();
     	
@@ -306,6 +307,7 @@
     		console.log('emp_nm is null');
     		var html = '';
 	    	$('.search_person_wrap').empty();
+	    	
 	    	/*
 	    	var data = emplist;
 	    	for (var i = 0; i< data.length; i++){

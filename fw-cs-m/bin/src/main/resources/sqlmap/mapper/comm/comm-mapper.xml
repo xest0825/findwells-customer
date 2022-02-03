@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="Common">
+
+	<sql id="PagingStart">
+	<![CDATA[
+	SELECT * 
+	  FROM (SELECT ROWNUM AS ROW_NUMBER, COUNT(*) OVER() AS TOTAL,
+	A.*
+	          FROM (
+	]]>
+	</sql>
+	
+	<sql id="PagingEnd">
+	<![CDATA[
+	               ) A 
+	       ) 
+	 WHERE ROWNUM <= ${pageSize} 
+	   AND ROW_NUMBER > (${page}-1) * ${pageSize}
+	]]>
+	</sql>
+
+	<!-- 변환작업 완료전 삭제 처리 -->
+	<sql id="CountStart">
+		SELECT COUNT(1) AS TOTAL
+		  FROM (
+	</sql>
+	
+	<sql id="CountEnd">
+			   ) A
+	</sql>
+
+	<select id="fasooFinal" resultType="int">
+	SELECT FSPLUGIN.SPXDB.FINAL
+	  FROM DUAL
+	</select>
+	
+	<select id="fsInit" resultType="int">
+	SELECT FSPLUGIN.SPXDB.INIT()
+	  FROM DUAL
+	</select>
+
+
+
+</mapper>

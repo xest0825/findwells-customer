@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="User">
+
+
+	<sql id="getUserSql">
+		SELECT tb2.cust_id 	as user_id
+			 , tb1.login_id
+			 , tb1.login_id AS username
+			 , tb2.cust_nm 	AS user_nm
+			 , tb1.login_pw
+			 , tb1.login_pw	AS password
+			 , tb1.simpl_pw
+			 , 1 AS enabled
+			 , 'YNG' AS mb_id
+		  FROM tbcs_mobile_login tb1
+		  JOIN tbcs_customer_mobile tb2
+		    ON tb1.cust_id = tb2.cust_id
+		 WHERE 1 = 1
+	</sql>
+	
+	<select id="getUserMap" parameterType="kr.co.fw.system.security.model.User" resultType="Hmap" >
+		/* user-mapper.xml getUser */
+		<include refid="getUserSql"/>
+		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_id)'>
+			AND tb1.login_id = #{login_id}
+		</if>
+	</select>
+	
+	<select id="getUser" parameterType="kr.co.fw.system.security.model.User" resultType="kr.co.fw.system.security.model.User"  >
+		/* user-mapper.xml getUser */
+		<include refid="getUserSql"/>
+		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_id)'>
+			AND tb1.login_id = #{login_id}
+		</if>
+	</select>
+	
+	<select id="getCustomerUserList" parameterType="kr.co.fw.customer.CustomerVO" resultType="hmap"  >
+		/* user-mapper.xml getCustomerUserList */
+		 SELECT cust_id, cust_nm, ssn, cust_cell, mo_cd, approved_yn, data_dcd, in_emp_cd, in_dtm, up_emp_cd, up_dtm
+		   FROM tbcs_customer_mobile tb1
+		  WHERE 1 = 1
+		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_id)'>
+			AND tb1.cust_id = #{cust_id}
+		</if>
+	</select>
+	
+	<insert id="insertCustomerUser" parameterType="kr.co.fw.customer.CustomerVO">
+		/* user-mapper.xml insertCustomerUser */
+		INSERT 
+		  INTO tbcs_customer_mobile 
+		  	 ( 
+		  	   cust_id       /* VARCHAR(32)     '사용자 ID(UUID)' */
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_nm)'>
+			 , cust_nm       /* VARCHAR(50)     '사용자 명' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(ssn)'>
+			 , ssn
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_cell)'>
+			 , cust_cell
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(mo_cd)'>
+			 , mo_cd
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(approved_yn)'>
+			 , approved_yn
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(data_dcd)'>
+			 , data_dcd
+			 </if>
+			 , in_emp_cd
+			 , up_emp_cd
+			 , in_dtm
+			 , up_dtm
+		  	 )
+		VALUES
+			 ( 
+			   #{cust_id}       /* VARCHAR(32)     '사용자 ID(UUID)' */
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_nm)'>
+			 , #{cust_nm}       /* VARCHAR(50)     '사용자 명' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(ssn)'>
+			 , #{ssn}
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_cell)'>
+			 , #{cust_cell}
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(mo_cd)'>
+			 , #{mo_cd}
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(approved_yn)'>
+			 , #{approved_yn}
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(data_dcd)'>
+			 , #{data_dcd}
+			 </if>
+			 , 'ADMIN'
+			 , 'ADMIN'
+			 , SYSDATE
+			 , SYSDATE
+			 )
+	</insert>
+	
+	<update id="updateCustomerUser" parameterType="kr.co.fw.customer.CustomerVO">
+		/* user-mapper.xml updateCustomerUser */
+		UPDATE tbcs_customer_mobile 
+		   SET up_dtm  = SYSDATE     		/* DATETIME        '등록 일시' */
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_nm)'>
+			 , cust_nm = #{cust_nm}       /* VARCHAR(50)     '사용자 명' */
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(ssn)'>
+			 , ssn = #{ssn}
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_cell)'>
+			 , cust_cell = #{cust_cell}
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(mo_cd)'>
+			 , mo_cd = #{mo_cd}
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(approved_yn)'>
+			 , approved_yn = #{approved_yn}
+			 </if>
+			 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(data_dcd)'>
+			 , data_dcd = #{data_dcd}
+			 </if>
+		 WHERE cust_id = #{cust_id}
+	</update>
+	
+	<delete id="deleteCustomerUser" parameterType="kr.co.fw.customer.CustomerVO">
+		/*  user-mapper.xml deleteCustomerUser */
+		DELETE tbcs_customer_mobile
+		 WHERE cust_id = #{cust_id}
+	</delete>
+	
+	<select id="getCustomerLoginPW" resultType="Hmap" parameterType="kr.co.fw.customer.CustomerVO">
+			SELECT tb2.user_id		/* VARCHAR(100) '사용자 ID' */
+			 	 , tb1.login_id		/* VARCHAR(100) '로그인 ID' */
+			 	 , tb2.cust_nm		/* VARCHAR(50)  '사용자 이름' */
+			 	 , tb1.login_pw		/* VARCHAR(256) '로그인 비밀번호' */
+			 	 , tb2.cust_cell 	/* VARCHAR(256) '사용자 ID' */
+		  	  FROM tbcs_mobile_login tb1
+		  	  JOIN tbcs_customer_mobile tb2
+		    	ON tb1.user_id = tb2.user_id
+		 	 WHERE 1 = 1 
+		 	 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_id)'>
+		  	   AND tb1.login_id = #{login_id}
+		  	 </if>  
+		  	 <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(contact_no)'>
+		  	   AND tb3.contact_no = #{contact_no}
+		  	 </if>
+	</select>
+	
+	<sql id="getCustomerLoginInfoSql">
+	        SELECT  tb1.login_id      /* VARCHAR(100) '로그인 ID' */
+	              , tb1.cust_id       /* VARCHAR(100) '사용자 ID' */
+	              , tb2.cust_nm
+	              , tb1.devc_id
+	              , tb1.login_pw      /* VARCHAR(256) '로그인 비밀번호' */
+	              , NVL(tb1.simpl_pw,'') simpl_pw        /* VARCHAR(256) '간편 비밀번호' */
+	              , tb1.accnt_sts     /* VARCHAR(1)   '계정상태' */
+	              , tb1.expr_dt  /* VARCHAR(10)  '계정 만료 일자' */
+	           FROM tbcs_mobile_login tb1
+	LEFT OUTER JOIN tbcs_customer_mobile tb2
+	             ON tb1.cust_id = tb2.cust_id
+	          WHERE 1 = 1
+	</sql>
+	
+	<select id="getCustomerLoginInfoList" resultType="Hmap" parameterType="kr.co.fw.customer.CustomerVO">
+		/* user-mapper.xml getCustomerLoginInfoList */
+		<include refid="getCustomerLoginInfoSql"/>
+		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_id)'>
+			AND tb1.login_id = #{login_id}
+		</if>
+		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(user_id)'>
+			AND tb1.cust_id = #{cust_id}
+		</if>
+		
+	</select>
+	
+	<select id="getCustomerLoginInfo" resultType="Hmap" parameterType="kr.co.fw.customer.CustomerVO">
+		/* user-mapper.xml getCustomerLoginInfo */
+		<include refid="getCustomerLoginInfoSql"/>
+		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_id)'>
+			AND tb1.login_id = #{login_id}
+		</if>
+		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(user_id)'>
+			AND tb1.cust_id = #{cust_id}
+		</if>
+	</select>
+	
+	<insert id="insertCustomerLoginInfo" parameterType="kr.co.fw.customer.CustomerVO">
+		/* user-mapper.xml insertCustomerLoginInfo */
+		INSERT 
+          INTO tbcs_mobile_login
+             (  
+                login_id        /* VARCHAR(100) '로그인 ID' */
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_id)'>
+              , cust_id         /* VARCHAR(100) '사용자 ID' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(devc_id)'>
+              , devc_id         /* VARCHAR(100) '기기 ID' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_pw)'>
+              , login_pw        /* VARCHAR(256) '로그인 비밀번호' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(simpl_pw)'>
+              , simpl_pw        /* VARCHAR(256) '간편 비밀번호' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(accnt_sts)'>
+              , accnt_sts       /* VARCHAR(1)   '계정상태' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(expr_dt)'>
+              , expr_dt    		/* VARCHAR(10)  '계정 만료 일자' */
+              </if>
+              , in_dtm          /* DATETIME     '등록 일시' */
+              , up_dtm          /* DATETIME     '등록 일시' */
+              ) 
+         VALUES
+              (
+                #{login_id}      /* VARCHAR(100) '로그인 ID' */
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_id)'>
+              , #{cust_id}       /* VARCHAR(100) '사용자 ID' */
+              </if>
+              <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(devc_id)'>
+              , #{devc_id}       /* VARCHAR(100) '기기 ID' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_pw)'>
+              , #{login_pw}      /* VARCHAR(256) '로그인 비밀번호' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(simpl_pw)'>
+              , #{simpl_pw}      /* VARCHAR(256) '간편 비밀번호' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(accnt_sts)'>
+              , #{accnt_sts}     /* VARCHAR(1)   '계정상태' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(expr_dt)'>
+              , #{expr_dt}  	 /* VARCHAR(10)  '계정 만료 일자' */
+              </if>
+              , SYSDATE       	 /* DATETIME     '등록 일시' */
+              , SYSDATE	       	 /* DATETIME     '등록 일시' */
+              )
+	</insert>
+	
+	
+	<update id="updateCustomerLoginInfo" parameterType="kr.co.fw.customer.CustomerVO">
+		/* user-mapper.xml updateCustomerLoginInfo */
+		 UPDATE tbcs_mobile_login
+            SET UP_DTM       = SYSDATE         /* DATETIME     '등록 일시' */
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_id)'>
+              , cust_id 	= #{cust_id}       /* VARCHAR(100) '사용자 ID' */
+              </if>
+              <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(devc_id)'>
+              , devc_id 	= #{devc_id}       /* VARCHAR(100) '기기 ID' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_pw)'>
+              , login_pw 	= #{login_pw}      /* VARCHAR(256) '로그인 비밀번호' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(simpl_pw)'>
+              , simpl_pw 	= #{simpl_pw}      /* VARCHAR(256) '간편 비밀번호' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(accnt_sts)'>
+              , accnt_sts 	= #{accnt_sts}     /* VARCHAR(1)   '계정상태' */
+              </if>
+			  <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(expr_dt)'>
+              , expr_dt 	= #{expr_dt}  	   /* VARCHAR(10)  '계정 만료 일자' */
+              </if>
+          WHERE login_id    = #{login_id} 
+	</update>
+	
+	<delete id="deleteCustomerLoginInfo" parameterType="kr.co.fw.customer.CustomerVO">
+		/* user-mapper.xml deleteCustomerLoginInfo */
+		DELETE tbcs_mobile_login
+		 WHERE login_id = #{login_id}
+	</delete>
+
+</mapper>
