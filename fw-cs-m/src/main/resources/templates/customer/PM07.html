@@ -32,7 +32,18 @@
       </div>
 
       <div class="output_list_wrap">
-        <ul>
+        <ul id="contracts">
+          <li>
+            <a href="">
+              <div>
+                <img src="/images/logo_metis.png">
+              </div>
+              <p>
+                Metis HK
+              </p>
+            </a>
+          </li>
+          <!-- 
           <li>
             <a href="">
               <div>
@@ -63,16 +74,7 @@
               </p>
             </a>
           </li>
-          <li>
-            <a href="">
-              <div>
-                <img src="/images/logo_metis.png">
-              </div>
-              <p>
-                Metis HK
-              </p>
-            </a>
-          </li>
+           -->
         </ul>
 
         <div class="btn_wrap_left">
@@ -91,8 +93,69 @@
 	<script>
 	var user_id =  '[[${user_id}]]';
 	$(document).ready(function(){
+		getContractList();
 
     });
+	
+	function getContractList() {
+		var param = {cust_id: user_id};
+		
+		$.get({
+			url: '/cs/contracts'
+			, type: 'GET'
+			, async: false
+			, data : param
+			, contentType: 'application/json; charset=UTF-8'
+			, headers: {
+			}
+			, success: function (data) {
+				console.log(data);
+				var list = data.result;
+				//list = [];
+				var html = '';
+				$('#contracts').empty();
+				if (list.length == 0) {
+					
+					html += '<li>'
+					html += '	<a href="">'
+					html += '		<div>'
+					html += '			<img src="/images/logo_FW.png">'
+					html += '		</div>'
+					html += '		<p>'
+					html += '가입하신 상품이 없습니다.'
+					html += '		</p>'
+					html += '	</a>'
+					html += '</li>'
+					
+				} else {
+					for (var i = 0; i < list.length; i++) {
+						html += '<li>'
+						html += '	<a href="javascript:goAssetWithdrawlDetail('+list[i].SEQ+')">'
+						html += '		<div>'
+						html += list[i].INSCO_CD != '' ? '<img src="/images/logo_' + list[i].INSCO_CD + '.png">': '		<img src="/images/logo_FW.png" />'
+						html += '		</div>'
+						html += '		<p>'
+						html += list[i].INSCO_NM + ' / ' + list[i].PROD_NM
+						html += '		</p>'
+						html += '	</a>'
+						html += '</li>'
+					}
+					
+				}
+		          
+				$('#contracts').html(html);
+				
+			}
+			, error: function (req, status, error) {
+				console.log(req + ", " + status + ", " + error);	
+				
+			}
+		});
+	}
+	
+	function goAssetWithdrawlDetail(seq){
+		location.href = '/m/PM07_1/' + user_id + '/' + seq;
+	}
     
     function goBack(){
     	location.href = '/m/PM01/'+ user_id;

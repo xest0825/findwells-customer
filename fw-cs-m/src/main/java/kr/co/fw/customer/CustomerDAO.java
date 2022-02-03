@@ -53,4 +53,13 @@ public class CustomerDAO extends BaseDAO {
 	}
 	*/
 	
+	public List<HashMap<String, Object>> getAssetWithdrawalLogList(CustomerVO paramvo) {
+		return getSqlSession().selectList(getCustomerMapper() + "getAssetWithdrawalLogList", paramvo);
+	}
+	
+	public List<HashMap<String, Object>> getAssetPlanList(CustomerVO paramvo) {
+		return getSqlSession().selectList(getCustomerMapper() + "getAssetPlanList", paramvo);
+	}
+	
+	
 }

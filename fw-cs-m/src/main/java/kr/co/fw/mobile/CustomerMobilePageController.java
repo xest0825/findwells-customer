@@ -196,11 +196,12 @@ public class CustomerMobilePageController {
 	/**
 	 * @descriptio 인출내역 상세 
 	 */
-	@GetMapping(value = "/m/PM07_1/{user_id}")
-	public ModelAndView pm07_1(HttpServletRequest req, @PathVariable("user_id") String user_id) throws Exception {
+	@GetMapping(value = "/m/PM07_1/{user_id}/{seq}")
+	public ModelAndView pm07_1(HttpServletRequest req, @PathVariable("user_id") String user_id, @PathVariable("seq") String seq) throws Exception {
 		log.info("/m/PM07_1");
 		ModelAndView mav = new ModelAndView("customer/PM07_1");
 		mav.addObject("user_id", user_id);
+		mav.addObject("seq", seq);
 		return mav;
 	}
 	
@@ -218,11 +219,12 @@ public class CustomerMobilePageController {
 	/**
 	 * @descriptio 자산사용계획 상세 
 	 */
-	@GetMapping(value = "/m/PM08_1/{user_id}")
-	public ModelAndView pm08_1(HttpServletRequest req, @PathVariable("user_id") String user_id) throws Exception {
+	@GetMapping(value = "/m/PM08_1/{user_id}/{seq}")
+	public ModelAndView pm08_1(HttpServletRequest req, @PathVariable("user_id") String user_id, @PathVariable("seq") String seq) throws Exception {
 		log.info("/m/PM08_1");
 		ModelAndView mav = new ModelAndView("customer/PM08_1");
 		mav.addObject("user_id", user_id);
+		mav.addObject("seq", seq);
 		return mav;
 	}
 	

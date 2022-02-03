@@ -729,4 +729,252 @@ SELECT COUNT(*)
 	</if>
 
 	</select>
+	
+	<select id="getAssetWithdrawalLogList" parameterType="kr.co.fw.customer.CustomerVO" resultType="hmap">
+				/* customer-mapper.xml getAssetWithdrawalLogList 인출 이력 조회 */
+				SELECT TB1.SEQ 				seq			/* NUMBER PRIMARY KEY */
+					 , TB1.CUST_ID 			cust_id		/* VARCHAR2(20) */
+					 , TB1.MO_CD 			mo_cd		/* VARCHAR2(20) */
+					 , TB1.INSCO_CD 		insco_cd	/* VARCHAR2(5)  */
+					 , TB1.INSPOL_NO 		inspol_no	/* VARCHAR2(40) */
+					 , TB1.CONT_SEQ			cont_seq
+					 , TB1.PROD_SEQ 		prod_seq	/* VARCHAR2(22) */
+					 , TB1.WITHDRAWAL_DT 	withdrawal_dt	/* VARCHAR2(20)  */
+					 , TB1.AMT 				amt				/* INT */
+					 , TB1.AMT_SUM 			amt_sum			/* INT */
+					 , TB1.BANK 			bank			/* VARCHAR2(10) */
+					 , TB1.MEMO 			memo			/* VARCHAR2(400) */
+					 , TB1.IN_EMP_CD 		in_emp_cd		/* VARCHAR2(20)  */
+					 , TB1.UP_EMP_CD 		up_emp_cd		/* VARCHAR2(20) */
+					 , TO_CHAR(TB1.IN_DTM, 'YYYY-MM-DD HH24:MI:SS') in_dtm /* TIMESTAMP */
+					 , TO_CHAR(TB1.UP_DTM, 'YYYY-MM-DD HH24:MI:SS') up_dtm /* TIMESTAMP */
+				  FROM TBCS_ASSET_WITHDRAWAL_LOG TB1
+	   LEFT OUTER JOIN TBCS_CUSTOMER_MOBILE TB2
+	   				ON TB1.CUST_ID = TB2.CUST_ID
+	   LEFT OUTER JOIN TBIN_EMPMST_FSB TB3
+	   				ON TB1.MO_CD = TB3.EMP_CD
+				 WHERE 1 = 1
+				   <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(cust_id)">
+				   AND TB1.CUST_ID = #{cust_id}
+				   </if>
+				   <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(Cust_nm)">
+				   AND TB2.CUST_NM = #{cust_nm}
+				   </if>
+				   <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(mo_cd)">
+				   AND TB1.MO_CD = #{mo_cd}
+				   </if>
+				   <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(cont_seq)">
+				   AND TB1.CONT_SEQ = #{cont_seq}
+				   </if>
+				 ORDER BY TB1.IN_DTM DESC
+	</select>
+	
+	<insert id="insertAssetWithdrawalLog" parameterType="kr.co.fw.customer.CustomerAssetVO" >
+				/* customer-mapper.xml insertAssetWithdrawalLog  인출 이력 입력 */
+				INSERT
+				  INTO TBCS_ASSET_WITHDRAWAL_LOG
+				     (
+				       SEQ 				/* NUMBER PRIMARY KEY */
+					 , CUST_ID 			/* VARCHAR2(20) */
+					 , MO_CD 			/* VARCHAR2(20) */
+					 , INSCO_CD 		/* VARCHAR2(5)  */
+					 , INSPOL_NO 		/* VARCHAR2(40) */
+					 , PROD_SEQ 		/* VARCHAR2(22) */
+					 , WITHDRAWAL_DT 	/* VARCHAR2(20)  */
+					 , AMT 				/* INT */
+					 , AMT_SUM 			/* INT */
+					 , BANK 			/* VARCHAR2(10) */
+					 , MEMO 			/* VARCHAR2(400) */
+					 , IN_EMP_CD 		/* VARCHAR2(20)  */
+					 , IN_DTM 			/* TIMESTAMP */
+					 , UP_EMP_CD 		/* VARCHAR2(20) */
+					 , UP_DTM 			/* TIMESTAMP */
+					 , CONT_SEQ
+				     )
+			    VALUES
+			         (
+				       TBCS_ASSET_WITHDRAWAL_LOG_SEQ.NEXTVAL /* NUMBER PRIMARY KEY */
+					 , #{cust_id} 			/* VARCHAR2(20) */
+					 , #{mo_cd} 			/* VARCHAR2(20) */
+					 , #{insco_cd} 			/* VARCHAR2(5)  */
+					 , #{inspol_no} 		/* VARCHAR2(40) */
+					 , #{prod_seq} 			/* VARCHAR2(22) */
+					 , #{withdrawal_dt} 	/* VARCHAR2(20)  */
+					 , #{amt} 				/* INT */
+					 , #{amt_sum} 			/* INT */
+					 , #{bank} 				/* VARCHAR2(10) */
+					 , #{memo} 				/* VARCHAR2(400) */
+					 , #{in_emp_cd} 		/* VARCHAR2(20)  */
+					 , SYSDATE 				/* TIMESTAMP */
+					 , #{up_emp_cd} 		/* VARCHAR2(20) */
+					 , SYSDATE 				/* TIMESTAMP */
+					 , #{cont_seq}
+			         )
+	</insert>
+	
+	
+	<update id="updateAssetWithdrawalLog" parameterType="kr.co.fw.customer.CustomerAssetVO" >
+				/* customer-mapper.xml updateAssetWithdrawalLog 인출 이력 수정 */
+				UPDATE TBCS_ASSET_WITHDRAWAL_LOG
+				   SET UP_DTM 		 = SYSDATE				/* TIMESTAMP */
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(cust_id)">
+					 , CUST_ID 		 = #{cust_id} 			/* VARCHAR2(20) */
+					 </if>
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(mo_cd)">
+					 , MO_CD 		 = #{mo_cd} 			/* VARCHAR2(20) */
+					 </if>
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(Insco_cd)">
+					 , INSCO_CD 	 = #{insco_cd} 			/* VARCHAR2(5)  */
+					 </if>
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(inspol_no)">
+					 , INSPOL_NO	 = #{inspol_no} 		/* VARCHAR2(40) */
+					 </if>
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(prod_seq)">
+					 , PROD_SEQ 	 = #{prod_seq} 			/* VARCHAR2(22) */
+					 </if>
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(withdrawal_dt)">
+					 , WITHDRAWAL_DT = #{withdrawal_dt} 	/* VARCHAR2(20)  */
+					 </if>
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(amt)">
+					 , AMT 			 = #{amt} 				/* INT */
+					 </if>
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(amt_sum)">
+					 , AMT_SUM 		 = #{amt_sum} 			/* INT */
+					 </if>
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(bank)">
+					 , BANK 		 = #{bank} 				/* VARCHAR2(10) */
+					 </if>
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(memo)">
+					 , MEMO 		 = #{memo} 				/* VARCHAR2(400) */
+					 </if>
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(up_emp_cd)">
+					 , UP_EMP_CD 	 = #{up_emp_cd} 		/* VARCHAR2(20) */
+					 </if>
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(cont_seq)">
+				     , CONT_SEQ = #{cont_seq}
+				     </if>
+				 WHERE SEQ 			 = #{seq} 				/* NUMBER PRIMARY KEY */
+	</update>
+	
+	
+	<delete id="deleteAssetWithdrawalLog" parameterType="kr.co.fw.customer.CustomerAssetVO" >
+				/* customer-mapper.xml deleteAssetWithdrawalLog 인출 이력 삭제 */
+				DELETE TBCS_ASSET_WITHDRAWAL_LOG
+				 WHERE SEQ 			 = #{seq} 				/* NUMBER PRIMARY KEY */
+	</delete>
+	
+	<select id="getAssetPlanList" parameterType="kr.co.fw.customer.CustomerVO" resultType="hmap">
+				/* customer-mapper.xml getAssetPlanList 자산 사용계획 조회 */
+				SELECT TB1.SEQ 				seq	/* NUMBER PRIMARY KEY * /
+					 , TB1.CUST_ID 			cust_id	/* VARCHAR2(20) */
+					 , TB1.MO_CD 			mo_cd	/* VARCHAR2(20) */
+					 , TB1.CONT_SEQ			cont_seq
+					 , TB1.USE_YEAR 		use_year	/* VARCHAR(4) */
+					 , TB1.PURPOSE 			purpose	/* VARCHAR(20) */
+					 , TB1.AGE 				age	/* INT */
+					 , TB1.AMT 				amt	/* INT */
+					 , TB1.USE_MEAN 		use_mean	/* VARCHAR(20) */
+					 , TB1.MEMO 			memo	/* VARCHAR2(400) */
+					 , TB1.IN_EMP_CD 		in_emp_cd		/* VARCHAR2(20)  */
+					 , TB1.UP_EMP_CD 		up_emp_cd		/* VARCHAR2(20) */
+					 , TO_CHAR(TB1.IN_DTM, 'YYYY-MM-DD HH24:MI:SS') in_dtm /* TIMESTAMP */
+					 , TO_CHAR(TB1.UP_DTM, 'YYYY-MM-DD HH24:MI:SS') up_dtm /* TIMESTAMP */
+				  FROM TBCS_ASSET_PLAN TB1
+	   LEFT OUTER JOIN TBCS_CUSTOMER_MOBILE TB2
+	   				ON TB1.CUST_ID = TB2.CUST_ID
+	   LEFT OUTER JOIN TBIN_EMPMST_FSB TB3
+	   				ON TB1.MO_CD = TB3.EMP_CD
+				 WHERE 1 = 1
+				   <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(cust_id)">
+				   AND TB1.CUST_ID = #{cust_id}
+				   </if>
+				   <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(cust_nm)">
+				   AND TB2.CUST_NM = #{cust_nm}
+				   </if>
+				   <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(mo_cd)">
+				   AND TB1.MO_CD = #{mo_cd}
+				   </if>
+				   <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(cont_seq)">
+				   AND TB1.CONT_SEQ = #{cont_seq}
+				   </if>
+				 ORDER BY TB1.IN_DTM DESC
+	</select>
+	
+	<insert id="insertAssetPlan" parameterType="kr.co.fw.customer.CustomerAssetVO" >
+				/* customer-mapper.xml insertAssetPlan 자산 사용입력 조회 */
+				INSERT
+				  INTO TBCS_ASSET_PLAN
+				     (
+				       SEQ 					/* NUMBER PRIMARY KEY */
+					 , CUST_ID 				/* VARCHAR2(20) */
+					 , MO_CD 				/* VARCHAR2(20) */
+					 , USE_YEAR 			/* VARCHAR(4) */
+					 , PURPOSE 				/* VARCHAR(20) */
+					 , AGE 					/* INT */
+					 , AMT 					/* INT */
+					 , USE_MEAN 			/* VARCHAR(20) */
+					 , MEMO 				/* VARCHAR2(400) */
+					 , IN_EMP_CD 			/* VARCHAR2(20)  */
+					 , IN_DTM 				/* TIMESTAMP */
+					 , UP_EMP_CD 			/* VARCHAR2(20) */
+					 , UP_DTM 				/* TIMESTAMP */
+				     )
+			    VALUES
+			         (
+				       TBCS_ASSET_WITHDRAWAL_LOG_SEQ.NEXTVAL /* NUMBER PRIMARY KEY */
+					 , #{cust_id} 			/* VARCHAR2(20) */
+					 , #{mo_cd} 			/* VARCHAR2(20) */
+					 , #{use_year} 			/* VARCHAR(4) */
+					 , #{purpose} 			/* VARCHAR(20) */
+					 , #{age} 				/* INT */
+					 , #{amt} 				/* INT */
+					 , #{use_mean} 			/* VARCHAR(20) */
+					 , #{memo} 				/* VARCHAR2(400) */
+					 , #{in_emp_cd} 		/* VARCHAR2(20)  */
+					 , SYSDATE 				/* TIMESTAMP */
+					 , #{up_emp_cd} 		/* VARCHAR2(20) */
+					 , SYSDATE 				/* TIMESTAMP */
+			         )
+	</insert>
+	
+	<update id="updateAssetPlan" parameterType="kr.co.fw.customer.CustomerAssetVO" >
+				/* customer-mapper.xml updateAssetPlan 자산 사용계획 수정 */
+				UPDATE TBCS_ASSET_PLAN
+				   SET UP_DTM 		 = SYSDATE 			/* TIMESTAMP */
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(cust_id)">
+					 , CUST_ID 		 = #{cust_id} 			/* VARCHAR2(20) */
+					 </if>
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(mo_cd)">
+					 , MO_CD 		 = #{mo_cd} 			/* VARCHAR2(20) */
+					 </if>
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(use_year)">
+					 , USE_YEAR 	= #{use_year} 			/* VARCHAR(4) */
+					 </if>
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(purpose)">
+					 , PURPOSE 		= #{purpose} 			/* VARCHAR(20) */
+					 </if>
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(age)">
+					 , AGE 			= #{age} 				/* INT */
+					 </if>
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(amt)">
+					 , AMT 			= #{amt} 				/* INT */
+					 </if>
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(use_mean)">
+					 , USE_MEAN 	= #{use_mean} 			/* VARCHAR(20) */
+					 </if>
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(memo)">
+					 , MEMO 		 = #{memo} 				/* VARCHAR2(400) */
+					 </if>
+					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(up_emp_cd)">
+					 , UP_EMP_CD 	 = #{up_emp_cd} 		/* VARCHAR2(20) */
+					 </if>
+				 WHERE SEQ 			 = #{seq} 				/* NUMBER PRIMARY KEY */
+	</update>
+	
+	<update id="deleteAssetPlan" parameterType="kr.co.fw.customer.CustomerAssetVO" >
+				/* customer-mapper.xml deleteAssetPlan 자산 사용계획 삭제 */
+				DELETE TBCS_ASSET_PLAN
+				 WHERE SEQ 			 = #{seq} 				/* NUMBER PRIMARY KEY */
+	</update>
+	
 </mapper>

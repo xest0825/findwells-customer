@@ -62,4 +62,12 @@ public class CustomerService extends BaseService {
 		return getCustomerDAO().getContractListByCustomer(paramvo);
 	}
 	
+	public List<HashMap<String, Object>> getAssetWithdrawalLogList(CustomerVO paramvo) {
+		return getCustomerDAO().getAssetWithdrawalLogList(paramvo);
+	}
+	
+	public List<HashMap<String, Object>> getAssetPlanList(CustomerVO paramvo) {
+		return getCustomerDAO().getAssetPlanList(paramvo);
+	}
+	
 }

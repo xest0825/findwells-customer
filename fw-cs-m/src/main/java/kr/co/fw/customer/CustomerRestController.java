@@ -290,7 +290,7 @@ public class CustomerRestController extends BaseController {
 	}
 	
 	/**
-	 * 메시지 이력 조회
+	 * 게시글 목록 조회
 	 * @param paramvo
 	 * @return
 	 */
@@ -316,7 +316,7 @@ public class CustomerRestController extends BaseController {
 	}
 	
 	/**
-	 * 메시지 이력 조회
+	 * 게시글 조회
 	 * @param paramvo
 	 * @return
 	 */
@@ -330,6 +330,58 @@ public class CustomerRestController extends BaseController {
 			retvo = getBoardService().selectBoardItem(paramvo);
 			retMap.put("res_cd","OK");
 			retMap.put("result", retvo);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			retMap.put("res_cd","FAIL");
+			retMap.put("result", "");
+		}
+		
+		ResponseEntity<HashMap<String, Object>> entity = new ResponseEntity<>(retMap, HttpStatus.OK);
+		return entity;
+	}
+	
+	/**
+	 * 자산 인출 내역 조회
+	 * @param paramvo
+	 * @return
+	 */
+	@GetMapping("/cs/asset-withdrawal-log")
+	public ResponseEntity<HashMap<String, Object>> getAssetWithdrawalLogList(CustomerVO paramvo) {
+		log.info("getMessageLogList");
+		List<HashMap<String, Object>> retList = new ArrayList<HashMap<String, Object>>();
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		try {
+			retList = getCustomerService().getAssetWithdrawalLogList(paramvo);
+			retMap.put("res_cd","OK");
+			retMap.put("result", retList);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			retMap.put("res_cd","FAIL");
+			retMap.put("result", "");
+		}
+		
+		ResponseEntity<HashMap<String, Object>> entity = new ResponseEntity<>(retMap, HttpStatus.OK);
+		return entity;
+	}
+	
+	/**
+	 * 자산 사용 계획 조회
+	 * @param paramvo
+	 * @return
+	 */
+	@GetMapping("/cs/asset-plans")
+	public ResponseEntity<HashMap<String, Object>> getAssetPlanList(CustomerVO paramvo) {
+		log.info("getMessageLogList");
+		List<HashMap<String, Object>> retList = new ArrayList<HashMap<String, Object>>();
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		try {
+			retList = getCustomerService().getAssetPlanList(paramvo);
+			retMap.put("res_cd","OK");
+			retMap.put("result", retList);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
