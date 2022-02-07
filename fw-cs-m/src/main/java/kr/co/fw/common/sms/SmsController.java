@@ -28,7 +28,7 @@ public class SmsController extends BaseController {
 		
 
 		try {
-			String serviceId = "ncp:sms:kr:256659458278:rapidex";
+			String serviceId = "ncp:sms:kr:273490381644:fw1001";
 			String apiUrl = "https://sens.apigw.ntruss.com/sms/v2/services/"+serviceId+"/messages";
 			String reqMethod = "POST";
 			long timestamp =  System.currentTimeMillis();
@@ -36,8 +36,8 @@ public class SmsController extends BaseController {
 			HashMap<String, Object> signingkey =new HashMap<String, Object>();
 			signingkey.put("timestamp", timestamp+"");
 			signingkey.put("serviceId", serviceId);
-			signingkey.put("accessKey", "t49MAOU3HwqZaMkkcpt7");
-			signingkey.put("secretKey", "iXInwocSx0y4GB1XoHjaLQvsgZCKj5UvV1o35ttS");
+			signingkey.put("accessKey", "sfsdoiOcSK1FAfNXSzi0");
+			signingkey.put("secretKey", "wAeebl69JCs94hc4hXWy2PF3hQwkTDRleCTdeMD9");
 			String signature = CommUtil.getSigningKey(signingkey);
 			log.info("signature : " + signature);
 			
@@ -53,13 +53,13 @@ public class SmsController extends BaseController {
 			
 			HashMap<String, Object> paramMap = new HashMap<String, Object>();
 			paramMap.put("timestamp", timestamp + "");
-			paramMap.put("accessKey", "t49MAOU3HwqZaMkkcpt7");
+			paramMap.put("accessKey", "sfsdoiOcSK1FAfNXSzi0");
 			paramMap.put("signature", signature);
 			
 			paramMap.put("type", "SMS");
 			paramMap.put("contentType", "COMM");
 			paramMap.put("countryCode", "82");
-			paramMap.put("from", "01046933692");
+			paramMap.put("from", "0262031144");
 			paramMap.put("to", paramvo.getCall_to().replace("-", ""));
 			paramMap.put("subject", "[파인드웰스] 인증번호 전송");
 			String content = "[파인드웰스] 회원가입을 위한 인증번호는 \n"
@@ -87,7 +87,7 @@ public class SmsController extends BaseController {
 				
 				AuthVO auth = new AuthVO();
 				auth.setAuth_no(authno);
-				auth.setSender("01046933692");
+				auth.setSender("0262031144");
 				auth.setReceiver(paramvo.getCall_to().replace("-", ""));
 				auth.setReceiver_nm(paramvo.getReceiver_nm());
 				getAuthService().insertAuthLog(auth);

@@ -109,11 +109,11 @@
     });
     
     function goBack(){
-    	location.href = '/m/PM01/'+ user_id;
+    	location.href = '/m/PM04/'+ user_id;
     }
     
     function getContractList() {
-		var param = {cust_id: user_id, seq : cont_seq};
+		var param = {cust_id: user_id, cont_seq : cont_seq};
 		
 		$.get({
 			url: '/cs/contracts'
@@ -127,7 +127,6 @@
 			, success: function (data_) {
 				console.log(data_);
 				//console.log(data + "");
-				//     fconsole.log(data.substring(data.indexOf("uid") + 4, data.indexOf("mid") - 2));   //uid 만 파싱
 				var list = data_.result;
 				var data = {};
 				var html = '';
@@ -138,7 +137,7 @@
 					$('#prod_nm').text(data.PROD_NM);
 					$('#cont_date').text(data.CONT_DATE);
 					$('#inspol_no').text(data.INSPOL_NO);
-					$('#pay_info').text(data.AUTO_TRANS_YN + ', ' + data.NAPMETHOD + ', ' + data.NAPGI+ data.NAPGI_GBN);
+					$('#pay_info').text(data.NAPMETHOD + ', ' + data.NAPGI+ data.NAPGI_GBN);
 					$('#cont_period').text(data.INSU_STRT_DATE + ' ~ ' + data.INSU_END_DATE);
 					$('#prem_amt').text((data.HPREM_AMT > 0 ? 'HKD $' + data.HPREM_AMT : 'USD $' + data.UPREM_AMT));
 					$('#geaja').text(data.GEAJA_NM);
@@ -147,6 +146,16 @@
 					
 				} else {
 					data = {};
+					$('#insco_cd').text('');
+					$('#prod_nm').text('');
+					$('#cont_date').text('');
+					$('#inspol_no').text('');
+					$('#pay_info').text('');
+					$('#cont_period').text('');
+					$('#prem_amt').text('');
+					$('#geaja').text('');
+					$('#piabo').text('');
+					$('#beneficiary').text('');
 				}
 
 		        

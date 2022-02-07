@@ -10,7 +10,7 @@ public class CryptoUtilTest {
 		System.out.println(CryptoUtil.encrypt("0000"));
 		String enc1 = CryptoUtil.encrypt("01046933992");
 		System.out.println(enc1);
-		String enc2 = CryptoUtil.encrypt("01046933692");
+		String enc2 = CryptoUtil.encrypt("0262031144");
 		System.out.println(enc2);
 		System.out.println(CryptoUtil.decrypt(enc1));
 		System.out.println(CryptoUtil.decrypt(enc2));

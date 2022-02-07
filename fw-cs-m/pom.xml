@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>kr.co.fw</groupId>
-	<artifactId>fw-cs-m</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>fw-cs-m</name>
+	<artifactId>fwcsm</artifactId>
+	<version>0.8</version>
+	<name>fwcsm</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
 		<!-- Generic properties -->

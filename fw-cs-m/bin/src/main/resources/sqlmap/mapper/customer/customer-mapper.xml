@@ -727,6 +727,10 @@ SELECT COUNT(*)
 	   AND ( I.CUST_ID = #{cust_id} OR H.CUST_ID = #{cust_id} OR G.CUST_ID = #{cust_id}
 		)
 	</if>
+	<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cont_seq)'>
+	   AND A.SEQ = #{cont_seq}
+		)
+	</if>
 
 	</select>
 </mapper>
