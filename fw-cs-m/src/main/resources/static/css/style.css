@@ -574,13 +574,13 @@ header .welcome span em {
 
 
 .mySwiper .swiper-slide:nth-of-type(1) {
-  background: url('/images/banner-02.png') 0 no-repeat;
+  /* background: url('/images/banner-02.png') 0 no-repeat; */
   background-size : cover; 
   height: 180px; 
   background-position : center;
 }
 .mySwiper .swiper-slide:nth-of-type(2) {
-  background: url('/images/banner-01.png') 0 no-repeat;
+  /* background: url('/images/banner-01.png') 0 no-repeat; */
   /*object-fit: contain;*/
   background-size : cover; 
   height: 180px; 
