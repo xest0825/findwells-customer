@@ -141,8 +141,6 @@
 			}
 			, success: function (data) {
 				console.log(data);
-				// console.log(data + "");
-				//     fconsole.log(data.substring(data.indexOf("uid") + 4, data.indexOf("mid") - 2));   //uid 만 파싱
 				var list = data.result;
 				var html = '';
 				$('#contractList').empty();
@@ -151,7 +149,7 @@
 					html += '<li>'
 					html += '<a href="javascript:goContractDetail('+ list[i].SEQ +');">'
 					html += '<div>'
-					html += '<img src="http://f-ims.com'+list[i].CI_URL+'" '+ (list[i].INSCO_CD == 'ITA' ? 'style="background:gray;"' : '')+'>'
+					html += list[i].INSCO_CD != '' ? '<img src="/images/logo_80_80/' + list[i].INSCO_CD + '.png">': '		<img src="/images/logo_FW_notext.png" />'
 					html += '</div>'
 					html += '<div>'
 					html += '<p class="company_name">'

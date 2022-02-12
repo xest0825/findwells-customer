@@ -65,7 +65,7 @@
 	        <button id="btn_send_authno" class="b_search" style="margin-right: 10px;font-size:13px;" onclick="sendAuthNum();">
 	          인증번호받기
 	        </button>
-	        <button class="b_search" style="margin-right: 10px;" onclick="checkAuthNo();">확인</button>
+	        <!-- <button class="b_search" style="margin-right: 10px;" onclick="checkAuthNo();">확인</button> -->
 	        <input type="tel" class="text_box t_c" placeholder="" id="auth_no" maxlength="6"/>
 	        <span class="timer" id="sp_timer">00:00</span>
 	        <!-- 
@@ -118,7 +118,7 @@
     	
     	
 		$('#bt_join2').on('click', function(){
-			// checkAuthNo();
+			checkAuthNo();
 			join();
 		});
 		

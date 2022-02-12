@@ -33,6 +33,7 @@
 
       <div class="output_list_wrap">
         <ul id="contracts">
+          <!-- 
           <li>
             <a href="">
               <div>
@@ -43,7 +44,6 @@
               </p>
             </a>
           </li>
-          <!-- 
           <li>
             <a href="">
               <div>
@@ -76,10 +76,12 @@
           </li>
            -->
         </ul>
-
+        
+        <!-- 
         <div class="btn_wrap_left">
           <a href="" class="b_blue"><img src="/images/btn_icon_down.png">납입인출계획표</a>
         </div>
+         -->
       </div>
 
 
@@ -114,33 +116,25 @@
 				//list = [];
 				var html = '';
 				$('#contracts').empty();
-				if (list.length == 0) {
-					
+				for (var i = 0; i < list.length; i++) {
 					html += '<li>'
-					html += '	<a href="">'
-					html += '		<div>'
-					html += '			<img src="/images/logo_FW.png">'
-					html += '		</div>'
-					html += '		<p>'
-					html += '가입하신 상품이 없습니다.'
-					html += '		</p>'
-					html += '	</a>'
+					html += '<a href="javascript:goAssetWithdrawlDetail('+ list[i].SEQ +');">'
+					html += '<div>'
+					html += list[i].INSCO_CD != '' ? '<img src="/images/logo_80_80/' + list[i].INSCO_CD + '.png">': '		<img src="/images/logo_FW_notext.png" />'
+					html += '</div>'
+					html += '<div>'
+					html += '<p class="company_name">'
+					html +=  list[i].PROD_NM
+					html += '</p>'
+					html += '<p class="name">'
+					html += '<span>' + list[i].GEAJA_NM+ '</span> / <span>' + list[i].PIABO_NM + '</span>'
+					html += '</p>'
+					html += '<p style="display:inline-block;" class="money">'+(list[i].HPREM_AMT > 0? 'HKD $' + list[i].HPREM_AMT : 'USD $' + list[i].UPREM_AMT ) + '</p>'
+					html += '<p style="display:inline-block;" class="date">'+ list[i].CONT_DATE+ '</p>'
+					html += '</div>'
+					html += '</a>'
 					html += '</li>'
-					
-				} else {
-					for (var i = 0; i < list.length; i++) {
-						html += '<li>'
-						html += '	<a href="javascript:goAssetWithdrawlDetail('+list[i].SEQ+')">'
-						html += '		<div>'
-						html += list[i].INSCO_CD != '' ? '<img src="/images/logo_' + list[i].INSCO_CD + '.png">': '		<img src="/images/logo_FW.png" />'
-						html += '		</div>'
-						html += '		<p>'
-						html += list[i].INSCO_NM + ' / ' + list[i].PROD_NM
-						html += '		</p>'
-						html += '	</a>'
-						html += '</li>'
-					}
-					
+					;
 				}
 		          
 				$('#contracts').html(html);

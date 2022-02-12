@@ -29,6 +29,7 @@
     <section class="self_certification">
       <div class="message_wrap sub">
         <ul id="messages">
+          <!-- 
           <li>
             <div class="logo">
               <img src="/images/logo_metis.png">
@@ -44,7 +45,6 @@
               </div>
             </div>
           </li>
-          <!-- 
           <li>
             <div class="logo">
               <img src="/images/logo_metis.png">
@@ -239,7 +239,7 @@
 					
 					html += '<li style="display:list-item">'
 					html += '	<div class="logo">'
-					html += '		<img src="/images/logo_findwell.png">'
+					html += '		<img src="/images/logo_FW_notext.png">'
 					html += '	</div>'
 					html += '	<div class="inner">'
 					html += '		<div class="tit">'
@@ -256,11 +256,11 @@
 						html += '<li style="display:list-item">'
 						html += '	<div class="logo">'
 						if (list[i].REF_TYP == 'FW'){
-						html += '		<img src="/images/logo_findwell.png">'
+						html += '		<img src="/images/logo_FW_notext.png">'
 						} else if ( list[i].REF_ID == '') {
 						html += '		'
 						} else {
-						html += '		<img src="/images/logo_'+list[i].INSCO_CD + '.png">'
+						html += '		<img src="/images/logo_80_80/'+list[i].INSCO_CD + '.png">'
 						//html += '		<img src="/images/logo_FWD.png">'
 						}
 						html += '	</div>'
