@@ -14,9 +14,12 @@
 	  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 	  <script type="text/javascript" src="/js/common_added.js"></script>
 	  <!-- <script type="text/javascript" src="../js/app.js"></script> -->
+	  <script type="text/javascript" src="/js/common_util.js"></script>
 	</head>
 	
 	<body>
+	
+	  <th:block th:include="customer/loading"></th:block>
 	  <!-- 모달팝업 -->
 	  <div class="layerPopup login_guide" id="noticePopup" data-backdrop="true" data-target="#noticePopup" style="display:none;">
 	    <div class="content login_guide_wrap">
@@ -77,6 +80,8 @@
 	    var ACCESS_TOKEN = '';
 	    var USER_ID = '';
 	    $(document).ready(function(){
+	    	wrap_mask(0);
+
 	    	console.log(localStorage.JOIN_YN)
 	    	
 	    	if(localStorage.JOIN_YN == 'Y') {

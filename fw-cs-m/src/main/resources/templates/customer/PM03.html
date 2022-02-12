@@ -18,9 +18,12 @@
   <script type="text/javascript" src="/js/common_added.js"></script>
   <script type="text/javascript" src="/js/app.js"></script>
   <script type="text/javascript" src="/js/navigation.js"></script>
+  <script type="text/javascript" src="/js/common_util.js"></script>
 </head>
 
 <body>
+  	<th:block th:include="customer/loading"></th:block>
+  	
   <div class="wrapper_notice">
     <div class="top_wrapper">
       <a href="javascript:goBack();" class="go_back">뒤로가기</a>
@@ -57,6 +60,7 @@
 	var user_id =  '[[${user_id}]]';
 	var item_no =  '[[${item_no}]]';
 	$(document).ready(function(){
+		wrap_mask(0);
 		getBoardItem();
 
     });

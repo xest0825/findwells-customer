@@ -15,9 +15,13 @@
 	  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 	  <script type="text/javascript" src="/js/common_added.js"></script>
 	  <script type="text/javascript" src="/js/app.js"></script>
+	  <script type="text/javascript" src="/js/common_util.js"></script>
 	</head>
 	
 	<body>
+	
+	  	<th:block th:include="customer/loading"></th:block>
+	  	
 	  <div class="wrapper_lock loading">
 	    <div class="top_wrapper">
 	      <a href="javascript:goBack();" class="go_back">뒤로가기</a>
@@ -46,6 +50,7 @@
 	
 	<script>
     $(document).ready(function(){
+    	wrap_mask(0);
 		$('#bt_set_pw').on('click', function(){
 			location.href = '/m/P04';
 		});

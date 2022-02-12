@@ -35,6 +35,9 @@
 	</head>
 	
 	<body>
+	  	<th:block th:include="customer/loading"></th:block>
+	  	
+	  	
 	  <!-- 모달팝업 -->
 	  <div class="layerPopup login_guide" id="noticePopup" data-backdrop="true" data-target="#noticePopup">
 	    <div class="content login_guide_wrap">
@@ -104,6 +107,7 @@
 	  </div>
 	  <script>
 	    //메인에 공지팝업 자동노출
+	    wrap_mask(0);
 	    common.autoPopup('noticePopup')
 	  </script>
 	</body>

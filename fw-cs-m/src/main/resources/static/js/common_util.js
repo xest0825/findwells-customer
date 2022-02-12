@@ -150,6 +150,7 @@
 		
 		function wrap_mask(c, time){
 				if(c == 1){
+					console.log('wrap_mask(1)')
 					$(".wrap-loading").removeClass("loading_none");
 				} else {
 					setTimeout(function() {

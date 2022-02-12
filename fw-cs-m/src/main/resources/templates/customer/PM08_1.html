@@ -22,6 +22,9 @@
 </head>
 
 <body>
+
+  	<th:block th:include="customer/loading"></th:block>
+  	
   <div class="wrapper_notice output">
     <div class="top_wrapper">
       <a href="javascript:goBack();" class="go_back">뒤로가기</a>
@@ -217,6 +220,7 @@
 	var user_id =  '[[${user_id}]]';
 	var seq =  '[[${seq}]]';
 	$(document).ready(function(){
+		wrap_mask(0);
 		console.log(seq);
 		getAssetPlanList();
     });

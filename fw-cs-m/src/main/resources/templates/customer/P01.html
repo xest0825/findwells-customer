@@ -14,9 +14,12 @@
   <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
   <script type="text/javascript" src="/js/common_added.js"></script>
   <!-- <script type="text/javascript" src="/js/app.js"></script> -->
+  <script type="text/javascript" src="/js/common_util.js"></script>
 </head>
 
 <body>
+
+  <th:block th:include="customer/loading"></th:block>
   <!-- 모달팝업 -->
   <div class="layerPopup login_guide" id="noticePopup" data-backdrop="true" data-target="#noticePopup">
     <div class="content login_guide_wrap">
@@ -89,6 +92,7 @@
   <script>
     //메인에 공지팝업 자동노출
     $(document).ready(function(){
+    	wrap_mask(0);
     	common.autoPopup('noticePopup');
     	$('#password').val('');
     	$('#bt_join').on('click', function(){
