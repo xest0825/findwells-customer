@@ -572,32 +572,34 @@ header .welcome span em {
   object-fit: contain;
 }
 
+
 .mySwiper .swiper-slide:nth-of-type(1) {
-  background: url('../images/main_banner_01.jpeg') 0 no-repeat;
+  background: url('/images/banner-02.png') 0 no-repeat;
+  background-size : cover; 
+  height: 180px; 
+  background-position : center;
+}
+.mySwiper .swiper-slide:nth-of-type(2) {
+  background: url('/images/banner-01.png') 0 no-repeat;
   /*object-fit: contain;*/
   background-size : cover; 
   height: 180px; 
   /* background-size : 336px; */
   background-position : center;
 }
-.mySwiper .swiper-slide:nth-of-type(2) {
-  background: url('../images/main_banner_02.jpg') 0 no-repeat;
-  background-size : cover; 
-  height: 180px; 
-  background-position : center;
-}
 .mySwiper .swiper-slide:nth-of-type(3) {
-  background: url('../images/main_banner_03.jpg') 0 no-repeat;
+  background: url('/images/main_banner_03.jpg') 0 no-repeat;
   background-size : cover; 
   height: 180px; 
   background-position : center;
 }
 .mySwiper .swiper-slide:nth-of-type(4) {
-  background: url('../images/main_banner_04.jpg') 0 no-repeat;
+  background: url('/images/main_banner_04.jpg') 0 no-repeat;
   background-size : cover; 
   height: 180px; 
   background-position : center;
 }
+
 
 .mySwiper2 {
   margin-top: 20px;
