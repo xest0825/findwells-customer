@@ -38,10 +38,12 @@
 	
 	<select id="getCustomerUserList" parameterType="kr.co.fw.customer.CustomerVO" resultType="hmap"  >
 		/* user-mapper.xml getCustomerUserList */
-		 SELECT cust_id, cust_nm, ssn, cust_cell, mo_cd, approved_yn, data_dcd, in_emp_cd, in_dtm, up_emp_cd, up_dtm
+		 SELECT cust_id, cust_nm, ssn, cust_cell, mo_cd, approved_yn, data_dcd
+		      , in_emp_cd
+		      , up_emp_cd
 		   FROM tbcs_customer_mobile tb1
 		  WHERE 1 = 1
-		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_id)'>
+		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_id)'>
 			AND tb1.cust_id = #{cust_id}
 		</if>
 	</select>

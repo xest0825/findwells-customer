@@ -232,7 +232,7 @@
     </section>
   </div>
   <footer>
-    copyright 2021@findwell
+    copyright 2021@FIND WELLS Global Solutions.
   </footer>
 </body>
 
@@ -242,6 +242,8 @@
     	//wrap_mask(0);
     	
 		console.log(user_id);
+		
+		getCustomerInfo();
 		
 		getContractList();
 		
@@ -263,6 +265,32 @@
 	ITA - 
 	*/
 	
+	function getCustomerInfo(){
+		var param = {cust_id : user_id};
+		
+		$.get({
+			url: '/cs/customer-info'
+			, type: 'GET'
+			, async: false
+			, data : param
+			, contentType: 'application/json; charset=UTF-8'
+			, headers: {
+			}
+			, success: function (data) {
+				console.log(data);
+				var cust = data.result;
+
+				$('#customer_nm_nav').text(cust.CUST_NM);
+				
+			}
+			, error: function (req, status, error) {
+				console.log(req + ", " + status + ", " + error);	
+				
+			}
+		});
+		
+		
+	}
 	
 	
 	function getContractList() {
@@ -394,7 +422,7 @@
 					
 				} else {
 					for (var i = 0; i < list.length; i++) {
-						html += '<li>'
+						html += '<li onclick="goMessages();">'
 						html += '	<div class="logo">'
 						if (list[i].REF_TYP == 'FW'){
 						html += '		<img src="/images/logo_FW_notext.png">'

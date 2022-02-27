@@ -25,110 +25,8 @@
 
   	<th:block th:include="customer/loading"></th:block>
   	
-  <div class="wrapper_lock health">
-    <header>
-      <div id="menu-container">
-        <div id="menu-wrapper">
-          <div id="hamburger-menu">
-            <span></span>
-            <span></span>
-            <span></span>
-          </div>
-          <!-- hamburger-menu -->
-        </div>
-        <!-- menu-wrapper -->
-        <ul class="menu-list accordion">
-          <p class="welcome">
-            <span>
-              <img src="/images/lnb_person.png">
-              <em>홍길동</em>
-            </span>
-          </p>
-          <li id="nav1" class="toggle accordion-toggle">
-            <span class="icon-plus">
-              <img src="/images/icon_menu_notice.png">
-            </span>
-            <a class="menu-link" href="#">
-              공지사항
-            </a>
-          </li>
-          <li id="nav2" class="toggle accordion-toggle">
-            <span class="icon-plus">
-              <img src="/images/icon_menu_join_list.png">
-            </span>
-            <a class="menu-link" href="#">
-              가입내역
-            </a>
-          </li>
-          <li id="nav3" class="toggle accordion-toggle">
-            <span class="icon-plus">
-              <img src="/images/icon_menu_message.png">
-            </span>
-            <a class="menu-link" href="#">
-              메세지
-            </a>
-          </li>
-          <li id="nav4" class="toggle accordion-toggle">
-            <span class="icon-plus">
-              <img src="/images/icon_menu_out.png">
-            </span>
-            <a class="menu-link" href="#">
-              인출내역
-            </a>
-          </li>
-          <li id="nav5" class="toggle accordion-toggle">
-            <span class="icon-plus">
-              <img src="/images/icon_menu_plan.png">
-            </span>
-            <a class="menu-link" href="#">
-              자산계획
-            </a>
-          </li>
-          <li id="nav6" class="toggle accordion-toggle">
-            <span class="icon-plus">
-              <img src="/images/icon_menu_company.png">
-            </span>
-            <a class="menu-link" href="#">
-              회사소개
-            </a>
-          </li>
-          <li id="nav7" class="toggle accordion-toggle">
-            <span class="icon-plus">
-              <img src="/images/icon_menu_link.png">
-            </span>
-            <a class="menu-link" href="#">
-              제휴사링크
-            </a>
-          </li>
-
-          <div class="btn">
-            <a href="#none" class="b_logout">
-              <img src="/images/b_lnb_logout.png">
-              로그아웃
-            </a>
-            <a href="#none" class="b_lock">
-              <img src="/images/b_lnb_pw.png">
-              잠금 비밀번호
-            </a>
-          </div>
-          <!-- 2depth 
-            <ul class="menu-submenu accordion-content">
-              <li><a class="head" href="#">Submenu1</a></li>
-              <li><a class="head" href="#">Submenu2</a></li>
-              <li><a class="head" href="#">Submenu3</a></li>
-            </ul>
-            -->
-        </ul>
-        <h1>
-          <a href="#none" class="logo_findwell">
-            <img src="/images/logo_findwell.png" />
-          </a>
-        </h1>
-        <button class="go_home">
-          <img src="/images/home.png" />
-        </button>
-      </div>
-    </header>
+	<!-- header //-->
+	<th:block th:include="customer/header"></th:block>
 
 
 
@@ -143,14 +41,42 @@
 
 
     </section>
-  </div>
+
 </body>
 
 	<script>
 	var user_id =  '[[${user_id}]]';
 	$(document).ready(function(){
 		wrap_mask(0);
+		getCustomerInfo();
     });
+	
+	function getCustomerInfo(){
+		var param = {cust_id : user_id};
+		
+		$.get({
+			url: '/cs/customer-info'
+			, type: 'GET'
+			, async: false
+			, data : param
+			, contentType: 'application/json; charset=UTF-8'
+			, headers: {
+			}
+			, success: function (data) {
+				console.log(data);
+				var cust = data.result;
+
+				$('#customer_nm_nav').text(cust.CUST_NM);
+				
+			}
+			, error: function (req, status, error) {
+				console.log(req + ", " + status + ", " + error);	
+				
+			}
+		});
+		
+		
+	}
     
     function goBack(){
     	location.href = '/m/PM01/'+ user_id;

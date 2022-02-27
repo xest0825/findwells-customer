@@ -215,6 +215,30 @@ public class CustomerRestController extends BaseController {
 		ResponseEntity<HashMap<String, Object>> entity = new ResponseEntity<>(retMap, HttpStatus.OK);
 		return entity;
 	}
+
+	/**
+	 * 고객 계약 목록 조회
+	 * @param paramvo
+	 * @return
+	 */
+	@GetMapping("/cs/customer-info")
+	public ResponseEntity<HashMap<String, Object>> getCustomerInfo(CustomerVO paramvo) {
+		log.info("getCustomerInfo");
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		HashMap<String, Object> csMap = new HashMap<String, Object>();
+		
+		csMap = getUserService().getCustomerUser(paramvo);
+		if (CommUtil.isNotEmpty(csMap)) {
+			retMap.put("res_cd","OK");
+			retMap.put("result", csMap);
+		} else {
+			retMap.put("res_cd","FAIL");
+			retMap.put("result", "");
+		}
+
+		ResponseEntity<HashMap<String, Object>> entity = new ResponseEntity<>(retMap, HttpStatus.OK);
+		return entity;
+	}
 	
 	/**
 	 * 고객 계약 목록 조회

@@ -22,7 +22,7 @@ public class DataSourceConfig {
 	
 	@Bean(name="dataSource")
 	@Primary
-	@ConfigurationProperties(prefix="spring.datasource")
+	@ConfigurationProperties(prefix="spring.datasource.hikari")
 	public DataSource DataSource() {
 		return new HikariDataSource();
 	}
