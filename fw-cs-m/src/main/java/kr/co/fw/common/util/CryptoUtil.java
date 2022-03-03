@@ -180,11 +180,11 @@ public class CryptoUtil {
 	}
 	
 	public static void main(String [] args) {
-		String plain = "asdf1";
-		String enc = "";
+		String plain = "";
+		String enc = "OJsAkHBYvOzHaQ1qtpA7ig==";
 		try {
-			enc = encrypt(plain);
-			System.out.println(enc);
+			plain = decrypt(enc);
+			System.out.println(plain);
 			
 		} catch (UnsupportedEncodingException | GeneralSecurityException e) {
 			// TODO Auto-generated catch block

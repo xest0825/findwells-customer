@@ -132,7 +132,7 @@
 	}
 	
 	function getContractList() {
-		var param = {cust_id: user_id};
+		var param = {cust_id: user_id, withdraw_use : 'W'};
 		
 		$.get({
 			url: '/cs/contracts'
@@ -148,6 +148,12 @@
 				//list = [];
 				var html = '';
 				$('#contracts').empty();
+				if (list.length == 0) {
+					html += '<li>'
+					html += '<p>자산인출내역이 없습니다.</p>'
+					html += '</li>'
+					;
+				} else {
 				for (var i = 0; i < list.length; i++) {
 					html += '<li>'
 					html += '<a href="javascript:goAssetWithdrawlDetail('+ list[i].SEQ +');">'
@@ -167,6 +173,8 @@
 					html += '</a>'
 					html += '</li>'
 					;
+				}
+					
 				}
 		          
 				$('#contracts').html(html);

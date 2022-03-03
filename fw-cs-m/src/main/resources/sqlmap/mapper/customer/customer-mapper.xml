@@ -719,6 +719,14 @@ SELECT COUNT(*)
 	                    GROUP BY SEQ, GUBUN, MB_ID) I   /* 수익자 조회 */
 	    ON A.MB_ID = I.MB_ID
 	   AND A.SEQ = I.SEQ     
+	   <if test='@kr.co.fw.common.util.CommUtil@isEquals(withdraw_use, "W")'>
+	  LEFT OUTER JOIN TBCN_CONTRACT_WITHDRAWAL W
+	    ON A.SEQ = W.REF_SEQ
+	   </if>
+	   <if test='@kr.co.fw.common.util.CommUtil@isEquals(withdraw_use, "P")'>
+	  LEFT OUTER JOIN TBCN_CONTRACT_ASSET P
+	    ON A.SEQ = P.REF_SEQ
+	   </if>
 	 WHERE A.MB_ID = 'YNG'
 	   AND A.MO_CD NOT IN ('SADMIN', 'ADMIN', 'INSCOM')
 	    <![CDATA[AND NVL(A.DATA_DCD,'I') <> 'D']]>
@@ -730,6 +738,14 @@ SELECT COUNT(*)
 	
 	<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cont_seq)'>
 	   AND A.SEQ = #{cont_seq}
+	</if>
+	
+	<if test='@kr.co.fw.common.util.CommUtil@isEquals(withdraw_use, "W")'>
+	   AND W.REF_SEQ IS NOT NULL
+	</if>
+	
+	<if test='@kr.co.fw.common.util.CommUtil@isEquals(withdraw_use, "P")'>
+	   AND P.REF_SEQ IS NOT NULL
 	</if>
 
 	</select>

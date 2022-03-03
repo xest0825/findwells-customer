@@ -134,7 +134,7 @@
 	}
 	
 	function getContractList() {
-		var param = {cust_id: user_id};
+		var param = {cust_id: user_id, withdraw_use : 'P'};
 		
 		$.get({
 			url: '/cs/contracts'
@@ -150,25 +150,32 @@
 				//list = [];
 				var html = '';
 				$('#contracts').empty();
-				for (var i = 0; i < list.length; i++) {
+				if (list.length == 0) {
 					html += '<li>'
-					html += '<a href="javascript:goAssetPlanDetail('+ list[i].SEQ +');">'
-					html += '<div>'
-					html += list[i].INSCO_CD != '' ? '<img src="/images/logo_80_80/' + list[i].INSCO_CD + '.png">': '		<img src="/images/logo_FW_notext.png" />'
-					html += '</div>'
-					html += '<div>'
-					html += '<p class="company_name">'
-					html +=  list[i].PROD_NM
-					html += '</p>'
-					html += '<p class="name">'
-					html += '<span>' + list[i].GEAJA_NM+ '</span> / <span>' + list[i].PIABO_NM + '</span>'
-					html += '</p>'
-					html += '<p style="display:inline-block;" class="money">'+(list[i].HPREM_AMT > 0? 'HKD $' + list[i].HPREM_AMT : 'USD $' + list[i].UPREM_AMT ) + '</p>'
-					html += '<p style="display:inline-block;" class="date">'+ list[i].CONT_DATE+ '</p>'
-					html += '</div>'
-					html += '</a>'
+					html += '<p>작성된 자산사용계획이 없습니다.</p>'
 					html += '</li>'
 					;
+				} else {
+					for (var i = 0; i < list.length; i++) {
+						html += '<li>'
+						html += '<a href="javascript:goAssetPlanDetail('+ list[i].SEQ +');">'
+						html += '<div>'
+						html += list[i].INSCO_CD != '' ? '<img src="/images/logo_80_80/' + list[i].INSCO_CD + '.png">': '		<img src="/images/logo_FW_notext.png" />'
+						html += '</div>'
+						html += '<div>'
+						html += '<p class="company_name">'
+						html +=  list[i].PROD_NM
+						html += '</p>'
+						html += '<p class="name">'
+						html += '<span>' + list[i].GEAJA_NM+ '</span> / <span>' + list[i].PIABO_NM + '</span>'
+						html += '</p>'
+						html += '<p style="display:inline-block;" class="money">'+(list[i].HPREM_AMT > 0? 'HKD $' + list[i].HPREM_AMT : 'USD $' + list[i].UPREM_AMT ) + '</p>'
+						html += '<p style="display:inline-block;" class="date">'+ list[i].CONT_DATE+ '</p>'
+						html += '</div>'
+						html += '</a>'
+						html += '</li>'
+						;
+					}
 				}
 		          
 				$('#contracts').html(html);
