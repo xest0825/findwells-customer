@@ -32,6 +32,12 @@
 		<script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 		<script type="text/javascript" src="/js/common_added.js"></script>
 		<script type="text/javascript" src="/js/app.js"></script>
+		  <script>
+		  history.pushState(null, null, location.href);
+		  window.onpopstate = function(event){
+			  history.go(1);
+		  }
+		  </script>
 	</head>
 	
 	<body>

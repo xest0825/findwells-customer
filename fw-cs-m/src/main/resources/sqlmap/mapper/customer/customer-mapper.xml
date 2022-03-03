@@ -737,44 +737,56 @@ SELECT COUNT(*)
 	<select id="getAssetWithdrawalLogList" parameterType="kr.co.fw.customer.CustomerVO" resultType="hmap">
 				/* customer-mapper.xml getAssetWithdrawalLogList 인출 이력 조회 */
 				SELECT TB1.SEQ 				seq			/* NUMBER PRIMARY KEY */
-					 , TB1.CUST_ID 			cust_id		/* VARCHAR2(20) */
-					 , TB1.MO_CD 			mo_cd		/* VARCHAR2(20) */
-					 , TB1.INSCO_CD 		insco_cd	/* VARCHAR2(5)  */
+					 , GJ.CUST_ID 			cust_id		/* VARCHAR2(20) */
+					 , TB5.MO_CD 			mo_cd		/* VARCHAR2(20) */
+					 , TB5.INSCO_CD 		insco_cd	/* VARCHAR2(5)  */
 					 , TB4.INSCO_NM			insco_nm
 					 , TB5.INSPOL_NO 		inspol_no	/* VARCHAR2(40) */
-					 , TB1.CONT_SEQ			cont_seq
-					 , TB1.PROD_SEQ 		prod_seq	/* VARCHAR2(22) */
-					 , TB%.PROD_NM			prod_nm
-					 , TB1.WITHDRAWAL_DT 	withdrawal_dt	/* VARCHAR2(20)  */
-					 , TB1.AMT 				amt				/* INT */
-					 , TB1.AMT_SUM 			amt_sum			/* INT */
-					 , TB1.BANK 			bank			/* VARCHAR2(10) */
+					 , TB1.REF_SEQ			cont_seq
+					 , TB5.PROD_SEQ 		prod_seq	/* VARCHAR2(22) */
+					 , TB5.PROD_NM			prod_nm
+					 , TB1.WITHDRAWAL_DATE 	withdrawal_dt	/* VARCHAR2(20)  */
+					 , TB1.DEPOSIT_AMT 		amt				/* INT */
+					 , TB1.ACCUMULATE_AMT 	amt_sum			/* INT */
+					 , TB1.BK_ID  			bank			/* VARCHAR2(10) */
 					 , TB1.MEMO 			memo			/* VARCHAR2(400) */
 					 , TB1.IN_EMP_CD 		in_emp_cd		/* VARCHAR2(20)  */
 					 , TB1.UP_EMP_CD 		up_emp_cd		/* VARCHAR2(20) */
 					 , TO_CHAR(TB1.IN_DTM, 'YYYY-MM-DD HH24:MI:SS') in_dtm /* TIMESTAMP */
 					 , TO_CHAR(TB1.UP_DTM, 'YYYY-MM-DD HH24:MI:SS') up_dtm /* TIMESTAMP */
-				  FROM TBCS_ASSET_WITHDRAWAL_LOG TB1
-	   LEFT OUTER JOIN TBCS_CUSTOMER_MOBILE TB2
-	   				ON TB1.CUST_ID = TB2.CUST_ID
-	   LEFT OUTER JOIN TBIN_EMPMST_FSB TB3
-	   				ON TB1.MO_CD = TB3.EMP_CD
-	   LEFT OUTER JOIN TBCM_INSCO TB4
-	   				ON TB1.INSCO_CD = TB4.INSCO_CD
+				  FROM TBCN_CONTRACT_WITHDRAWAL TB1
 	   LEFT OUTER JOIN TBCN_CONTRACT TB5
-	   				ON TB1.CONT_SEQ = TB5.SEQ
+	   				ON TB1.REF_SEQ = TB5.SEQ			  
+	   LEFT OUTER JOIN TBCN_CONTRACT_CUSTOMER GJ /* 계약자 */
+	   				ON TB5.SEQ = GJ.SEQ			
+	   			   AND GJ.GUBUN  = 'GEAJA'
+	   LEFT OUTER JOIN TBCN_CONTRACT_CUSTOMER PB /* 피보험자 */
+	   				ON TB5.SEQ = GJ.SEQ			
+	   			   AND GJ.GUBUN  = 'PIBO'
+	   LEFT OUTER JOIN TBCN_CONTRACT_CUSTOMER BN /* 수익자 */
+	   				ON TB5.SEQ = GJ.SEQ			
+	   			   AND GJ.GUBUN  = 'BENEFICIARY'
+	   LEFT OUTER JOIN TBCS_CUSTOMER_MOBILE TB2 /* 계약자 */
+	   				ON GJ.CUST_ID = TB2.CUST_ID
+	   LEFT OUTER JOIN TBIN_EMPMST_FSB TB3 /* 모집인 */
+	   				ON TB5.MO_CD = TB3.EMP_CD
+	   LEFT OUTER JOIN TBIN_EMPMST_FSB TB6 /* 유지인 */
+	   				ON TB5.YU_CD = TB6.EMP_CD
+	   LEFT OUTER JOIN TBCM_INSCO TB4
+	   				ON TB5.INSCO_CD = TB4.INSCO_CD
+
 				 WHERE 1 = 1
-				   <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(cust_id)">
-				   AND TB1.CUST_ID = #{cust_id}
+				   <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_id)">
+				   AND GJ.CUST_ID = #{cust_id}
 				   </if>
-				   <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(Cust_nm)">
+				   <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_nm)">
 				   AND TB2.CUST_NM = #{cust_nm}
 				   </if>
-				   <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(mo_cd)">
-				   AND TB1.MO_CD = #{mo_cd}
+				   <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(mo_cd)">
+				   AND TB5.MO_CD = #{mo_cd}
 				   </if>
-				   <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(cont_seq)">
-				   AND TB1.CONT_SEQ = #{cont_seq}
+				   <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cont_seq)">
+				   AND TB1.REF_SEQ = #{cont_seq}
 				   </if>
 				 ORDER BY TB1.IN_DTM DESC
 	</select>
@@ -827,40 +839,40 @@ SELECT COUNT(*)
 				/* customer-mapper.xml updateAssetWithdrawalLog 인출 이력 수정 */
 				UPDATE TBCS_ASSET_WITHDRAWAL_LOG
 				   SET UP_DTM 		 = SYSDATE				/* TIMESTAMP */
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(cust_id)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_id)">
 					 , CUST_ID 		 = #{cust_id} 			/* VARCHAR2(20) */
 					 </if>
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(mo_cd)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(mo_cd)">
 					 , MO_CD 		 = #{mo_cd} 			/* VARCHAR2(20) */
 					 </if>
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(Insco_cd)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(Insco_cd)">
 					 , INSCO_CD 	 = #{insco_cd} 			/* VARCHAR2(5)  */
 					 </if>
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(inspol_no)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(inspol_no)">
 					 , INSPOL_NO	 = #{inspol_no} 		/* VARCHAR2(40) */
 					 </if>
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(prod_seq)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(prod_seq)">
 					 , PROD_SEQ 	 = #{prod_seq} 			/* VARCHAR2(22) */
 					 </if>
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(withdrawal_dt)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(withdrawal_dt)">
 					 , WITHDRAWAL_DT = #{withdrawal_dt} 	/* VARCHAR2(20)  */
 					 </if>
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(amt)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(amt)">
 					 , AMT 			 = #{amt} 				/* INT */
 					 </if>
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(amt_sum)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(amt_sum)">
 					 , AMT_SUM 		 = #{amt_sum} 			/* INT */
 					 </if>
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(bank)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(bank)">
 					 , BANK 		 = #{bank} 				/* VARCHAR2(10) */
 					 </if>
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(memo)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(memo)">
 					 , MEMO 		 = #{memo} 				/* VARCHAR2(400) */
 					 </if>
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(up_emp_cd)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(up_emp_cd)">
 					 , UP_EMP_CD 	 = #{up_emp_cd} 		/* VARCHAR2(20) */
 					 </if>
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(cont_seq)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cont_seq)">
 				     , CONT_SEQ = #{cont_seq}
 				     </if>
 				 WHERE SEQ 			 = #{seq} 				/* NUMBER PRIMARY KEY */
@@ -876,44 +888,47 @@ SELECT COUNT(*)
 	<select id="getAssetPlanList" parameterType="kr.co.fw.customer.CustomerVO" resultType="hmap">
 				/* customer-mapper.xml getAssetPlanList 자산 사용계획 조회 */
 				SELECT TB1.SEQ 				seq			/* NUMBER PRIMARY KEY * /
-					 , TB1.CUST_ID 			cust_id		/* VARCHAR2(20) */
-					 , TB1.MO_CD 			mo_cd		/* VARCHAR2(20) */
-					 , TB1.CONT_SEQ			cont_seq
+					 , GJ.CUST_ID 			cust_id		/* VARCHAR2(20) */
+					 , TB1.EMP_CD 			mo_cd		/* VARCHAR2(20) */
+					 , TB1.REF_SEQ			cont_seq
 					 , TB4.INSPOL_NO		inspol_no
 					 , TB4.INSCO_CD			insco_cd
 					 , TB5.INSCO_NM			insco_nm
 					 , TB4.PROD_NM			prod_nm
-					 , TB1.USE_YEAR 		use_year	/* VARCHAR(4) */
+					 , TB1.ASSET_DATE 		use_year	/* VARCHAR(4) */
 					 , TB1.PURPOSE 			purpose		/* VARCHAR(20) */
 					 , TB1.AGE 				age			/* INT */
-					 , TB1.AMT 				amt			/* INT */
-					 , TB1.USE_MEAN 		use_mean	/* VARCHAR(20) */
+					 , TB1.ASSET_AMT 		amt			/* INT */
+					 , TB1.USE_METHOD 		use_mean	/* VARCHAR(20) */
 					 , TB1.MEMO 			memo		/* VARCHAR2(400) */
 					 , TB1.IN_EMP_CD 		in_emp_cd	/* VARCHAR2(20)  */
 					 , TB1.UP_EMP_CD 		up_emp_cd	/* VARCHAR2(20) */
 					 , TO_CHAR(TB1.IN_DTM, 'YYYY-MM-DD HH24:MI:SS') in_dtm /* TIMESTAMP */
 					 , TO_CHAR(TB1.UP_DTM, 'YYYY-MM-DD HH24:MI:SS') up_dtm /* TIMESTAMP */
-				  FROM TBCS_ASSET_PLAN TB1
-	   LEFT OUTER JOIN TBCS_CUSTOMER_MOBILE TB2
-	   				ON TB1.CUST_ID = TB2.CUST_ID
-	   LEFT OUTER JOIN TBIN_EMPMST_FSB TB3
-	   				ON TB1.MO_CD = TB3.EMP_CD
+				  FROM TBCN_CONTRACT_ASSET TB1
 	   LEFT OUTER JOIN TBCN_CONTRACT TB4
-	   				ON TB1.CONT_SEQ = TB5.SEQ
+	   				ON TB1.REF_SEQ = TB4.SEQ
+	   LEFT OUTER JOIN TBCN_CONTRACT_CUSTOMER GJ /* 계약자 */
+	   				ON TB4.SEQ = GJ.SEQ			
+	   			   AND GJ.GUBUN  = 'GEAJA'
+	   LEFT OUTER JOIN TBCS_CUSTOMER_MOBILE TB2
+	   				ON GJ.CUST_ID = TB2.CUST_ID
+	   LEFT OUTER JOIN TBIN_EMPMST_FSB TB3
+	   				ON TB1.EMP_CD = TB3.EMP_CD
 	   LEFT OUTER JOIN TBCM_INSCO TB5
 	   				ON TB4.INSCO_CD = TB5.INSCO_CD
 				 WHERE 1 = 1
-				   <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(cust_id)">
-				   AND TB1.CUST_ID = #{cust_id}
+				   <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_id)">
+				   AND GJ.CUST_ID = #{cust_id}
 				   </if>
-				   <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(cust_nm)">
+				   <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_nm)">
 				   AND TB2.CUST_NM = #{cust_nm}
 				   </if>
-				   <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(mo_cd)">
-				   AND TB1.MO_CD = #{mo_cd}
+				   <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(mo_cd)">
+				   AND TB1.EMP_CD = #{mo_cd}
 				   </if>
-				   <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(cont_seq)">
-				   AND TB1.CONT_SEQ = #{cont_seq}
+				   <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cont_seq)">
+				   AND TB1.REF_SEQ = #{cont_seq}
 				   </if>
 				 ORDER BY TB1.IN_DTM DESC
 	</select>
@@ -959,31 +974,31 @@ SELECT COUNT(*)
 				/* customer-mapper.xml updateAssetPlan 자산 사용계획 수정 */
 				UPDATE TBCS_ASSET_PLAN
 				   SET UP_DTM 		 = SYSDATE 			/* TIMESTAMP */
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(cust_id)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_id)">
 					 , CUST_ID 		 = #{cust_id} 			/* VARCHAR2(20) */
 					 </if>
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(mo_cd)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(mo_cd)">
 					 , MO_CD 		 = #{mo_cd} 			/* VARCHAR2(20) */
 					 </if>
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(use_year)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(use_year)">
 					 , USE_YEAR 	= #{use_year} 			/* VARCHAR(4) */
 					 </if>
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(purpose)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(purpose)">
 					 , PURPOSE 		= #{purpose} 			/* VARCHAR(20) */
 					 </if>
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(age)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(age)">
 					 , AGE 			= #{age} 				/* INT */
 					 </if>
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(amt)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(amt)">
 					 , AMT 			= #{amt} 				/* INT */
 					 </if>
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(use_mean)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(use_mean)">
 					 , USE_MEAN 	= #{use_mean} 			/* VARCHAR(20) */
 					 </if>
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(memo)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(memo)">
 					 , MEMO 		 = #{memo} 				/* VARCHAR2(400) */
 					 </if>
-					 <if test="@kr.co.fw.comm.util.CommUtil@isNotEmpty(up_emp_cd)">
+					 <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(up_emp_cd)">
 					 , UP_EMP_CD 	 = #{up_emp_cd} 		/* VARCHAR2(20) */
 					 </if>
 				 WHERE SEQ 			 = #{seq} 				/* NUMBER PRIMARY KEY */
