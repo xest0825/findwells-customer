@@ -61,5 +61,21 @@ public class CustomerDAO extends BaseDAO {
 		return getSqlSession().selectList(getCustomerMapper() + "getAssetPlanList", paramvo);
 	}
 	
+	public List<HashMap<String, Object>> getAccountInfoList(CustomerVO paramvo) {
+		return getSqlSession().selectList(getCustomerMapper() + "getAccountInfoList", paramvo);
+	}
+	
+	public int insertAccountInfo(CustomerVO paramvo) {
+		return getSqlSession().insert(getCustomerMapper() + "insertAccountInfo", paramvo);
+	}
+	
+	public int updateAccountInfo(CustomerVO paramvo) {
+		return getSqlSession().update(getCustomerMapper() + "updateAccountInfo", paramvo);
+	}
+	
+	public int deleteAccountInfo(CustomerVO paramvo) {
+		return getSqlSession().delete(getCustomerMapper() + "deleteAccountInfo", paramvo);
+	}
+	
 	
 }

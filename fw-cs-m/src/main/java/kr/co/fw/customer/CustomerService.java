@@ -70,4 +70,20 @@ public class CustomerService extends BaseService {
 		return getCustomerDAO().getAssetPlanList(paramvo);
 	}
 	
+	public List<HashMap<String, Object>> getAccountInfoList(CustomerVO paramvo) {
+		return getCustomerDAO().getAccountInfoList(paramvo);
+	}
+	
+	public int insertAccountInfo(CustomerVO paramvo) {
+		return getCustomerDAO().insertAccountInfo(paramvo);
+	}
+	
+	public int updateAccountInfo(CustomerVO paramvo) {
+		return getCustomerDAO().updateAccountInfo(paramvo);
+	}
+	
+	public int deleteAccountInfo(CustomerVO paramvo) {
+		return getCustomerDAO().deleteAccountInfo(paramvo);
+	}
+	
 }

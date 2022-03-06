@@ -10,8 +10,10 @@ import java.util.List;
 //import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -406,6 +408,110 @@ public class CustomerRestController extends BaseController {
 			retList = getCustomerService().getAssetPlanList(paramvo);
 			retMap.put("res_cd","OK");
 			retMap.put("result", retList);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			retMap.put("res_cd","FAIL");
+			retMap.put("result", "");
+		}
+		
+		ResponseEntity<HashMap<String, Object>> entity = new ResponseEntity<>(retMap, HttpStatus.OK);
+		return entity;
+	}
+	
+	/**
+	 * 금융사 비번 목록 조회
+	 * @param paramvo
+	 * @return
+	 */
+	@GetMapping("/cs/account-info-list")
+	public ResponseEntity<HashMap<String, Object>> getAccountInfoList(CustomerVO paramvo) {
+		log.info("getAccountInfoList");
+		List<HashMap<String, Object>> retList = new ArrayList<HashMap<String, Object>>();
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		try {
+			retList = getCustomerService().getAccountInfoList(paramvo);
+			retMap.put("res_cd","OK");
+			retMap.put("result", retList);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			retMap.put("res_cd","FAIL");
+			retMap.put("result", "");
+		}
+		
+		ResponseEntity<HashMap<String, Object>> entity = new ResponseEntity<>(retMap, HttpStatus.OK);
+		return entity;
+	}
+	
+	/**
+	 * 금융사 비번 목록 입력
+	 * @param paramvo
+	 * @return
+	 */
+	@PostMapping("/cs/account-info")
+	public ResponseEntity<HashMap<String, Object>> insertAccountInfo(CustomerVO paramvo) {
+		log.info("insertAccountInfo");
+		int ret = 0;
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		try {
+			ret = getCustomerService().insertAccountInfo(paramvo);
+			retMap.put("res_cd","OK");
+			retMap.put("result", ret);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			retMap.put("res_cd","FAIL");
+			retMap.put("result", "");
+		}
+		
+		ResponseEntity<HashMap<String, Object>> entity = new ResponseEntity<>(retMap, HttpStatus.OK);
+		return entity;
+	}
+	
+	/**
+	 * 금융사 비번 목록 수정
+	 * @param paramvo
+	 * @return
+	 */
+	@PutMapping("/cs/account-info")
+	public ResponseEntity<HashMap<String, Object>> updateAccountInfo(CustomerVO paramvo) {
+		log.info("insertAccountInfo");
+		int ret = 0;
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		try {
+			ret = getCustomerService().updateAccountInfo(paramvo);
+			retMap.put("res_cd","OK");
+			retMap.put("result", ret);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			retMap.put("res_cd","FAIL");
+			retMap.put("result", "");
+		}
+		
+		ResponseEntity<HashMap<String, Object>> entity = new ResponseEntity<>(retMap, HttpStatus.OK);
+		return entity;
+	}
+	
+	/**
+	 * 금융사 비번 목록 삭제 
+	 * @param paramvo
+	 * @return
+	 */
+	@DeleteMapping("/cs/account-info")
+	public ResponseEntity<HashMap<String, Object>> deleteAccountInfo(CustomerVO paramvo) {
+		log.info("insertAccountInfo");
+		int ret = 0;
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		
+		try {
+			ret = getCustomerService().deleteAccountInfo(paramvo);
+			retMap.put("res_cd","OK");
+			retMap.put("result", ret);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -33,5 +33,12 @@ public class CustomerAssetVO extends BaseVO{
 	private String approved_yn;
 	
 	private String cont_seq;
+	
+	private String seq; 
+	private String corp_nm; 		/* varchar(100)   */
+	private String bank_acc_no; 	/* varchar(100)   */
+	private String pin_no; 		/* varchar(100)   */
+	private String withdraw_pw; 	/* varchar(100)   */
+	private String memo; 		/* varchar(200)   */
 
 }

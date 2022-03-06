@@ -270,7 +270,7 @@
 					
 					html += '<li style="display:list-item">'
 					html += '	<div class="logo">'
-					html += '		<img src="/images/logo_FW_notext.png">'
+					html += '		<img src="/images/logo_circle_2/FW.png">'
 					html += '	</div>'
 					html += '	<div class="inner">'
 					html += '		<div class="tit">'
@@ -285,14 +285,13 @@
 				} else {
 					for (var i = 0; i < list.length; i++) {
 						html += '<li style="display:list-item">'
-						html += '	<div class="logo">'
+						html += '	<div class="logo"><!-- -->'
 						if (list[i].REF_TYP == 'FW'){
-						html += '		<img src="/images/logo_FW_notext.png">'
+						html += '		<img src="/images/logo_circle_2/FW.png">'
 						} else if ( list[i].REF_ID == '') {
 						html += '		'
 						} else {
-						html += '		<img src="/images/logo_80_80/'+list[i].INSCO_CD + '.png">'
-						//html += '		<img src="/images/logo_FWD.png">'
+						html += '		<img src="/images/logo_circle_2/'+list[i].INSCO_CD + '.png">'
 						}
 						html += '	</div>'
 						html += '	<div class="inner">'

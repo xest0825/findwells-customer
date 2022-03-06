@@ -1026,4 +1026,71 @@ SELECT COUNT(*)
 				 WHERE SEQ 			 = #{seq} 				/* NUMBER PRIMARY KEY */
 	</update>
 	
+	<select id="getAccountInfoList" parameterType="kr.co.fw.customer.CustomerAssetVO" resultType="Hmap">
+		/* customer-mapper.xml getAccountInfoList */
+		SELECT SEQ 
+			 , CUST_ID 		/* VARCHAR(30) NN */
+			 , CORP_NM 		/* VARCHAR(100)   */
+			 , BANK_ACC_NO 	/* VARCHAR(100)   */
+			 , PIN_NO 		/* VARCHAR(100)   */
+			 , LOGIN_PW 	/* VARCHAR(100)   */
+			 , WITHDRAW_PW 	/* VARCHAR(100)   */
+			 , MEMO 		/* VARCHAR(200)   */
+		  FROM TBCS_FIN_ACCOUNT A
+		 WHERE CUST_ID = #{cust_id}
+	  ORDER BY IN_DTM DESC
+	</select>
+	
+	<insert id="insertAccountInfo" parameterType="kr.co.fw.customer.CustomerAssetVO" >
+		/* customer-mapper.xml insertAccountInfo */
+		INSERT 
+		  INTO TBCS_FIN_ACCOUNT 
+		  	 ( SEQ
+			 , CUST_ID 		/* VARCHAR(30) NN */
+			 , CORP_NM 		/* VARCHAR(100)   */
+			 , BANK_ACC_NO 	/* VARCHAR(100)   */
+			 , PIN_NO 		/* VARCHAR(100)   */
+			 , LOGIN_PW 	/* VARCHAR(100)   */
+			 , WITHDRAW_PW 	/* VARCHAR(100)   */
+			 , MEMO 		/* VARCHAR(200)   */
+			 , IN_EMP_CD
+			 , IN_DTM
+			 , UP_EMP_CD
+			 , UP_DTM
+			 ) VALUES 
+			 ( TBCS_FIN_ACCOUNT_SEQ.NEXTVAL
+			 , #{cust_id} 		/* VARCHAR(30) NN */
+			 , #{corp_nm} 		/* VARCHAR(100)   */
+			 , #{bank_acc_no} 	/* VARCHAR(100)   */
+			 , #{pin_no} 		/* VARCHAR(100)   */
+			 , #{login_pw} 		/* VARCHAR(100)   */
+			 , #{withdraw_pw} 	/* VARCHAR(100)   */
+			 , #{memo} 			/* VARCHAR(200)   */
+			 , ''
+			 , SYSDATE
+			 , ''
+			 , SYSDATE
+			 )
+	</insert>
+	
+	<update id="updateAccountInfo" parameterType="kr.co.fw.customer.CustomerAssetVO" >
+		/* customer-mapper.xml updateAccountInfo */
+		UPDATE TBCS_FIN_ACCOUNT
+		   SET UP_DTM = SYSDATE
+		   	 , CUST_ID 		= #{cust_id} 		/* VARCHAR(30) NN */
+			 , CORP_NM 		= #{corp_nm} 		/* VARCHAR(100)   */
+			 , BANK_ACC_NO 	= #{bank_acc_no} 	/* VARCHAR(100)   */
+			 , PIN_NO 		= #{pin_no}			/* VARCHAR(100)   */
+			 , LOGIN_PW 	= #{login_pw}		/* VARCHAR(100)   */
+			 , WITHDRAW_PW 	= #{withdraw_pw}	/* VARCHAR(100)   */
+			 , MEMO 		= #{memo}			/* VARCHAR(200)   */
+		 WHERE SEQ = #{seq}
+	</update>
+	
+	<delete id="deleteAccountInfo" parameterType="kr.co.fw.customer.CustomerAssetVO" >
+		/* customer-mapper.xml deleteAccountInfo */
+		DELETE TBCS_FIN_ACCOUNT
+		WHERE SEQ  = #{seq}
+	</delete>
+	
 </mapper>

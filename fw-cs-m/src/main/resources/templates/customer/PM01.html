@@ -321,7 +321,7 @@
 					
 					html += '<div class="swiper-slide">'
 					html += '	<div class="logo">'
-					html += '		<img src="/images/logo_FW_notext.png" />'
+					html += '		<img src="/images/logo_circle_2/FW.png" />'
 					html += '	</div>'
 					html += '	<div class="txt">'
 					html += '		<p class="logo_txt">'
@@ -343,7 +343,7 @@
 						html += '<div class="swiper-slide">'
 						html += '	<div class="logo">'
 						//html += '<img src="/images/logo_ITA.png">'
-						html += list[i].INSCO_CD != '' ? '<img src="/images/logo_80_80/' + list[i].INSCO_CD + '.png">': '		<img src="/images/logo_FW_notext.png" />'
+						html += list[i].INSCO_CD != '' ? '<img src="/images/logo_circle_2/' + list[i].INSCO_CD + '.png">': '		<img src="/images/logo_circle_2/FW.png" />'
 						html += '	</div>'
 						html += '	<div class="txt">'
 						html += '		<p class="logo_txt">'
@@ -414,7 +414,7 @@
 					
 					html += '<li>'
 					html += '	<div class="logo">'
-					html += '		<img src="/images/logo_FW_notext.png">'
+					html += '		<img src="/images/logo_cirle_2/FW.png">'
 					html += '	</div>'
 					html += '	<div class="inner">'
 					html += '		<div class="tit">'
@@ -432,12 +432,11 @@
 						html += '<li onclick="goMessages();">'
 						html += '	<div class="logo">'
 						if (list[i].REF_TYP == 'FW'){
-						html += '		<img src="/images/logo_FW_notext.png">'
+						html += '		<img src="/images/logo_circle_2/FW.png">'
 						} else if ( list[i].REF_ID == '') {
 						html += '		'
 						} else {
-						html += '		<img src="/images/logo_80_80/'+list[i].INSCO_CD + '.png">'
-						//html += '		<img src="/images/logo_FWD.png">'
+						html += '		<img src="/images/logo_circle_2/'+list[i].INSCO_CD + '.png">'
 						}
 						html += '	</div>'
 						html += '	<div class="inner">'
