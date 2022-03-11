@@ -7,6 +7,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import kr.co.fw.base.BaseService;
+import kr.co.fw.common.util.CommUtil;
 
 @Service
 public class CustomerService extends BaseService {
@@ -70,19 +71,34 @@ public class CustomerService extends BaseService {
 		return getCustomerDAO().getAssetPlanList(paramvo);
 	}
 	
-	public List<HashMap<String, Object>> getAccountInfoList(CustomerVO paramvo) {
+	public List<HashMap<String, Object>> getAccountInfoList(CustomerAssetVO paramvo) {
 		return getCustomerDAO().getAccountInfoList(paramvo);
 	}
 	
-	public int insertAccountInfo(CustomerVO paramvo) {
+	public int saveAccountInfo(CustomerAssetVO paramvo) {
+		List<HashMap<String, Object>> accList = new ArrayList<HashMap<String, Object>>();
+		accList = getAccountInfoList(paramvo);
+		if (CommUtil.isEmpty(paramvo.getSeq())) {
+			return getCustomerDAO().insertAccountInfo(paramvo);			
+			
+		} else {
+			if (accList.size() > 0) {
+				return getCustomerDAO().updateAccountInfo(paramvo);			
+			} else {
+				return getCustomerDAO().insertAccountInfo(paramvo);
+			}			
+		}
+	}
+	
+	public int insertAccountInfo(CustomerAssetVO paramvo) {
 		return getCustomerDAO().insertAccountInfo(paramvo);
 	}
 	
-	public int updateAccountInfo(CustomerVO paramvo) {
+	public int updateAccountInfo(CustomerAssetVO paramvo) {
 		return getCustomerDAO().updateAccountInfo(paramvo);
 	}
 	
-	public int deleteAccountInfo(CustomerVO paramvo) {
+	public int deleteAccountInfo(CustomerAssetVO paramvo) {
 		return getCustomerDAO().deleteAccountInfo(paramvo);
 	}
 	

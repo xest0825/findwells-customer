@@ -425,7 +425,7 @@ public class CustomerRestController extends BaseController {
 	 * @return
 	 */
 	@GetMapping("/cs/account-info-list")
-	public ResponseEntity<HashMap<String, Object>> getAccountInfoList(CustomerVO paramvo) {
+	public ResponseEntity<HashMap<String, Object>> getAccountInfoList(CustomerAssetVO paramvo) {
 		log.info("getAccountInfoList");
 		List<HashMap<String, Object>> retList = new ArrayList<HashMap<String, Object>>();
 		HashMap<String, Object> retMap = new HashMap<String, Object>();
@@ -451,13 +451,13 @@ public class CustomerRestController extends BaseController {
 	 * @return
 	 */
 	@PostMapping("/cs/account-info")
-	public ResponseEntity<HashMap<String, Object>> insertAccountInfo(CustomerVO paramvo) {
+	public ResponseEntity<HashMap<String, Object>> insertAccountInfo(@RequestBody CustomerAssetVO paramvo) {
 		log.info("insertAccountInfo");
 		int ret = 0;
 		HashMap<String, Object> retMap = new HashMap<String, Object>();
 		
 		try {
-			ret = getCustomerService().insertAccountInfo(paramvo);
+			ret = getCustomerService().saveAccountInfo(paramvo);
 			retMap.put("res_cd","OK");
 			retMap.put("result", ret);
 		} catch (Exception e) {
@@ -477,7 +477,7 @@ public class CustomerRestController extends BaseController {
 	 * @return
 	 */
 	@PutMapping("/cs/account-info")
-	public ResponseEntity<HashMap<String, Object>> updateAccountInfo(CustomerVO paramvo) {
+	public ResponseEntity<HashMap<String, Object>> updateAccountInfo(@RequestBody CustomerAssetVO paramvo) {
 		log.info("insertAccountInfo");
 		int ret = 0;
 		HashMap<String, Object> retMap = new HashMap<String, Object>();
@@ -503,7 +503,7 @@ public class CustomerRestController extends BaseController {
 	 * @return
 	 */
 	@DeleteMapping("/cs/account-info")
-	public ResponseEntity<HashMap<String, Object>> deleteAccountInfo(CustomerVO paramvo) {
+	public ResponseEntity<HashMap<String, Object>> deleteAccountInfo(@RequestBody CustomerAssetVO paramvo) {
 		log.info("insertAccountInfo");
 		int ret = 0;
 		HashMap<String, Object> retMap = new HashMap<String, Object>();

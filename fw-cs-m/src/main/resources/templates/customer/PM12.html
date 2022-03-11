@@ -16,8 +16,8 @@
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
   <script type="text/javascript" src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
   <!-- 
-  <script type="text/javascript" src="/js/common_added.js"></script>
    -->
+  <script type="text/javascript" src="/js/common_added_pw.js"></script>
   <script type="text/javascript" src="/js/app.js"></script>
   <script type="text/javascript" src="/js/navigation.js"></script>
   <script type="text/javascript" src="/js/common_util.js"></script>
@@ -36,8 +36,8 @@
       <div class="notice_search_bar flex_box_between">
         <h2 class="output">로그인정보</h2>
         <!-- 
-        <a href="javascript:addAccountInfo();" class="b_blue btnLayer" data-target="#modalPop">+ 추가하기</a>
          -->
+        <a href="#" class="b_blue btnLayer" data-target="#modalPop" onclick="addAccountInfo();">+ 추가하기</a>
       </div>
       <div class="output_table">
         <p style="margin-bottom:15px; line-height:1.2; ">
@@ -200,7 +200,7 @@
                 비밀번호
               </td>
               <td>
-                <input type="password" id="login_id" class="input_normal">
+                <input type="password" id="login_pw" class="input_normal">
               </td>
             </tr>
             <tr>
@@ -208,7 +208,7 @@
                 인출번호
               </td>
               <td>
-                <input type="password" id="withdraw_id" class="input_normal">
+                <input type="password" id="withdraw_pw" class="input_normal">
               </td>
             </tr>
             <tr>
@@ -223,9 +223,9 @@
         </table>
       </div>
       <div class="btn_wrap">
-        <a href="javascript:deleteAccountInfo();" class="layerClose cancle">삭제</a>
-        <a href="javascript:;" class="layerClose cancle">취소</a>
-        <a href="javascript:saveAccountInfo();" class="layerClose ok">저장</a>
+        <a href="#" class="layerClose cancle" onclick="deleteAccountInfo();">삭제</a>
+        <a href="#" class="layerClose cancle">취소</a>
+        <a href="#" class="layerClose ok" onclick="saveAccountInfo();">저장</a>
       </div>
     </div>
     <div class="layerDim keep"></div>
@@ -268,6 +268,7 @@
 		
 	}
 	
+	var accounts = [];
 	function getAccountInfoList(){
 		var param = {cust_id : user_id};
 		
@@ -281,47 +282,51 @@
 			}
 			, success: function (data) {
 				console.log(data);
-				var accounts = data.result;
+				accounts = data.result;
 				$('#accounts').empty();
 				var html = '';
 				if (accounts.length == 0) {
 					html += '<p>등록된 비밀번호 정보가 없습니다.</p>'
 				} else {
-					html += '<a href="javascript:;" class="btnLayer" data-target="#modalPop">'
-					html += '  <table class="login_table">'
-					html += '<colgroup>'
-					html += '<col width="30%">'
-					html += '<col width="30%">'
-					html += '<col width="*">'
-					html += '</colgroup>'
-					html += '<thead>'
-					html += '<tr>'
-					html += '<td>'
-					html += account[i].CORP_NM
-					html += '</td>'
-					html += '<td>'
-					html += account[i].BANK_ACC_NO
-					html += '</td>'
-					html += '<td class="t_l">'
-					html += '<p>핀번호: '+ account[i].PIN_NO + '</p>'
-					html += '<p>로그인: '+ account[i].LOGIN_PW + '</p>'
-					html += '<p>인출: '+ account[i].WITHDRAW_PW + '</p>'
-					html += '</td>'
-					html += '</tr>'
-					html += '</thead>'
-					html += '</tbody>'
-					html += '</table>'
-
-					html += '<p class="memo">'
-					html += '<span>'
-					html += 'Remark'
-					html += '</span>'
-					html += '<span>'
-					html += account[i].MEMO
-					html += '</span>'
-					html += '</p>'
-					html += '</a>'
+					for (var i = 0; i< accounts.length; i++) {
+						html += '<a class="btnLayer" data-target="#modalPop" onclick="addAccountInfo('+ accounts[i].SEQ+');">'
+						html += '  <table class="login_table">'
+						html += '<colgroup>'
+						html += '<col width="30%">'
+						html += '<col width="30%">'
+						html += '<col width="*">'
+						html += '</colgroup>'
+						html += '<thead>'
+						html += '<tr>'
+						html += '<td>'
+						html += '<input id="acc_seq" type="hidden" value="'+accounts[i].SEQ+'" >'
+						html += accounts[i].CORP_NM
+						html += '</td>'
+						html += '<td>'
+						html += accounts[i].BANK_ACC_NO
+						html += '</td>'
+						html += '<td class="t_l">'
+						html += '<p>핀번호: '+ accounts[i].PIN_NO + '</p>'
+						html += '<p>로그인: '+ accounts[i].LOGIN_PW + '</p>'
+						html += '<p>인출: '+ accounts[i].WITHDRAW_PW + '</p>'
+						html += '</td>'
+						html += '</tr>'
+						html += '</thead>'
+						html += '</tbody>'
+						html += '</table>'
+	
+						html += '<p class="memo">'
+						html += '<span>'
+						html += 'Remark'
+						html += '</span>'
+						html += '<span>'
+						html += accounts[i].MEMO
+						html += '</span>'
+						html += '</p>'
+						html += '</a>'
+					}
 				}
+				$('#accounts').html(html);
 
 				
 			}
@@ -334,17 +339,119 @@
 		
 	}
 	
-	function addAccountInfo(){
-		console.log('addAccountInfo');
+	function addAccountInfo(seq){
+		console.log('addAccountInfo(' + seq + ')');
+		var account = {};
 		//$('#modalPop').show();
+		if (seq == undefined) {
+			console.log('seq empty')
+			$('#acc_seq').val('');
+			$('#corp_nm').val('');
+			$('#bank_acc_no').val('');
+			$('#pin_no').val('');
+			$('#login_pw').val('');
+			$('#withdraw_pw').val('');
+			$('#memo').val('');
+		} else {
+			console.log('seq exist')
+			for (var i = 0; i<accounts.length; i++){
+				console.log(accounts[i]);
+				if (seq + '' == accounts[i].SEQ +'') {
+					account = accounts[i];
+					console.log(account);
+					break;
+				}
+			}
+			$('#acc_seq').val(account.SEQ);
+			$('#corp_nm').val(account.CORP_NM);
+			$('#bank_acc_no').val(account.BANK_ACC_NO);
+			$('#pin_no').val(account.PIN_NO);
+			$('#login_pw').val(account.LOGIN_PW);
+			$('#withdraw_pw').val(account.WITHDRAW_PW);
+			$('#memo').val(account.MEMO);
+			$('#modalPop').show();
+			common.modalPopup($('#modalPop'));
+		}
+
+		
 	}
 	
 	function deleteAccountInfo(){
 		console.log('deleteAccountInfo');
+		var param = {
+				cust_id : user_id
+				, seq : $('#acc_seq').val()
+			};
+			
+			$.get({
+				url: '/cs/account-info'
+				, type: 'DELETE'
+				, async: false
+				, data : JSON.stringify(param)
+				, contentType: 'application/json; charset=UTF-8'
+				, headers: {
+				}
+				, success: function (data) {
+					console.log(data);
+					if (data.res_cd == 'OK') {
+						console.log('삭제하였습니다.');
+					} else {
+						console.log('삭제에 실패하였습니다.');
+						
+					}
+					getAccountInfoList();
+
+					
+				}
+				, error: function (req, status, error) {
+					console.log(req + ", " + status + ", " + error);	
+					
+				}
+			});
 	}
 	
 	function saveAccountInfo(){
 		console.log('saveAccountInfo');
+		
+		var param = {
+			cust_id : user_id
+			, seq : $('#acc_seq').val()
+			, corp_nm : $('#corp_nm').val()
+			, bank_acc_no : $('#bank_acc_no').val()
+			, pin_no : $('#pin_no').val()
+			, login_pw : $('#login_pw').val()
+			, withdraw_pw : $('#withdraw_pw').val()
+			, memo : $('#memo').val()
+		};
+		
+		var typ = 'POST';
+		
+		$.get({
+			url: '/cs/account-info'
+			, type: 'POST'
+			, async: false
+			, data : JSON.stringify(param)
+			, contentType: 'application/json; charset=UTF-8'
+			, headers: {
+			}
+			, success: function (data) {
+				console.log(data);
+				if (data.res_cd == 'OK') {
+					console.log('저장하였습니다.');
+					
+				} else {
+					console.log('저장에 실패하였습니다.');
+					
+				}
+				getAccountInfoList();
+
+				
+			}
+			, error: function (req, status, error) {
+				console.log(req + ", " + status + ", " + error);	
+				
+			}
+		});
 	}
     
     function goBack(){
