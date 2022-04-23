@@ -25,6 +25,16 @@ public class CustomerMobilePageController {
 		ModelAndView mav = new ModelAndView("customer/P00");
 		return mav;
 	}
+	
+	/**
+	 * @description 모바일 페이지로 이동
+	 */
+	@GetMapping(value = "/login")
+	public ModelAndView lgoin(HttpServletRequest req) throws Exception {
+		log.info("/");
+		ModelAndView mav = new ModelAndView("customer/P00");
+		return mav;
+	}
 
 	/**
 	 * @description 모바일 페이지로 이동
@@ -106,7 +116,7 @@ public class CustomerMobilePageController {
 	/**
 	 * @description 메인화면
 	 */
-	@GetMapping(value = "/m/PM01/{user_id}")
+	@GetMapping(value = {"/m/PM01/{user_id}", "/m/main/{user_id}"})
 	public ModelAndView pm01(HttpServletRequest req, @PathVariable("user_id") String user_id) throws Exception {
 		log.info("/m/PM01");
 		ModelAndView mav = new ModelAndView("customer/PM01");
