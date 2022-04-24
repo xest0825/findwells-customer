@@ -156,7 +156,7 @@
   <!-- 모달팝업 -->
   <div class="layerPopup login_guide" id="modalPop" data-target="#modalPop">
     <div class="content login_guide_wrap">
-      <h2>메시지 창</h2>
+      <h2>Pqssword 관리</h2>
       <div class="layerBody">
         <table class="modal_table">
           <colgroup>
@@ -181,13 +181,13 @@
             </tr>
             <tr>
               <td>
-                Id/계좌번호
+                ID
               </td>
               <td>
                 <input type="text" id="bank_acc_no" class="input_normal">
               </td>
             </tr>
-            <tr>
+            <tr style="display:none;">
               <td>
                 핀번호
               </td>
@@ -203,7 +203,7 @@
                 <input type="password" id="login_pw" class="input_normal">
               </td>
             </tr>
-            <tr>
+            <tr style="display:none;">
               <td>
                 인출번호
               </td>
@@ -290,40 +290,39 @@
 				} else {
 					for (var i = 0; i< accounts.length; i++) {
 						html += '<a class="btnLayer" data-target="#modalPop" onclick="addAccountInfo('+ accounts[i].SEQ+');">'
-						html += '  <table class="login_table">'
-						html += '<colgroup>'
-						html += '<col width="30%">'
-						html += '<col width="30%">'
-						html += '<col width="*">'
-						html += '</colgroup>'
-						html += '<thead>'
-						html += '<tr>'
-						html += '<td>'
+						html += '  <table >'
+						html += '	<colgroup>'
+						html += '		<col width="23%">'
+						html += '		<col width="40%">'
+						html += '		<col width="*">'
+						html += '	</colgroup>'
+						html += '	<thead>'
+						html += '		<td>금융사</td>'
+						html += '		<td>ID</td>'
+						html += '		<td>PW</td>'
+						html += '	</thead>'
+						html += '	<tbody>'
+						html += '		<tr>'
+						html += '			<td>'
 						html += '<input id="acc_seq" type="hidden" value="'+accounts[i].SEQ+'" >'
-						html += accounts[i].CORP_NM
-						html += '</td>'
-						html += '<td>'
-						html += accounts[i].BANK_ACC_NO
-						html += '</td>'
-						html += '<td class="t_l">'
-						html += '<p>핀번호: '+ accounts[i].PIN_NO + '</p>'
-						html += '<p>로그인: '+ accounts[i].LOGIN_PW + '</p>'
-						html += '<p>인출: '+ accounts[i].WITHDRAW_PW + '</p>'
-						html += '</td>'
-						html += '</tr>'
-						html += '</thead>'
-						html += '</tbody>'
+						html += (accounts[i].CORP_NM== null ? '' : accounts[i].CORP_NM)
+						html += '			</td>'
+						html += '			<td>'
+						html += (accounts[i].BANK_ACC_NO == null ? '' : accounts[i].BANK_ACC_NO)
+						html += '			</td>'
+						html += '			<td class="t_l">'
+						//html += '<p>핀번호: '+ (accounts[i].PIN_NO == null ? '' : accounts[i].PIN_NO) + '</p>'
+						html += (accounts[i].LOGIN_PW == null ? '' : accounts[i].LOGIN_PW )
+						//html += '<p>인출: '+ (accounts[i].WITHDRAW_PW == null ? '' : accounts[i].WITHDRAW_PW) + '</p>'
+						html += '			</td>'
+						html += '		</tr>'
+						html += '		<tr>'
+						html += '			<td colspan="3" style="text-align:left;padding-left:10px;background-color:white;">'
+						html += '메모 : ' + (accounts[i].MEMO == null? '': accounts[i].MEMO)						
+						html += '			</td>'
+						html += '		</tr>'
+						html += '	</tbody>'
 						html += '</table>'
-	
-						html += '<p class="memo">'
-						html += '<span>'
-						html += 'Remark'
-						html += '</span>'
-						html += '<span>'
-						html += accounts[i].MEMO
-						html += '</span>'
-						html += '</p>'
-						html += '</a>'
 					}
 				}
 				$('#accounts').html(html);

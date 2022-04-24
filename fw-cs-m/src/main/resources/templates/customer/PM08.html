@@ -82,10 +82,11 @@
           -->
         </ul>
 
-		<!-- 
         <div class="btn_wrap_left">
-          <a href="" class="b_blue"><img src="/images/btn_icon_down.png">납입인출계획표</a>
+          <a href="javascript:downloadFile('1')" class="b_blue"><img src="/images/btn_icon_down.png">납입인출계획</a>
+          <a href="javascript:downloadFile('2')" class="b_blue"><img src="/images/btn_icon_down.png">연금목돈예상금액</a>
         </div>
+		<!-- 
         -->
       </div>
 
@@ -187,6 +188,11 @@
 				
 			}
 		});
+	}
+	
+	function downloadFile(idx) {
+		console.log('downloadFile(' + idx + ')');
+		alert('준비중입니다.')
 	}
 	
 	function goAssetPlanDetail(seq){

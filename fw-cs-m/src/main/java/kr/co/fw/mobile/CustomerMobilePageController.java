@@ -70,6 +70,16 @@ public class CustomerMobilePageController {
 	}
 	
 	/**
+	 * @description 회원가입 약관동의
+	 */
+	@GetMapping(value = "/public/privacy.go")
+	public ModelAndView privacyPolicy(HttpServletRequest req) throws Exception {
+		log.info("/public/privacy");
+		ModelAndView mav = new ModelAndView("customer/privacy");
+		return mav;
+	}
+	
+	/**
 	 * @description 회원가입
 	 */
 	@GetMapping(value = "/m/P03/{user_id}")

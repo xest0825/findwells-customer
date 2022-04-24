@@ -594,61 +594,61 @@ SELECT COUNT(*)
 </select>
 
 	<select id="getContractListByCustomer" parameterType="kr.co.fw.customer.CustomerVO" resultType="hmap">
-		SELECT A.MB_ID             /* 회원사ID                                                                       VARCHAR2(20)   */
-	     , A.SEQ               /* 일련번호(TBCN_CONTRACT_SEQ)                                                    NUMBER(22)     */
-	     , A.INSPOL_NO         /* 증권번호                                                                       VARCHAR2(40)   */
+		SELECT A.MB_ID              /* 회원사ID                                     VARCHAR2(20)   */
+	     , A.SEQ               		/* 일련번호(TBCN_CONTRACT_SEQ)                  NUMBER(22)     */
+	     , A.INSPOL_NO         		/* 증권번호                                     VARCHAR2(40)   */
 	     , A.IFA_CD
-	     , A.INSCO_CD          /* 원수사코드                                                                     VARCHAR2(3)    */
-	     , C.INSCO_NM          /* 원수사명 */
+	     , A.INSCO_CD          		/* 원수사코드                                   VARCHAR2(3)    */
+	     , C.INSCO_NM          		/* 원수사명 */
 	     , C.CI_URL
-	     , A.PROD_SEQ          /* 상품 일련번호                                                                  NUMBER(22)     */
-	     , A.PROD_NM           /* 상품명                                                                         VARCHAR2(100)  */
-	     , E.PROD_KIND1        /* 상품구분1 */
-	     , A.PROD_KIND2        /* 상품구분2                                                                      VARCHAR2(20)   */
-	     , A.CONT_DATE         /* 계약일자                                                                       VARCHAR2(10)   */
-	     , A.CONT_STATUS       /* 계약상태(GRP_CMM_CD = CONT_STATUS)                                             VARCHAR2(4)    */
-	     , A.NAPCNT            /* 납입회차                                                                        NUMBER    */
-	     , A.SUGUM_STATUS      /* 수금상태                                                                       VARCHAR2(20)    */
-	     , A.NAP_MONTH         /* 납입월                                                                         VARCHAR2(10)    */
-	     , A.NAP_DATE          /* 납입일자                                                                       VARCHAR2(10)    */
-	     , A.STATUS_DATE       /* 상태변경일                                                                      VARCHAR2(10)    */
-	     , A.GIJUN_DATE        /* 데이터기준일                                                                     VARCHAR2(10)    */
-	     , A.NAPMETHOD         /* 납입방법(GRP_CMM_CD = NAPMETHOD)                                               VARCHAR2(20)   */
-	     , A.NAPGI             /* 납입기간                                                                       VARCHAR2(10)   */
-	     , A.NAPGI_GBN         /* 납입기간구분(GRP_CMM_CD = NAPGI_GBN)                                           VARCHAR2(10)   */
+	     , A.PROD_SEQ          		/* 상품 일련번호                                NUMBER(22)     */
+	     , A.PROD_NM           		/* 상품명                                       VARCHAR2(100)  */
+	     , E.PROD_KIND1        		/* 상품구분1 */
+	     , A.PROD_KIND2        		/* 상품구분2                                    VARCHAR2(20)   */
+	     , A.CONT_DATE         		/* 계약일자                                     VARCHAR2(10)   */
+	     , A.CONT_STATUS       		/* 계약상태(GRP_CMM_CD = CONT_STATUS)           VARCHAR2(4)    */
+	     , A.NAPCNT            		/* 납입회차                                     NUMBER         */
+	     , A.SUGUM_STATUS      		/* 수금상태                                     VARCHAR2(20)   */
+	     , A.NAP_MONTH         		/* 납입월                                       VARCHAR2(10)   */
+	     , A.NAP_DATE          		/* 납입일자                                     VARCHAR2(10)   */
+	     , A.STATUS_DATE       		/* 상태변경일                                   VARCHAR2(10)   */
+	     , A.GIJUN_DATE        		/* 데이터기준일                                 VARCHAR2(10)   */
+	     , A.NAPMETHOD         		/* 납입방법(GRP_CMM_CD = NAPMETHOD)             VARCHAR2(20)   */
+	     , A.NAPGI             		/* 납입기간                                     VARCHAR2(10)   */
+	     , A.NAPGI_GBN         		/* 납입기간구분(GRP_CMM_CD = NAPGI_GBN)         VARCHAR2(10)   */
 	     , CM1.CD_VL_NM AS NAPGI_GBN_NM
-	     , A.PREM_AMT          /* 보험료                                                                         NUMBER(22)     */
-	     , A.CREDIT			   /* 크레딧                                                                         NUMBER(22)     */
+	     , A.PREM_AMT          		/* 보험료                                       NUMBER(22)     */
+	     , A.CREDIT			   		/* 크레딧                                       NUMBER(22)     */
 	     , NVL(A.UPREM_AMT,0) AS    UPREM_AMT   
 	     , NVL(A.HPREM_AMT,0) AS    HPREM_AMT   
-	     , A.MON_PREM_AMT      /* 월납보험료                                                                     NUMBER(22)     */
-	     , A.INSU_STRT_DATE    /* 보험시작일                                                                     VARCHAR2(10)   */
-	     , A.INSU_END_DATE     /* 보험종료일                                                                     VARCHAR2(10)   */
-	     , A.ACCOUNT_END_DATE  /* 초기계좌만기일                                                               VARCHAR2(10)   */
-	     , A.MO_CD             /* 모집인코드                                                                     VARCHAR2(20)   */
-	     , B.EMP_NM AS MO_NM   /* 모집인명 */
-	     , A.YU_CD             /* 유지FP코드                                                                     VARCHAR2(20)   */
-	     , F.EMP_NM AS YU_NM   /* 유지FP명 */
-	     , A.ISSUE             /* 이슈사항                                                                       VARCHAR2(1000) */
-	     , A.MEMO              /* 메모                                                                           VARCHAR2(4000) */
-		 , A.AUTO_TRANS_YN         /* 자동이체여부(GRP_CMM_CD = AUTO_TRANS_YN) VARCHAR2(1)   */
-		 , A.BANK                  /* 은행코드(GRP_CMM_CD = BANK)              VARCHAR2(50)  */
-		 , A.OWNER                 /* 예금주                                   VARCHAR2(30)  */
-		 , A.BK_ID                 /* 계좌번호                                 VARCHAR2(50)  */
-		 , A.REGI_AUTO_TRANS_YN    /* 자동송금등록여부                         VARCHAR2(1)   */
-	     , A.IN_EMP_CD         /* 입력자사번                                                                     VARCHAR2(20)   */
-	     , A.IN_DTM            /* 입력일시                                                                       DATE(7)        */
-	     , A.IN_IP             /* 입력 IP                                                                        VARCHAR2(15)   */
-	     , A.UP_EMP_CD         /* 수정자사번                                                                     VARCHAR2(20)   */
-	     , A.UP_DTM            /* 수정일시                                                                       DATE(7)        */
-	     , G.CUST_ID AS GEAJA			     /* 계약자ID */
-	     , G.CUST_NM AS GEAJA_NM		     /* 계약자이름 */
-	     , H.CUST_ID AS PIABO			     /* 피보험자ID */
-	     , H.CUST_NM AS PIABO_NM		     /* 피보험자이름 */
-	     , I.CUST_ID AS BENEFICIARY		     /* 수익자ID */
-	     , I.CUST_NM AS BENEFICIARY_NM	     /* 수익자이름 */
-	     , A.USD_NAP_MONTH 					 /* USD 월납화 */
-	     , A.HKD_NAP_MONTH 					 /* HKD 월납화 */
+	     , A.MON_PREM_AMT      			/* 월납보험료                               NUMBER(22)     */
+	     , A.INSU_STRT_DATE    			/* 보험시작일                               VARCHAR2(10)   */
+	     , A.INSU_END_DATE     			/* 보험종료일                               VARCHAR2(10)   */
+	     , A.ACCOUNT_END_DATE  			/* 초기계좌만기일                           VARCHAR2(10)   */
+	     , A.MO_CD             			/* 모집인코드                               VARCHAR2(20)   */
+	     , B.EMP_NM AS MO_NM   			/* 모집인명 */
+	     , A.YU_CD             			/* 유지FP코드                               VARCHAR2(20)   */
+	     , F.EMP_NM AS YU_NM   			/* 유지FP명 */
+	     , A.ISSUE             			/* 이슈사항                                 VARCHAR2(1000) */
+	     , A.MEMO              			/* 메모                                     VARCHAR2(4000) */
+		 , A.AUTO_TRANS_YN          	/* 자동이체여부(GRP_CMM_CD = AUTO_TRANS_YN) VARCHAR2(1)    */
+		 , A.BANK                   	/* 은행코드(GRP_CMM_CD = BANK)              VARCHAR2(50)   */
+		 , A.OWNER                  	/* 예금주                                   VARCHAR2(30)   */
+		 , A.BK_ID                  	/* 계좌번호                                 VARCHAR2(50)   */
+		 , A.REGI_AUTO_TRANS_YN     	/* 자동송금등록여부                         VARCHAR2(1)    */
+	     , A.IN_EMP_CD         			/* 입력자사번                               VARCHAR2(20)   */
+	     , A.IN_DTM            			/* 입력일시                                 DATE(7)        */
+	     , A.IN_IP             			/* 입력 IP                                  VARCHAR2(15)   */
+	     , A.UP_EMP_CD         			/* 수정자사번                               VARCHAR2(20)   */
+	     , A.UP_DTM            			/* 수정일시                                 DATE(7)        */
+	     , G.CUST_ID AS GEAJA			/* 계약자ID */
+	     , G.CUST_NM AS GEAJA_NM		/* 계약자이름 */
+	     , H.CUST_ID AS PIABO			/* 피보험자ID */
+	     , H.CUST_NM AS PIABO_NM		/* 피보험자이름 */
+	     , I.CUST_ID AS BENEFICIARY		/* 수익자ID */
+	     , I.CUST_NM AS BENEFICIARY_NM	/* 수익자이름 */
+	     , A.USD_NAP_MONTH 				/* USD 월납화 */
+	     , A.HKD_NAP_MONTH 				/* HKD 월납화 */
 	  FROM TBCN_CONTRACT A /* [CN][계약] 계약관리 */
 	  LEFT OUTER JOIN TBIN_EMPMST B	/* 사원(모집인)조회 */
 	    ON A.MB_ID = B.MB_ID
@@ -747,8 +747,8 @@ SELECT COUNT(*)
 	<if test='@kr.co.fw.common.util.CommUtil@isEquals(withdraw_use, "P")'>
 	   AND P.REF_SEQ IS NOT NULL
 	</if>
-
-	</select>
+     ORDER BY C.INSCO_CD, G.CUST_NM, A.CONT_DATE DESC
+	</select>	
 	
 	<select id="getAssetWithdrawalLogList" parameterType="kr.co.fw.customer.CustomerVO" resultType="hmap">
 				/* customer-mapper.xml getAssetWithdrawalLogList 인출 이력 조회 */
@@ -762,8 +762,8 @@ SELECT COUNT(*)
 					 , TB5.PROD_SEQ 		prod_seq	/* VARCHAR2(22) */
 					 , TB5.PROD_NM			prod_nm
 					 , TB1.WITHDRAWAL_DATE 	withdrawal_dt	/* VARCHAR2(20)  */
-					 , TB1.DEPOSIT_AMT 		amt				/* INT */
-					 , TB1.ACCUMULATE_AMT 	amt_sum			/* INT */
+					 , NVL(TB1.DEPOSIT_AMT, 0) amt			/* INT */
+					 , NVL(TB1.ACCUMULATE_AMT, 0) amt_sum	/* INT */
 					 , TB1.BK_ID  			bank			/* VARCHAR2(10) */
 					 , TB1.MEMO 			memo			/* VARCHAR2(400) */
 					 , TB1.IN_EMP_CD 		in_emp_cd		/* VARCHAR2(20)  */
@@ -1029,13 +1029,13 @@ SELECT COUNT(*)
 	<select id="getAccountInfoList" parameterType="kr.co.fw.customer.CustomerAssetVO" resultType="Hmap">
 		/* customer-mapper.xml getAccountInfoList */
 		SELECT SEQ 
-			 , CUST_ID 		/* VARCHAR(30) NN */
-			 , CORP_NM 		/* VARCHAR(100)   */
-			 , BANK_ACC_NO 	/* VARCHAR(100)   */
-			 , PIN_NO 		/* VARCHAR(100)   */
-			 , LOGIN_PW 	/* VARCHAR(100)   */
-			 , WITHDRAW_PW 	/* VARCHAR(100)   */
-			 , NVL(MEMO, '') MEMO 		/* VARCHAR(200)   */
+			 , CUST_ID 							/* VARCHAR(30) NN */
+			 , NVL(CORP_NM, '') 	CORP_NM		/* VARCHAR(100)   */
+			 , NVL(BANK_ACC_NO, '') BANK_ACC_NO /* VARCHAR(100)   */
+			 , NVL(PIN_NO, '') 		PIN_NO 		/* VARCHAR(100)   */
+			 , NVL(LOGIN_PW, '') 	LOGIN_PW 	/* VARCHAR(100)   */
+			 , NVL(WITHDRAW_PW, '') WITHDRAW_PW /* VARCHAR(100)   */
+			 , NVL(MEMO, '') 		NOTE 		/* VARCHAR(200)   */
 		  FROM TBCS_FIN_ACCOUNT A
 		 WHERE CUST_ID 	= #{cust_id}
 		   <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(seq)">

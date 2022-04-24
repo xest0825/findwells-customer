@@ -1345,7 +1345,7 @@ input.key0 {
     }
     
 input.key {
-    font-size: 24px;
+    font-size: 28px;
     border: none;
     color: #000;
     height: 64px;
@@ -1356,7 +1356,7 @@ input.key {
     outline-style: none;
     border-bottom: none;
     width: 284px;
-    letter-spacing: 63px;
+    letter-spacing: 64px;
     padding-left: 25px;
     box-sizing: border-box;
     font-weight: bold;
