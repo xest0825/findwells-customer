@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -15,6 +13,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import kr.co.fw.base.BaseController;
@@ -23,6 +23,8 @@ import kr.co.fw.common.file.FileVO;
 import kr.co.fw.common.msg.MessageVO;
 import kr.co.fw.common.util.CommUtil;
 import kr.co.fw.common.util.CryptoUtil;
+import kr.co.fw.common.util.FCMSendUtil;
+import kr.co.fw.system.app.MobileAppVO;
 import kr.co.fw.system.auth.AuthVO;
 import kr.co.fw.system.security.model.User;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +33,37 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 public class CustomerRestController extends BaseController {
 
+	/**
+	 * 푸시 테스트
+	 * @param vo
+	 * @return
+	 * @throws Exception
+	 */
+	@PostMapping(value= {"/cs/push-test"})
+	public ResponseEntity<HashMap<String, Object>> testpush(@RequestBody MobileAppVO vo) throws Exception {
+		log.debug("test api");
+		HashMap<String, Object> resultvo = new HashMap<String, Object>();
+		String token[] = new String[10];
+		//token[0] = "fEpepkUXyEx4jxOUxju0yp:APA91bHbGF7DNAjR0VGGR1aUTQgPInhVpBXLJG1_XQSrWmJrCah2T2_6ioQF98_y3y2JBV517PK4nY0vsDI1fe8Z3JysS5D_92gYELdW_Upvua4-7_Z8SYpRtqLCO3B7c3vstg-d8LSe";
+		token[0] = vo.getPush_token();
+		log.debug("/////////// TEST :"+ vo.getPush_token());
+		log.debug("/////////// TEST :"+ token[0]);
+		FCMSendUtil.pushFCMNotification(token,"푸시알림 테스트","testpush");
+		ResponseEntity<HashMap<String, Object>> ret = new ResponseEntity<HashMap<String, Object> >(resultvo, HttpStatus.OK);
+		return ret;
+	}
+	
+	@PostMapping(value= {"/cs/user-device"})
+	public ResponseEntity<HashMap<String, Object>> insertAppConnectionLog(@RequestBody MobileAppVO vo) throws Exception {
+		log.debug("insertAppConnectionLog");
+		HashMap<String, Object> resultvo = new HashMap<String, Object>();
+		getUserService().insertUserDevice(vo);
+		ResponseEntity<HashMap<String, Object>> ret = new ResponseEntity<HashMap<String, Object> >(resultvo, HttpStatus.OK);
+		return ret;
+	}
+	
+	
+	
 	/**
 	 * 로그인 계정 중복 확인
 	 * @param paramvo

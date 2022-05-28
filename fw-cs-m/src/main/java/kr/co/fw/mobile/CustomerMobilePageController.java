@@ -358,6 +358,16 @@ public class CustomerMobilePageController {
 		mav.addObject("user_id", user_id);
 		return mav;
 	}
+	
+	/**
+	 * @descriptio 테스트 페이지
+	 */
+	@GetMapping(value = "/m/test")
+	public ModelAndView test(HttpServletRequest req) throws Exception {
+		log.info("/m/test");
+		ModelAndView mav = new ModelAndView("customer/test");
+		return mav;
+	}
 
 	
 

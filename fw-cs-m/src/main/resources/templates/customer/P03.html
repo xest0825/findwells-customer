@@ -76,11 +76,8 @@
 	        <button id="btn_send_authno" class="b_search" style="margin-right: 10px;font-size:13px;" onclick="sendAuthNum();">
 	          인증번호받기
 	        </button>
-	        <!-- <button class="b_search" style="margin-right: 10px;" onclick="checkAuthNo();">확인</button> -->
 	        <input type="tel" class="text_box t_c" placeholder="" id="auth_no" maxlength="6"/>
 	        <span class="timer" id="sp_timer">00:00</span>
-	        <!-- 
-	         -->
 	     </div>
 	     <div>    
 	        <p id="err_msg_4" class="error_msg" style="display:none;">인증번호가 일치하지 않습니다.</p>
@@ -129,10 +126,12 @@
     	})
     	
     	
+    	/*
 		$('#bt_join2').on('click', function(){
 			checkAuthNo();
-			join();
+			//join();
 		});
+    	*/
 		
 		$('#bt_join').on('click', function(){
 			// console.log($('#emp_nm').val());
@@ -185,10 +184,8 @@
 				alert('고객님의 휴대폰번호를 입력해주세요.');
 				return;
 			}
+			checkAuthNo();
 			
-			join();
-			
-			// location.href = '/m/P05';
 		});
 		
 		$('#login_id').on('keyup', function(){
@@ -466,7 +463,8 @@
 				seq : msg_seq,
 				auth_no : $('#auth_no').val(),
     		};
-    	console.log(param)
+    	
+    		console.log(param);
     	
 		$.ajax({
 			url : "/cs/auth/check-auth-no",
@@ -482,6 +480,7 @@
 					authenticated = true;
 					$('#err_msg_4').text('인증번호가 확인되었습니다.').css('color', 'green');
 					$('#err_msg_4').show();
+					join();
 				} else {
 					console.log('NOT Authenticated');
 					authenticated = false;
@@ -579,8 +578,7 @@
 				console.log('error');
 			}
 		});
-    	
-		
+
 	}
     
     function goBack(){

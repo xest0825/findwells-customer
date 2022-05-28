@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import kr.co.fw.base.BaseService;
 import kr.co.fw.customer.CustomerVO;
+import kr.co.fw.system.app.MobileAppVO;
 
 @Service
 public class UserService extends BaseService {
@@ -148,6 +149,47 @@ public class UserService extends BaseService {
 	 */
 	public int deleteCustomerLoginInfo(CustomerVO paramap) {
 		return getUserDAO().deleteCustomerLoginInfo(paramap);
+	}
+	
+	/**
+	 * 사용자 기기 목록 조회
+	 * 
+	 * @param UserVO
+	 * @return List<HashMap<String, String>>
+	 */
+	public List<HashMap<String, Object>> getUserDeviceList(MobileAppVO paramap) {
+		return getUserDAO().getUserDeviceList(paramap);	
+	}
+	
+	/**
+	 * 사용자 기기 입력
+	 * 
+	 * @param UserVO
+	 * @return List<HashMap<String, String>>
+	 */
+	public int insertUserDevice(MobileAppVO paramap) {
+		return getUserDAO().insertUserDevice(paramap);			
+	}
+	
+	
+	/**
+	 * 사용자 기기 수정
+	 * 
+	 * @param UserVO
+	 * @return List<HashMap<String, String>>
+	 */
+	public int updateUserDevice(MobileAppVO paramap) {
+		return getUserDAO().updateUserDevice(paramap);			
+	}
+	
+	/**
+	 * 사용자 기기 삭제
+	 * 
+	 * @param UserVO
+	 * @return List<HashMap<String, String>>
+	 */
+	public int deleteUserDevice(MobileAppVO paramap) {
+		return getUserDAO().deleteUserDevice(paramap);			
 	}
 
 }

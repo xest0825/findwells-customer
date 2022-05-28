@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import kr.co.fw.base.BaseDAO;
 import kr.co.fw.customer.CustomerVO;
+import kr.co.fw.system.app.MobileAppVO;
 import kr.co.fw.system.security.model.User;
 
 @Repository
@@ -118,10 +119,46 @@ public class UserDAO extends BaseDAO {
 		return getSqlSession().delete(getUserMapper() + "deleteCustomerLoginInfo", paramap);
 	}
 	
+	/**
+	 * 사용자 기기 목록 조회
+	 * 
+	 * @param UserVO
+	 * @return List<HashMap<String, String>>
+	 */
+	public List<HashMap<String, Object>> getUserDeviceList(MobileAppVO paramap) {
+		return getSqlSession().selectList(getUserMapper() + "getUserDeviceList", paramap);			
+	}
+	
+	/**
+	 * 사용자 기기 입력
+	 * 
+	 * @param UserVO
+	 * @return List<HashMap<String, String>>
+	 */
+	public int insertUserDevice(MobileAppVO paramap) {
+		return getSqlSession().insert(getUserMapper() + "insertUserDevice", paramap);			
+	}
 	
 	
+	/**
+	 * 사용자 기기 수정
+	 * 
+	 * @param UserVO
+	 * @return List<HashMap<String, String>>
+	 */
+	public int updateUserDevice(MobileAppVO paramap) {
+		return getSqlSession().update(getUserMapper() + "updateUserDevice", paramap);			
+	}
 	
+	/**
+	 * 사용자 기기 삭제
+	 * 
+	 * @param UserVO
+	 * @return List<HashMap<String, String>>
+	 */
+	public int deleteUserDevice(MobileAppVO paramap) {
+		return getSqlSession().update(getUserMapper() + "deleteUserDevice", paramap);			
+	}
 	
-
 
 }

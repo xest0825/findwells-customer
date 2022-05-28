@@ -57,3 +57,7 @@
     function goBack(){
     	location.href = '/m/P01/' + user_id;    	
     }
+    
+    function goTest(){
+    	location.href = '/m/test';
+    }
