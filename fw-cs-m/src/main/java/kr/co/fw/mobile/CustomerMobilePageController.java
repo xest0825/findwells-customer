@@ -135,6 +135,18 @@ public class CustomerMobilePageController {
 	}
 	
 	/**
+	 * @description 간편비밀번호 재설정
+	 */
+	@GetMapping(value = "/m/PE02/{user_id}")
+	public ModelAndView pe02(HttpServletRequest req, @PathVariable("user_id") String user_id) throws Exception {
+		log.info("/m/PE02");
+		ModelAndView mav = new ModelAndView("customer/PE02");
+		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
+		return mav;
+	}
+	
+	/**
 	 * @description 메인화면
 	 */
 	@GetMapping(value = {"/m/PM01/{user_id}", "/m/main/{user_id}"})

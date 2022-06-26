@@ -17,5 +17,6 @@ public class SmsVO {
 	private String cont_seq;		/* 일련번호 */
 	private String call_to;			/* 발신자 */
 	private String receiver_nm;
+	private String purpose;
 
 }

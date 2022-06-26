@@ -14,9 +14,8 @@
 	
 	  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 	  <script type="text/javascript" src="/js/common_added.js"></script>
-	  <script type="text/javascript" src="/js/app.js"></script>
 	  <script type="text/javascript" src="/js/common_util.js"></script>
-	  <script type="text/javascript" src="/js/common_util.js"></script>
+	  <script type="text/javascript" th:src="@{/js/gnx_app_connector.js(tm=${tm})}"></script>
 	  <script>
 	  history.pushState(null, null, location.href);
 	  
@@ -28,7 +27,7 @@
 	
 	<body>
 	
-	  	<th:block th:include="customer/loading"></th:block>
+	  <th:block th:include="customer/loading"></th:block>
 	 
 	  <div class="wrapper_lock">
 	    <div class="top_wrapper">
@@ -47,39 +46,47 @@
 	        <input type="hidden" id="user_id" >
 	        <button id="btn_search" class="b_search btnLayer" data-target="#search_person" style="margin-left: 10px;" onclick="openPopup('search_person')">찾기</button>
 	      </div>
+	      
 	      <div class="input_text_wrap no_flex mt25">
 	        <input type="text" id="login_id" class="text_box" placeholder="로그인 아이디" autocomplete="off"/>
 	        <p id="err_msg_id" class="error_msg" style="display:none;">로그인 아이디 입력해주세요.</p>
 	      </div>
+	      
 	      <div class="input_text_wrap no_flex mt25">
 	        <input type="password" id="login_pw" class="text_box" placeholder="비밀번호" autocomplete="off"/>
 	        <p id="err_msg_pw" class="error_msg" style="display:none;">비밀번호를 입력해주세요.</p>
 	      </div>
+	      
 	      <div class="input_text_wrap no_flex mt25">
 	        <input type="password" id="login_pw2" class="text_box" placeholder="비밀번호 확인" autocomplete="off"/>
 	        <p id="err_msg_pw2" class="error_msg" style="display:none;">비밀번호 확인을 입력해주세요.</p>
 	      </div>
+	      
 	      <div class="input_text_wrap no_flex mt25">
 	        <input type="text" id="customer_nm" class="text_box" placeholder="이름" />
 	        <p id="err_msg_1" class="error_msg" style="display:none;">이름을 입력해주세요.</p>
 	      </div>
+	      
 	      <div class="input_text_wrap no_flex mt25" style="display:inline-block">
 	        <input type="tel" id="perno1" class="text_box" style="width:48%" placeholder="주민번호앞자리" maxlength="6"/>
 	        <input type="password" id="perno2" class="text_box" style="width:50%;float:right;letter-spacing:8px;" placeholder="주민번호뒷자리" maxlength="7"/>
 	        <p id="err_msg_2"  class="error_msg" style="display:none;">주민번호를 입력해주세요.</p>
 	      </div>
+	      
 	      <div class="input_text_wrap no_flex mt25">
 	        <input type="tel" id="customer_hpno" class="text_box" placeholder="휴대전화" value="" maxlength="11"/>
 	        <p id="err_msg_3" class="error_msg" style="display:none;">휴대전화번호를 입력해주세요.</p>
 	      </div>
+	      
 	      <div class="input_text_wrap mt25">
 	        <button id="btn_send_authno" class="b_search" style="margin-right: 10px;font-size:13px;" onclick="sendAuthNum();">
 	          인증번호받기
 	        </button>
 	        <input type="tel" class="text_box t_c" placeholder="" id="auth_no" maxlength="6"/>
 	        <span class="timer" id="sp_timer">00:00</span>
-	     </div>
-	     <div>    
+	      </div>
+	     
+	      <div>    
 	        <p id="err_msg_4" class="error_msg" style="display:none;">인증번호가 일치하지 않습니다.</p>
 	      </div>
 	    </section>
@@ -113,6 +120,7 @@
 	    </div>
 	    <div class="layerDim keep"></div>
 	  </div>
+	  
 	</body>
 	
 	<script>
@@ -123,15 +131,7 @@
     	
     	$('#emp_nm_hp').on('click', function(){
     		$('#search_person').show();
-    	})
-    	
-    	
-    	/*
-		$('#bt_join2').on('click', function(){
-			checkAuthNo();
-			//join();
-		});
-    	*/
+    	});
 		
 		$('#bt_join').on('click', function(){
 			// console.log($('#emp_nm').val());

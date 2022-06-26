@@ -32,7 +32,6 @@ public class InterceptorAdapter extends HandlerInterceptorAdapter {
 
 		// session검사
 		String url = request.getRequestURI();
-		logger.debug("url : " + url);
 
 		if (!url.contains("resources/") && 
 				!url.contains("META-INF/") && 
@@ -43,6 +42,7 @@ public class InterceptorAdapter extends HandlerInterceptorAdapter {
 				!url.contains("favicon.ico") 
 			) {
 
+			logger.debug("url : " + url);
 			Enumeration<String> paramsss = request.getParameterNames();
 			logger.info("---------- requests @ interceptor ----------");
 			String params = "";

@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html xmlns:tm="http://www.thymeleaf.org" 
+	  xmlns:th="http://www.thymeleaf.org" 
+	  xmlns:layout="http://www.thymeleaf.org/layout">
+
+	<head>
+	  <meta charset="utf-8" />
+	  <title>간편 비밀번호 재설정 인증</title>
+	  <meta name="viewport"
+	    content="user-scalable=no, initial-scale=1, width=device-width, target-densitydpi=medium-dpi" />
+	  <meta name="format-detection" content="telephone=no" />
+	  <link rel="stylesheet" href="/css/style.css" />
+	  <link href="/css/bootstrap.css" type="text/css" rel="stylesheet" />
+	
+	  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+	  <script type="text/javascript" src="/js/common_added.js"></script>
+	  <script type="text/javascript" src="/js/common_util.js"></script>
+	  <script type="text/javascript" th:src="@{/js/gnx_app_connector.js(tm=${tm})}"></script>
+	  <script>
+	  // history.pushState(null, null, location.href);
+	  
+	  //window.onpopstate = function(event){
+	  //	  history.go(1);
+	  //}
+	  </script>
+	</head>
+	
+	<body>
+	
+	  <th:block th:include="customer/loading"></th:block>
+	  	
+	  <div class="wrapper_lock">
+	    <div class="top_wrapper">
+	      <a href="javascript:goBack();" class="go_back" id="bt_back">뒤로가기</a>
+	      <a href="#none" class="logo_findwell">
+	        <img src="/images/logo_findwell.png" />
+	      </a>
+	    </div>
+	    <section class="self_certification">
+	      <h2>간편 비밀번호 재설정</h2>
+	      <p class="desc"></p>
+	
+	      <div class="input_text_wrap no_flex mt25">
+	        <input type="text" id="customer_nm" class="text_box" placeholder="이름" />
+	        <p id="err_msg_1" class="error_msg" style="display:none;">이름을 입력해주세요.</p>
+	      </div>
+	      
+	      <div class="input_text_wrap no_flex mt25">
+	        <input type="tel" id="customer_hpno" class="text_box" placeholder="휴대전화" value="" maxlength="11"/>
+	        <p id="err_msg_3" class="error_msg" style="display:none;">휴대전화번호를 입력해주세요.</p>
+	      </div>
+	      
+	      <div class="input_text_wrap mt25">
+	        <button id="btn_send_authno" class="b_search" style="margin-right: 10px;font-size:13px;" onclick="checkBeforeSendingAuthNo();">
+	          인증번호받기
+	        </button>
+	        <input type="tel" class="text_box t_c" placeholder="" id="auth_no" maxlength="6"/>
+	        <span class="timer" id="sp_timer">00:00</span>
+	      </div>
+	      
+	      <div>    
+	        <p id="err_msg_4" class="error_msg" style="display:none;">인증번호가 일치하지 않습니다.</p>
+	      </div>
+	
+		  <!-- 
+	      <div class="pw_view" style="display: none;">
+	        <p>나의 비밀번호</p>
+	        <p>1234</p>
+	      </div>
+	      -->
+	    </section>
+	    <div class="btn_wrap">
+	      <button class="b_point" id="bt_confirm">재설정</button>
+	    </div>
+	  </div>
+	  
+	</body>
+	
+	<script>
+	var emplist = [];
+    var msg_seq = '0';
+	var authenticated = false;
+	var USER_ID = '';
+    $(document).ready(function(){
+    	wrap_mask(0);
+    	
+    	$('#bt_confirm').on('click', function(){
+    		console.log('인증이 완료되면 비밀번호 설정 화면으로 이동');
+    		checkAuthNo();
+    	});
+    });
+    
+    // 이름, 휴대펀번호로 체흐하여 인증번호를 발송
+    function checkBeforeSendingAuthNo(){
+    	
+		if ($('#customer_nm').val() == '') {
+			alert('고객님의 이름을 입력하세요.');
+			return;
+		}
+		
+		if ($('#customer_hpno').val() == '') {
+			alert('고객님의 휴대폰번호를 입력해주세요.');
+			return;
+		}
+		// checkAuthNo();
+		$.ajax({
+			url : "/cs/customer-info",
+			type : "GET",
+			dataType : "json",
+			data : {
+				MB_ID : 'YNG',
+				cust_nm : $('#customer_nm').val(),
+				cust_cell : $('#customer_hpno').val()
+			},
+			//async : false,
+			contentType : 'application/x-www-form-urlencoded',
+			success : function(data) {
+				if (data.res_cd == 'OK'){
+					USER_ID = data.cust_id;
+					sendAuthNum();
+				} else {
+					console.log('조회실패');
+				}
+
+			},
+			error : function() {
+				console.log('error');
+			}
+		});
+    	
+    }
+    
+
+    function sendAuthNum(){
+    	console.log('sendAuthNo');
+    	clearInterval(timerId);
+		timersec = 300;
+		timermin = 0;
+		timersecond = 0;
+		timerrunning = false;
+		
+    	var param = {
+    			MB_ID : 'YNG',
+				call_to : $('#customer_hpno').val().replace(/-/ig, '').trim(),
+				receiver_nm : $('#customer_nm').val(),
+    		};
+		$.ajax({
+			url : "/sms/send-authnum-to-custoemr",
+			type : "POST",
+			dataType : "json",
+			data : JSON.stringify(param),
+			//async : false,
+			contentType : 'application/json; charset=UTF-8',
+			success : function(data) {
+				console.log(data);
+				if (data.res_cd = 'OK'){
+					msg_seq = data.msg_seq;
+					console.log(msg_seq);
+				}
+				startTimer();
+				$('#btn_send_authno').text('다시 받기');
+			},
+			error : function() {
+				console.log('error');
+			}
+		});
+		
+    	
+    }
+    
+    function checkAuthNo(){
+    	var param = {
+    			MB_ID : 'YNG',
+				seq : msg_seq,
+				auth_no : $('#auth_no').val(),
+    		};
+    	
+    		console.log(param);
+    	
+		$.ajax({
+			url : "/cs/auth/check-auth-no",
+			type : "POST",
+			dataType : "json",
+			data : JSON.stringify(param),
+			//async : false,
+			contentType : 'application/json; charset=UTF-8',
+			success : function(data) {
+				console.log(data);
+				// data에서 사용자 ID 조회 필요
+				if (data.res_cd == 'OK'){
+					console.log('OK Authenticated');
+					authenticated = true;
+					$('#err_msg_4').text('인증번호가 확인되었습니다.').css('color', 'green');
+					$('#err_msg_4').show();
+					goSettingSimplePassword();
+				} else {
+					console.log('NOT Authenticated');
+					authenticated = false;
+					$('#err_msg_4').text('인증번호가 올바르지 않거나 인증되지 않았습니다.').css('color', 'red');
+					$('#err_msg_4').show();
+				}
+			},
+			error : function() {
+				console.log('error');
+				authenticated = false;
+				$('#err_msg_4').text('인증번호가 올바르지 않거나 인증되지 않았습니다.').css('color', 'red');
+				$('#err_msg_4').show();
+			}
+		});
+    	
+    	
+    }
+    
+ // 2차 인증팝업 타이머
+	var timersec = 300;
+	var timermin = 0;
+	var timersecond = 0;
+	var timerrunning = false;
+	var timerId;
+	var res_cd = '';
+	function startTimer() {
+		console.log('timer started >>');
+		// timersec 세팅
+		setTimeout(function () {
+			timerId = setInterval(function () {
+
+				if (timersec <= 0) {
+					clearInterval(timerId);
+					timersec = 300;
+					timermin = 0;
+					timersecond = 0;
+					timerrunning = false;
+					console.log('<< timer stopped');
+					console.log('인증번호 입력시간이 경과하였습니다. 다시 요청해주세요.');
+				}
+				timersec = timersec - 1;
+				// console.log(timersec);
+				timermin = Math.floor(timersec / 60, 0);
+				timersecond = timersec - (timermin * 60);
+				console.log(timermin + ":" + lpad(timersecond, 2, '0'));
+				$('#sp_timer').text(timermin + ":" + lpad(timersecond, 2, '0'));
+				timerrunning = true;
+			}, 1000);
+
+		}, 0);
+
+	}
+	
+	function goSettingSimplePassword(){
+		if (USER_ID != '') {
+			location.href = '/m/P04/' + USER_ID ; // 사용자 ID를 전달해야 함. 
+		} else {
+			alert('사용자 ID를 식별할 수 없어 간편비밀번호를 설정할 수 없습니다.');
+			return;
+		}
+	}
+	
+	
+    function closePopup(id) {
+    	$('#' + id).hide();
+    }
+    
+    function goBack(){
+    	// location.href = '/m/P01';
+    	history.go(-1);
+    }
+    </script>
+	
+	
+
+</html>

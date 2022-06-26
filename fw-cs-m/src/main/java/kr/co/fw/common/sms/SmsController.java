@@ -25,6 +25,8 @@ public class SmsController extends BaseController {
 		log.info("[POST] /sms/send-authnum-to-custoemr");
 		HashMap<String, Object> hmap = new HashMap<String, Object>();
 		JSONObject jobj = new JSONObject();
+		String purpose1 = "회원가입";
+		String purpose2 = "간편 비밀번호 설정";
 		
 
 		try {
@@ -62,7 +64,10 @@ public class SmsController extends BaseController {
 			paramMap.put("from", "0262031144");
 			paramMap.put("to", paramvo.getCall_to().replace("-", ""));
 			paramMap.put("subject", "[파인드웰스] 인증번호 전송");
-			String content = "[파인드웰스] 회원가입을 위한 인증번호는 \n"
+			if ("2".equals(paramvo.getPurpose())) {
+				purpose1= purpose2;
+			}
+			String content = "[파인드웰스] " + purpose1 + "을 위한 인증번호는 \n"
 					+ authno + " 입니다." 
 					;
 			paramMap.put("content", content);

@@ -176,25 +176,31 @@
 				, login_type : 'SIMP'
 			};
 			console.log(JSON.stringify(data))
-			$.ajax({
-				url : '/cs/simple-pw'
-				, type : 'PUT'
-				, data : JSON.stringify(data)
-				, async: false
-				, contentType : 'application/json'
-				, success : function(data, status, response){
-					console.log(data);
-					if (data.res_cd == 'OK') {
-    					// goSimpleLogin();
-						common.autoPopup('noticePopup');	
+			
+			if (USER_ID == '') {
+				alert('사용자 ID를 식별할 수 없어 간편비밀번호를 설정할 수 없습니다.');
+				return;
+			} else {
+				$.ajax({
+					url : '/cs/simple-pw'
+					, type : 'PUT'
+					, data : JSON.stringify(data)
+					, async: false
+					, contentType : 'application/json'
+					, success : function(data, status, response){
+						console.log(data);
+						if (data.res_cd == 'OK') {
+	    					// goSimpleLogin();
+							common.autoPopup('noticePopup');	
+						}
 					}
-				}
-				, error : function(req, status, error){
-					//console.log(JSON.stringify(req) + ", "+ status + ", "  + error);
-					$('#error_msg').text('간편비밀번호 저장중 요류가 발생하였습니다.');
-					$('#error_msg').show();
-				}
-			});
+					, error : function(req, status, error){
+						//console.log(JSON.stringify(req) + ", "+ status + ", "  + error);
+						$('#error_msg').text('간편비밀번호 저장중 요류가 발생하였습니다.');
+						$('#error_msg').show();
+					}
+				});
+			}
     	}
     }
     
