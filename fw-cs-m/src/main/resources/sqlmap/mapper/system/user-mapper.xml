@@ -301,7 +301,7 @@
 				   </if>
 				   <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(devc_id)'>
 				   AND tb1.DEVC_ID = #{devc_id}
-				   AND (tb2.LOGIN_ID IS NOT NULL AND tb2.LOGIN_ID != '' )
+				   AND tb2.LOGIN_ID IS NOT NULL
 				   </if>
 			   </where>
 			  ORDER BY IN_DTM DESC
