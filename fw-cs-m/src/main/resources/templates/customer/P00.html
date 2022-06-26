@@ -96,50 +96,51 @@
 	    //메인에 공지팝업 자동노출
 	    var ACCESS_TOKEN = '';
 	    var USER_ID = '';
+	    var device_id = '';
 	    $(document).ready(function(){
 	    	wrap_mask(0);
 	    	
-	    	// reqSendDeviceInfo();
+	    	reqSendDeviceInfo();
 
+		    // 회원가입이 되면 팝업이 뜨지 않아야 한다. 
+		    // 회원가입 전까지는 계속 뜬다. 
+		    // 확인하는 메서드 필요 
 	    	// console.log(localStorage.JOIN_YN)
-	    	
-	    	if(localStorage.JOIN_YN == 'Y') {
-				
-			} else {
-	    		common.autoPopup('noticePopup');
-	    		
-	    		// $('#noticePopup').show();
+	    	if(localStorage.JOIN_YN != 'Y') {
+	    		common.autoPopup('noticePopup');				
 			}
 	    	
-	    	
 	    	$('#login_id').val('');
-	    	
-	    	$('#bt_join').on('click', function(){
-	    		location.href= '/m/P02';
-	    	});
-	    	
-	    	$('#bt_find_pw').on('click', function(){
-	    		// location.href= '/m/PE01';
-	    	});
 	    	
 	    	$('#bt_login').on('click', function(){
 	    		doLogin();
 	    	});
 	    	
-	    	$('#bt_simp_pw').on('click', function(){
-	    		goSimpleLogin();
+	    	$('#bt_join').on('click', function(){
+	    		location.href= '/m/P02';
 	    	});
 	    	
+	    	$('#bt_simp_pw').on('click', function(){
+	    		if (device_id != '') {
+	    			goSimpleLogin();
+	    		} else {
+	    			alert("모바일 브라우저 환경에서는 간편로그인을 사용할 수 업습니다.");
+	    			return;
+	    		}
+	    	});
+	    	
+	    	/* 
 	    	$('#bt_test').on('click', function(){
 	    		location.href= '/m/test';
 	    	});
+	    	*/
 	    	
 	    });
 	    
 	   function doLogin(){
+	   		console.log('doLogin');
 			//console.log($('#login_id').val());
 			//console.log($('#login_pw').val());
-	   		//console.log('doLogin');
 			var data = {
 					username : $('#login_id').val()
 					, password : $('#login_pw').val()
@@ -204,11 +205,6 @@
 			});
 		}
 		
-	    
-	    // 회원가입이 되면 팝업이 뜨지 않아야 한다. 
-	    // 회원가입 전까지는 계속 뜬다. 
-	    // 확인하는 메서드 필요 
-	    
 	    // 모바일 기기정보 받기
 		var reqSendDeviceInfo = function(){
 			gnx_app_master.call('reqSendDeviceInfo'
