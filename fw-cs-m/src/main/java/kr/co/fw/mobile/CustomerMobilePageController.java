@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.servlet.ModelAndView;
 
+import kr.co.fw.common.util.CommUtil;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -23,6 +24,7 @@ public class CustomerMobilePageController {
 	public ModelAndView root(HttpServletRequest req) throws Exception {
 		log.info("/");
 		ModelAndView mav = new ModelAndView("customer/P00");
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -33,6 +35,7 @@ public class CustomerMobilePageController {
 	public ModelAndView lgoin(HttpServletRequest req) throws Exception {
 		log.info("/");
 		ModelAndView mav = new ModelAndView("customer/P00");
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 
@@ -43,6 +46,7 @@ public class CustomerMobilePageController {
 	public ModelAndView gopage(HttpServletRequest req, @PathVariable("page_id") String page_id) throws Exception {
 		log.info("/m/page_id");
 		ModelAndView mav = new ModelAndView("customer/"+page_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -55,6 +59,7 @@ public class CustomerMobilePageController {
 		log.info("/m/P01");
 		ModelAndView mav = new ModelAndView("customer/P01");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -66,6 +71,7 @@ public class CustomerMobilePageController {
 		log.info("/m/P02");
 		ModelAndView mav = new ModelAndView("customer/P02");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -76,6 +82,7 @@ public class CustomerMobilePageController {
 	public ModelAndView privacyPolicy(HttpServletRequest req) throws Exception {
 		log.info("/public/privacy");
 		ModelAndView mav = new ModelAndView("customer/privacy");
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -87,6 +94,7 @@ public class CustomerMobilePageController {
 		log.info("/m/P03");
 		ModelAndView mav = new ModelAndView("customer/P03");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -98,6 +106,7 @@ public class CustomerMobilePageController {
 		log.info("/m/P04");
 		ModelAndView mav = new ModelAndView("customer/P04");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -109,6 +118,7 @@ public class CustomerMobilePageController {
 		log.info("/m/P05");
 		ModelAndView mav = new ModelAndView("customer/P05");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -120,6 +130,7 @@ public class CustomerMobilePageController {
 		log.info("/m/PE01");
 		ModelAndView mav = new ModelAndView("customer/PE01");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -131,6 +142,7 @@ public class CustomerMobilePageController {
 		log.info("/m/PM01");
 		ModelAndView mav = new ModelAndView("customer/PM01");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -142,6 +154,7 @@ public class CustomerMobilePageController {
 		log.info("/m/PM02");
 		ModelAndView mav = new ModelAndView("customer/PM02");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -154,6 +167,7 @@ public class CustomerMobilePageController {
 		ModelAndView mav = new ModelAndView("customer/PM03");
 		mav.addObject("user_id", user_id);
 		mav.addObject("item_no", item_no);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -165,6 +179,7 @@ public class CustomerMobilePageController {
 		log.info("/m/PM04");
 		ModelAndView mav = new ModelAndView("customer/PM04");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -176,6 +191,7 @@ public class CustomerMobilePageController {
 		log.info("/m/PM05");
 		ModelAndView mav = new ModelAndView("customer/PM05");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -188,6 +204,7 @@ public class CustomerMobilePageController {
 		ModelAndView mav = new ModelAndView("customer/PM05");
 		mav.addObject("user_id", user_id);
 		mav.addObject("cont_seq", seq);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -199,6 +216,7 @@ public class CustomerMobilePageController {
 		log.info("/m/PM06");
 		ModelAndView mav = new ModelAndView("customer/PM06");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -210,6 +228,7 @@ public class CustomerMobilePageController {
 		log.info("/m/PM07");
 		ModelAndView mav = new ModelAndView("customer/PM07");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -222,6 +241,7 @@ public class CustomerMobilePageController {
 		ModelAndView mav = new ModelAndView("customer/PM07_1");
 		mav.addObject("user_id", user_id);
 		mav.addObject("seq", seq);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -233,6 +253,7 @@ public class CustomerMobilePageController {
 		log.info("/m/PM08");
 		ModelAndView mav = new ModelAndView("customer/PM08");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -245,6 +266,7 @@ public class CustomerMobilePageController {
 		ModelAndView mav = new ModelAndView("customer/PM08_1");
 		mav.addObject("user_id", user_id);
 		mav.addObject("seq", seq);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -256,6 +278,7 @@ public class CustomerMobilePageController {
 		log.info("/m/PM09");
 		ModelAndView mav = new ModelAndView("customer/PM09");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -267,6 +290,7 @@ public class CustomerMobilePageController {
 		log.info("/m/PM10");
 		ModelAndView mav = new ModelAndView("customer/PM10");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -278,6 +302,7 @@ public class CustomerMobilePageController {
 		log.info("/m/PM11");
 		ModelAndView mav = new ModelAndView("customer/PM11");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -289,6 +314,7 @@ public class CustomerMobilePageController {
 		log.info("/m/PM11_1");
 		ModelAndView mav = new ModelAndView("customer/PM11_1");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -300,6 +326,7 @@ public class CustomerMobilePageController {
 		log.info("/m/PM12");
 		ModelAndView mav = new ModelAndView("customer/PM12");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -311,6 +338,7 @@ public class CustomerMobilePageController {
 		log.info("/m/PM13");
 		ModelAndView mav = new ModelAndView("customer/PM13");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -323,6 +351,7 @@ public class CustomerMobilePageController {
 		ModelAndView mav = new ModelAndView("customer/PM14");
 		mav.addObject("user_id", user_id);
 		mav.addObject("item_no", item_no);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -334,6 +363,7 @@ public class CustomerMobilePageController {
 		log.info("/m/PM15");
 		ModelAndView mav = new ModelAndView("customer/PM15");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -345,6 +375,7 @@ public class CustomerMobilePageController {
 		log.info("/m/PM15_1");
 		ModelAndView mav = new ModelAndView("customer/PM15_1");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -356,6 +387,7 @@ public class CustomerMobilePageController {
 		log.info("/m/PM15_1");
 		ModelAndView mav = new ModelAndView("customer/PM17");
 		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 	
@@ -366,6 +398,7 @@ public class CustomerMobilePageController {
 	public ModelAndView test(HttpServletRequest req) throws Exception {
 		log.info("/m/test");
 		ModelAndView mav = new ModelAndView("customer/test");
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
 

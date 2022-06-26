@@ -3,7 +3,12 @@ package kr.co.fw.system.security;
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
 import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
@@ -12,6 +17,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import kr.co.fw.common.util.CommUtil;
 import kr.co.fw.common.util.CryptoUtil;
@@ -37,6 +44,27 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 		String login_pw = (String) authentication.getCredentials();// 로그인패스워드
 		log.info("login_id : " + login_id);
 		log.info("login_pw : " + login_pw);
+		
+		Map<String, String> loginData = new HashMap<String, String>();//로그인데이터정보 담음
+		
+		// 기타정보 획득
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+		Enumeration<?> param = request.getParameterNames();
+		String loginType = "";
+		
+		while (param.hasMoreElements()){
+			String name = (String)param.nextElement();
+			
+			// 비밀번호의 경우 여기에 등록하지 않음
+			if(name.toLowerCase().equals("password")) continue;
+			
+			loginData.put(name.toLowerCase(), request.getParameter(name));
+		}
+		
+		loginType = loginData.get("login_type");
+		log.info("login_type :" + loginType);
+		log.info("mb_id :" + loginData.get("mb_id"));
+
 
 		user.setLogin_id(login_id);
 		retuser = userService.getUser(user);
@@ -53,14 +81,27 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
 		retuser.setAuthorities(roleList);
 		log.info("user : " + retuser.toString());
 		try {
-			if (CommUtil.isNotEmpty(retuser.getPassword())) {
-				if (!login_pw.equals(CryptoUtil.decrypt(retuser.getPassword()))) {
-					log.info("계정정보가 업거나 비빌번호가 일치하지 않습니다. 1");
+			if ("SIMP".equals(loginType)) {
+				if (CommUtil.isNotEmpty(retuser.getSimpl_pw())) {
+					if (!login_pw.equals(CryptoUtil.decrypt(retuser.getSimpl_pw()))) {
+						log.info("계정정보가 업거나 비빌번호가 일치하지 않습니다. 1-1");
+						throw new BadCredentialsException("계정정보가 업거나 비빌번호가 일치하지 않습니다.");
+					}
+				} else {
+					log.info("계정정보가 업거나 비빌번호가 일치하지 않습니다. 2-1");
 					throw new BadCredentialsException("계정정보가 업거나 비빌번호가 일치하지 않습니다.");
 				}
+				
 			} else {
-				log.info("계정정보가 업거나 비빌번호가 일치하지 않습니다. 2");
-				throw new BadCredentialsException("계정정보가 업거나 비빌번호가 일치하지 않습니다.");
+				if (CommUtil.isNotEmpty(retuser.getPassword())) {
+					if (!login_pw.equals(CryptoUtil.decrypt(retuser.getPassword()))) {
+						log.info("계정정보가 업거나 비빌번호가 일치하지 않습니다. 1-0");
+						throw new BadCredentialsException("계정정보가 업거나 비빌번호가 일치하지 않습니다.");
+					}
+				} else {
+					log.info("계정정보가 업거나 비빌번호가 일치하지 않습니다. 2-0");
+					throw new BadCredentialsException("계정정보가 업거나 비빌번호가 일치하지 않습니다.");
+				}
 			}
 		} catch (UnsupportedEncodingException | GeneralSecurityException e) {
 			// TODO Auto-generated catch block

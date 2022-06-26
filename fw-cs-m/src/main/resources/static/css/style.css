@@ -1947,6 +1947,19 @@ input:focus {
   box-shadow: 0px 20px 21px -15px rgb(97 87 195);
 }
 
+.b_prev {
+  height: 48px;
+  font-size: 18px;
+  font-weight: bold;
+  background: #333;
+  flex: 0.3;
+  margin-left: 10px;
+  color: #231f20;
+  background: var(--btn-theme-color);
+  border-radius: 10px;
+  box-shadow: 0px 20px 21px -15px rgb(97 87 195);
+}
+
 .b_point {
   height: 48px;
   font-size: 18px;

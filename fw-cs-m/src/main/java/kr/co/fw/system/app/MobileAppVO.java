@@ -7,10 +7,12 @@ public class MobileAppVO {
 	private String os_ver;
 	private String os_name;
 	private String push_token;
+	private String devc_token;
 	private String app_ver;
 	private String user_id;
 	private String in_user_id;
 	private String in_dtm;
+	private String memo;
 	
 	public String getDevc_id() {
 		return devc_id;
@@ -66,6 +68,19 @@ public class MobileAppVO {
 	public void setIn_user_id(String in_user_id) {
 		this.in_user_id = in_user_id;
 	}
+	public String getDevc_token() {
+		return devc_token;
+	}
+	public void setDevc_token(String devc_token) {
+		this.devc_token = devc_token;
+	}
+	public String getMemo() {
+		return memo;
+	}
+	public void setMemo(String memo) {
+		this.memo = memo;
+	}
+	
 	
 	
 }

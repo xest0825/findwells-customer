@@ -76,7 +76,7 @@ var gnx_app_factory = function(){
 				name: fn,
 				parameters: jsonData
 			};
-			window.webkit.messageHandlers.rpm.postMessage(message);
+			window.webkit.messageHandlers.fbridge.postMessage(message);
 			
 		} catch (e) {
 			//alert('[ERROR-606]에러가 발생했습니다');

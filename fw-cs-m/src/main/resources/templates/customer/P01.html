@@ -5,7 +5,7 @@
 
 <head>
 	  <meta charset="utf-8" />
-	  <title>P01</title>
+	  <title>간편로그인</title>
 	  <meta name="viewport" content="user-scalable=no, initial-scale=1, width=device-width, target-densitydpi=medium-dpi" />
 	  <meta name="format-detection" content="telephone=no" />
 	  <link rel="stylesheet" href="/css/style.css" />
@@ -13,8 +13,8 @@
 	
 	  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 	  <script type="text/javascript" src="/js/common_added.js"></script>
-	  <!-- <script type="text/javascript" src="/js/app.js"></script> -->
 	  <script type="text/javascript" src="/js/common_util.js"></script>
+  	  <script type="text/javascript" th:src="@{/js/gnx_app_connector.js(tm=${tm})}"></script>
   	  <script>
 	  history.pushState(null, null, location.href);
 	  
@@ -44,6 +44,24 @@
       <div class="btn_wrap">
         <!-- <a href="javascript:closePopup('noticePopup');" class="layerClose cancle">취소</a> -->
         <a href="javascript:closePopup('noticePopup')" class="ok">확인</a>
+      </div>
+    </div>
+    <div class="layerDim keep"></div>
+  </div>
+  
+  <!-- 모달팝업 -->
+  <div class="layerPopup login_guide" id="confirmPopup1" data-backdrop="true" data-target="#confirmPopup1">
+    <div class="content login_guide_wrap">
+      <h2>간편비밀번호 설정</h2>
+      <div class="layerBody">
+        <p class="desc">
+          간편 비밀번호가 설정되지 않았습니다. 
+          <br>간편 비밀번호를 설정하시겠습니까?
+        </p>
+      </div>
+      <div class="btn_wrap">
+        <a href="javascript:closePopup('confirmPopup')" class="layerClose cancle">취소</a>
+        <a href="javascript:goSettingSimplePassword('confirmPopup1');" class="ok">확인</a>
       </div>
     </div>
     <div class="layerDim keep"></div>
@@ -84,29 +102,54 @@
             <input type="button" value="0" id="0 " class="pinButton calc" onclick="field('0');"/>
             <input type="button" value="clear" id="delete" class="pinButton clear" onclick="deleteOne();"/>
 
+
         </div>
         <!-- 
         <script src="/js/app.js"></script>
          -->
         <!-- 핀패드 끝 -->
       </div>
+      
+      <div style="clear:both;" class="input_text_wrap no_flex mt25">
+	        <p id="error_msg" class="error_msg" style="display:none;">계정정보가 없거나 비밀번호가 일치하지 않습니다.</p>
+	  </div>
     </section>
+    
     <div class="btn_wrap">
       <button class="b_cancle" id="bt_join">회원가입</button>
-      <button class="b_ok" id="bt_find_pw">비밀번호 찾기</button>
+      <button class="b_ok" 	   id="bt_find_pw" style="width:30%;">비밀번호 찾기</button>
+      <button class="b_prev"   id="bt_id_pw"   style="width:10%;">&lt;</button>
     </div>
   </div>
   <script>
+  
+    var device_id = '';
+    var ACCESS_TOKEN = '';
+    var USER_ID = '';
     //메인에 공지팝업 자동노출
     $(document).ready(function(){
     	wrap_mask(0);
-    	common.autoPopup('noticePopup');
+    	
+    	reqSendDeviceInfo();
+    	
+        // 회원가입이 되면 팝업이 뜨지 않아야 한다. 
+        // 회원가입 전까지는 계속 뜬다. 
+    	if(localStorage.JOIN_YN != 'Y') {
+    		common.autoPopup('noticePopup');			
+		}
+    	
     	$('#password').val('');
+    	
     	$('#bt_join').on('click', function(){
     		location.href= '/m/P02';
     	});
+    	
     	$('#bt_find_pw').on('click', function(){
     		location.href= '/m/PE01';
+    	});
+    	
+    	$('#bt_id_pw').on('click', function(){
+    		location.href= '/m/P00';
     	});
     	
     });
@@ -114,31 +157,191 @@
     function field(value) {
         var input_value = $('#password');
     	input_value.val(input_value.val() + value);
-    	console.log(input_value.val());
+    	//console.log(input_value.val());
+    	$('#error_msg').hide();
         if (input_value.val().length == 4 ){
-    		  location.href = '/m/PM01'
+    		  // location.href = '/m/PM01';
+    		  getLoginID(input_value.val());
     	  }
     }
     
     function deleteOne(){
-    	 var val = $('#password').val();
-      	  console.log('val : ' + val);
-      	  console.log('val.length : ' + val.length);
-      	  console.log('val -1 char : ' +  val.substr(0, val.length-1));
+    	var val = $('#password').val();
+      	//console.log('val : ' + val);
+      	//console.log('val.length : ' + val.length);
+      	//console.log('val -1 char : ' +  val.substr(0, val.length-1));
       	  
-      	$('#password').val(val.substr(0, val.length-1));
+    	$('#password').val(val.substr(0, val.length-1));
+    	$('#error_msg').hide();
     }
     
     function clearPassword() {
-    	console.log('clearPassword');
-    	 $('#password').val('');
+    	$('#password').val('');
+    	$('#error_msg').hide();
     }
     
-
+    function getLoginID(pw){
+    	
+    	// TODO : 
+    	// 1. 디바이스 id를 이용하여 로그인 Id를 조회
+    	// 로그인 ID와 
+    	console.log('device_id from DEVC : ' + device_id);
+    	
+    	//device_id = 'GFbDJ46E8yKFZ0n6YOKfGyzCQzPh2UhtjUVHs2FSytI=';
+    	var data = { devc_id : device_id}
+		$.ajax({
+			url : '/cs/user-device'
+			, type : 'GET'
+			, data : data
+			, async: false
+			, contentType : 'application/x-www-form-urlencoded'
+			, success : function(data, status, response){
+				console.log(data);
+				USER_ID = data.USER_ID;
+				console.log(USER_ID);
+				if (USER_ID !='' && USER_ID != undefined) {
+					if (data.SIMPL_PW != '' && data.SIMPL_PW != undefined && data.SIMPL_PW != null){
+						doLogin(pw);
+					} else {
+						$('#error_msg').text('간편비밀번호 미등록');
+						$('#error_msg').show();
+						common.autoPopup('confirmPopup1');	
+						//goSettingSimplePassword();
+					}
+					
+				} else {
+					$('#error_msg').text('회원등록 필요');
+					$('#error_msg').show();
+					
+				}
+			}
+			, error : function(req, status, error){
+				console.log(req + ", "+ status + ", "  + error);
+				//console.log('계정정보가 없거나 비밀번호가 일치하지 않습니다.');
+				$('#error_msg').text('계정정보가 없거나 비밀번호가 일치하지 않습니다.');
+				$('#error_msg').show();
+			}
+		});
+		
+    }
     
-    // 회원가입이 되면 팝업이 뜨지 않아야 한다. 
-    // 회원가입 전까지는 계속 뜬다. 
-    // 
+    function doLogin(pw){
+		var data = {
+				username : USER_ID
+				, password : pw
+				, j_username : USER_ID
+				, j_password : pw
+				, mb_id : 'YNG'
+				, login_type : 'SIMP'
+			};
+		// alert(JSON.stringify(data))
+		$.ajax({
+			url : '/auth'
+			, type : 'POST'
+			, data : data
+			, async: false
+			, contentType : 'application/x-www-form-urlencoded'
+			, success : function(data, status, response){
+				console.log(data);
+				console.log(response.getResponseHeader('Authorization'));
+				ACCESS_TOKEN = response.getResponseHeader('Authorization');
+				ACCESS_TOKEN = ACCESS_TOKEN.replace('Bearer', '');
+				console.log(ACCESS_TOKEN);
+				//userInfo(); //헤더의 토큰으로 uid 추출
+				//userInfo();
+			}
+			, error : function(req, status, error){
+				//console.log(JSON.stringify(req) + ", "+ status + ", "  + error);
+				//alert('계정정보가 없거나 비밀번호가 일치하지 않습니다.');
+				$('#password').val('');
+				$('#error_msg').show();
+			}
+		});
+    	
+    }
+    
+    // 모바일 기기정보 받기
+	var reqSendDeviceInfo = function(){
+		gnx_app_master.call('reqSendDeviceInfo'
+			, function(result){
+				// var data1 = result.resultData;
+				var data1 = result;
+					// data.uuid.replace(/-/ig, ''); // 기기 id 
+					// data.osName;
+					// data.osVer;
+					// data.deviceName;
+					// data.appVer;
+					// data.deviceToken; // 토큰 
+					// data1.reg_id = fcid;
+				devc_id = data1.uuid.replace(/-/ig, ''); // 기기 id 
+				//console.log(data1);
+				var param = {
+					  devc_id : devc_id
+					, devc_name : data1.deviceName
+					, os_ver : data1.osVer
+					, os_name : data1.osName
+					, devc_token : data1.deviceToken
+					, app_ver : data1.appVer
+					, user_id : USER_ID
+					, memo : 'LOGIN'
+				};
+				
+				//$('#error_msg_device').text(JSON.stringify(data1)).show();
+				$.ajax({
+					url : "/cs/user-device",
+					type : "POST",
+					dataType : "json",
+					data : JSON.stringify(param),
+					//async : false,
+					contentType : 'application/json; charset=UTF-8',
+					headers: {
+						"Authorization": "bearer" + ACCESS_TOKEN,
+					},
+					success : function(data) {
+						console.log(data);
+					},
+					error : function(err) {
+						console.log('error');
+						//$('#error_msg_device').text(err).show();
+					}
+				});
+					
+			  } // gnx_app_master.function
+		    , ""
+		    );	// gnx_app_master
+	}
+    
+	//헤더의 토큰으로 uid 추출 (inner function)
+	function userInfo() {
+		$.get({
+			url: '/userInfo'
+			, type: 'GET'
+			, async: false
+			, contentType: 'application/json; charset=UTF-8'
+			, headers: {
+				"Authorization": "bearer" + ACCESS_TOKEN,
+			}
+			, success: function (data) {
+				console.log(data);
+				//console.log(data + "");
+				console.log(data.substring(data.indexOf("uid") + 4, data.indexOf("mid") - 2));   //uid 만 파싱
+				USER_ID = data.substring(data.indexOf("uid") + 4, data.indexOf("mid") - 2); //uid 만 파싱
+				console.log('/m/PM01/' + USER_ID);
+				localStorage.setItem("JOIN_YN", "Y");
+				location.href = "/m/PM01/" + USER_ID;
+				
+			}
+			, error: function (req, status, error) {
+				console.log(req + ", " + status + ", " + error);
+				
+			}
+		});
+	}
+	
+	function goSettingSimplePassword(popupId){
+		closePopup(popupId);
+		location.href = '/m/P04/' + USER_ID;
+	}
     
     function closePopup(id){
     	$('#' + id).hide();

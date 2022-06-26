@@ -126,6 +126,7 @@ public class UserService extends BaseService {
 	 * 
 	 * @param User
 	 * @return int
+	 * @note login_id가 PK
 	 */
 	public int insertCustomerLoginInfo(CustomerVO paramap) {
 		return getUserDAO().insertCustomerLoginInfo(paramap);
@@ -136,6 +137,7 @@ public class UserService extends BaseService {
 	 * 
 	 * @param User
 	 * @return int
+	 * @note login_id가 PK
 	 */
 	public int updateCustomerLoginInfo(CustomerVO paramap) {
 		return getUserDAO().updateCustomerLoginInfo(paramap);
@@ -146,6 +148,7 @@ public class UserService extends BaseService {
 	 * 
 	 * @param User
 	 * @return int
+	 * @note login_id가 PK
 	 */
 	public int deleteCustomerLoginInfo(CustomerVO paramap) {
 		return getUserDAO().deleteCustomerLoginInfo(paramap);
@@ -159,6 +162,23 @@ public class UserService extends BaseService {
 	 */
 	public List<HashMap<String, Object>> getUserDeviceList(MobileAppVO paramap) {
 		return getUserDAO().getUserDeviceList(paramap);	
+	}
+	
+	/**
+	 * 사용자 기기 조회
+	 * 
+	 * @param UserVO
+	 * @return HashMap<String, String>
+	 */
+	public HashMap<String, Object> getUserDevice(MobileAppVO paramap) {
+		HashMap<String,Object> resultMap = new HashMap<String,Object>();
+		List<HashMap<String,Object>> resultList = new ArrayList<HashMap<String, Object>>();
+		resultList = getUserDAO().getUserDeviceList(paramap);	
+		if (resultList.size() > 0) {
+			resultMap = resultList.get(0);
+		}
+		
+		return resultMap;	
 	}
 	
 	/**

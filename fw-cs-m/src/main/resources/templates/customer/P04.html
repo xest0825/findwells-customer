@@ -5,17 +5,17 @@
 
 	<head>
 	  <meta charset="utf-8" />
-	  <title>P04</title>
+	  <title>간편 비밀번호 설정</title>
 	  <meta name="viewport"
 	    content="user-scalable=no, initial-scale=1, width=device-width, target-densitydpi=medium-dpi" />
 	  <meta name="format-detection" content="telephone=no" />
-	  <link rel="stylesheet" href="/css/style.css" />
-	  <link href="/css/bootstrap.css" type="text/css" rel="stylesheet" />
+ 	  <link rel="stylesheet" href="/css/style.css" />
+	  <link rel="stylesheet" href="/css/bootstrap.css" type="text/css"  />
 	
 	  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
 	  <script type="text/javascript" src="/js/common_added.js"></script>
-	  <script type="text/javascript" src="/js/app.js"></script>
 	  <script type="text/javascript" src="/js/common_util.js"></script>
+	  <script type="text/javascript" th:src="@{/js/gnx_app_connector.js(tm=${tm})}"></script>
 	  <script>
 	  history.pushState(null, null, location.href);
 	  
@@ -26,17 +26,41 @@
 	</head>
 	
 	<body>
-	  	<th:block th:include="customer/loading"></th:block>
+	  <input type="hidden" id="cnt" value="1">
+	  <input type="hidden" id="simple_pw" value="">
+	  
+	  <th:block th:include="customer/loading"></th:block>
+	  
+	  <!-- 모달팝업 -->
+	  <div class="layerPopup login_guide" id="noticePopup" data-backdrop="true" data-target="#noticePopup">
+	    <div class="content login_guide_wrap">
+	      <h2>간편비밀번호 설정 완료</h2>
+	      <div class="layerBody">
+	        <p class="desc">
+	          간편비밀번호를 설정하였습니다.
+	          <br />
+	          로그인 화면으로 이동합니다.
+	        </p>
+	      </div>
+	      <div class="btn_wrap">
+	        <!-- <a href="javascript:closePopup('noticePopup');" class="layerClose cancle">취소</a> -->
+	        <a href="javascript:goSimpleLogin()" class="ok">확인</a>
+	      </div>
+	    </div>
+	    <div class="layerDim keep"></div>
+	  </div>
 	  	
 	  <div class="wrapper_lock">
 	    <div class="top_wrapper">
 	     <a href="javascript:goBack();" class="go_back">뒤로가기</a>
 	    </div>
 	    <section class="self_certification">
-	      <p class="desc">
-	        비밀번호 설정
+	      <!-- 
+	      <p class="desc" id="title">
+	        간편 비밀번호 설정
 	      </p>
-	      <h2>잠금 비밀번호 입력</h2>
+	       -->
+	      <h2 id="title">간편 비밀번호 입력</h2>
 	      <p class="desc">
 	        잠금 비밀번호 4자리를 입력하세요.
 	      </p>
@@ -44,52 +68,150 @@
 	      <div class="pad_wrap">
 	        <!-- 핀패드 시작 -->
 	        <div id="pinpad">
-	          <form>
 	            <div class="password_wrap">
 	              <input type="password" name="password" id="password" class="pinpad" inputmode="numeric" minlength="4"
 	                maxlength="4" size="4" value="" />
 	            </div>
 	
-	            <input type="button" value="1" id="1" class="pinButton calc" />
-	            <input type="button" value="2" id="2" class="pinButton calc" />
-	            <input type="button" value="3" id="3" class="pinButton calc" />
+	            <input type="button" value="1" id="1" class="pinButton calc" onclick="field('1');"/>
+	            <input type="button" value="2" id="2" class="pinButton calc" onclick="field('2');"/>
+	            <input type="button" value="3" id="3" class="pinButton calc" onclick="field('3');"/>
 	            <br />
-	            <input type="button" value="4" id="4" class="pinButton calc" />
-	            <input type="button" value="5" id="5" class="pinButton calc" />
-	            <input type="button" value="6" id="6" class="pinButton calc" />
+	            <input type="button" value="4" id="4" class="pinButton calc" onclick="field('4');"/>
+	            <input type="button" value="5" id="5" class="pinButton calc" onclick="field('5');"/>
+	            <input type="button" value="6" id="6" class="pinButton calc" onclick="field('6');"/>
 	            <br />
-	            <input type="button" value="7" id="7" class="pinButton calc" />
-	            <input type="button" value="8" id="8" class="pinButton calc" />
-	            <input type="button" value="9" id="9" class="pinButton calc" />
+	            <input type="button" value="7" id="7" class="pinButton calc" onclick="field('7');"/>
+	            <input type="button" value="8" id="8" class="pinButton calc" onclick="field('8');"/>
+	            <input type="button" value="9" id="9" class="pinButton calc" onclick="field('9');"/>
 	            <br />
-	            <input type="button" value="clear" id="clear" class="pinButton clear1" style="background-color: #bbb;" />
-	            <input type="button" value="0" id="0 " class="pinButton calc" />
-	            <input type="button" value="clear" id="clear" class="pinButton clear" />
-	          </form>
+	            <input type="button" value="clear" id="clear" class="pinButton clear1" onclick="clearPassword();" style="background-color: #bbb;" />
+	            <input type="button" value="0" id="0 " class="pinButton calc" onclick="field('0');"/>
+	            <input type="button" value="clear" id="clear" class="pinButton clear" onclick="deleteOne();"/>
 	        </div>
-	        <script src="/js/app.js"></script>
-	        <!-- 핀패드 끝 -->
+
 	      </div>
+	      
+	      <div style="clear:both;" class="input_text_wrap no_flex mt25">
+	        <p id="error_msg" class="error_msg" style="display:none;">간편 비밀번호가 일치하지 않습니다.</p>
+	  	  </div>
 	    </section>
+	    
+	    <!-- 
 	    <div class="btn_wrap">
 	      <button class="b_cancle" id="bt_join">회원가입</button>
 	      <button class="b_ok" id="bt_find-pw">비밀번호 찾기</button>
 	    </div>
+	     -->
+	    
 	  </div>
 	</body>
 	
 	  <script>
-    //메인에 공지팝업 자동노출
+    var device_id = '';
+    var USER_ID = '[[${user_id}]]';
     $(document).ready(function(){
     	wrap_mask(0);
-    	common.autoPopup('noticePopup');
+    	
+    	//reqSendDeviceInfo();
+    	
+    	$('#password').val('');
+    	
     	$('#bt_join').on('click', function(){
     		location.href= '/m/P03';
     	});
     	$('#bt_find_pw').on('click', function(){
     		location.href= '/m/PE01';
     	});
+    	
+    	// 가정사항 : user_id는 반드시 있어야 한다. 
+    	console.log(USER_ID);
     });
+    
+    function field(value) {
+        var input_value = $('#password');
+        var cnt = $('#cnt').val();
+    	input_value.val(input_value.val() + value);
+    	//console.log(input_value.val());
+    	$('#error_msg').hide();
+        if (cnt == "1" && input_value.val().length == 4 ){
+    		console.log('간편비번확인으로 이동');
+    		goConfirmSimplePassword(input_value.val());
+    	} else if (cnt == "2" && input_value.val().length == 4) {
+    		setSimplePassword(input_value.val());	
+    	}
+    }
+    
+    function deleteOne(){
+    	var val = $('#password').val();
+      	//console.log('val : ' + val);
+      	//console.log('val.length : ' + val.length);
+      	//console.log('val -1 char : ' +  val.substr(0, val.length-1));
+      	  
+    	$('#password').val(val.substr(0, val.length-1));
+    	$('#error_msg').hide();
+    }
+    
+    function clearPassword() {
+    	$('#password').val('');
+    	$('#error_msg').hide();
+    }
+    
+    function goConfirmSimplePassword(pw) {
+    	$("#simple_pw").val(pw);
+    	$('#password').val('');
+    	$('#cnt').val('2');
+    	$('#title').html('간편 비밀번호 <span style="color:yellow;">확인</span>');
+    }
+    
+    function setSimplePassword(pw) {
+    	console.log('setSimplePassword');
+    	if ($("#simple_pw").val() != pw){
+    		// 간편비밀번호가 일치하지 않습니다. 
+    		$('#error_msg').show();
+    	} else {
+    		// 간편비밀번호 설정 
+    		var data = {
+				user_id : USER_ID
+				, simpl_pw : pw
+				, mb_id : 'YNG'
+				, login_type : 'SIMP'
+			};
+			console.log(JSON.stringify(data))
+			$.ajax({
+				url : '/cs/simple-pw'
+				, type : 'PUT'
+				, data : JSON.stringify(data)
+				, async: false
+				, contentType : 'application/json'
+				, success : function(data, status, response){
+					console.log(data);
+					if (data.res_cd == 'OK') {
+    					// goSimpleLogin();
+						common.autoPopup('noticePopup');	
+					}
+				}
+				, error : function(req, status, error){
+					//console.log(JSON.stringify(req) + ", "+ status + ", "  + error);
+					$('#error_msg').text('간편비밀번호 저장중 요류가 발생하였습니다.');
+					$('#error_msg').show();
+				}
+			});
+    	}
+    }
+    
+    function goSimpleLogin(){
+    	closePopup('noticePopup');
+    	location.href = '/m/P01/' + USER_ID;
+    }
+    
+    function goBack(){
+    	location.href = '/m/P01/' + USER_ID;
+    }
+    
+    function closePopup(id){
+    	$('#' + id).hide();
+    }
   </script>
 
 </html>

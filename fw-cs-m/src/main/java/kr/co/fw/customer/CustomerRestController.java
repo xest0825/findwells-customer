@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import kr.co.fw.base.BaseController;
@@ -53,6 +51,27 @@ public class CustomerRestController extends BaseController {
 		return ret;
 	}
 	
+	/**
+	 * 사용자 디바이스 정보 조회
+	 * @param vo
+	 * @return
+	 * @throws Exception
+	 */
+	@GetMapping(value= {"/cs/user-device"})
+	public ResponseEntity<HashMap<String, Object>> getUserDeviceList(MobileAppVO vo) throws Exception {
+		log.debug("getUserDevice");
+		HashMap<String, Object> result = new HashMap<String, Object>();
+		result = getUserService().getUserDevice(vo);
+		ResponseEntity<HashMap<String, Object>> ret = new ResponseEntity<HashMap<String, Object>>(result, HttpStatus.OK);
+		return ret;
+	}
+	
+	/**
+	 * 사용자 디바이스 정보 입력
+	 * @param vo
+	 * @return
+	 * @throws Exception
+	 */
 	@PostMapping(value= {"/cs/user-device"})
 	public ResponseEntity<HashMap<String, Object>> insertAppConnectionLog(@RequestBody MobileAppVO vo) throws Exception {
 		log.debug("insertAppConnectionLog");
@@ -62,8 +81,7 @@ public class CustomerRestController extends BaseController {
 		return ret;
 	}
 	
-	
-	
+
 	/**
 	 * 로그인 계정 중복 확인
 	 * @param paramvo
@@ -243,13 +261,57 @@ public class CustomerRestController extends BaseController {
 			
 		}
 		
-
-
 		retMap.put("res_cd","OK");
 
 		ResponseEntity<HashMap<String, Object>> entity = new ResponseEntity<>(retMap, HttpStatus.OK);
 		return entity;
 	}
+	
+	/**
+	 * 간편 비밀번호 수정
+	 * @param paramvo
+	 * @return
+	 */
+	@PutMapping("/cs/simple-pw")
+	public ResponseEntity<HashMap<String, Object>> updateSimplePassword(@RequestBody CustomerVO paramvo) {
+		log.info("[PUT] /cs/simple-pw");
+		HashMap<String, Object> retMap = new HashMap<String, Object>();
+		HashMap<String, Object> custMap = new HashMap<String, Object>();
+		
+		String user_id = paramvo.getUser_id();
+		String simpl_pw = paramvo.getSimpl_pw();
+		
+		// 로그인 ID 조회 
+		MobileAppVO mvo = new MobileAppVO();
+		mvo.setUser_id(user_id);
+		custMap = getUserService().getUserDevice(mvo);
+		log.info(custMap.toString());
+		String login_id = custMap.get("LOGIN_ID").toString(); // 대문자로 조회해야함. 
+		
+		// 로그인 ID 설정 
+		log.info(simpl_pw);
+		log.info(login_id);
+		paramvo.setLogin_id(login_id);
+		
+		// login_id, cust_id, devc_id, login_pw, simpl_pw, accnt_sts, expr_dt, in_dtm, up_dtm
+		try {
+			paramvo.setSimpl_pw(CryptoUtil.encrypt(simpl_pw));
+		} catch (UnsupportedEncodingException | GeneralSecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		log.info("UPDATE CustomerLogin");
+		log.info(paramvo.toString());
+		getUserService().updateCustomerLoginInfo(paramvo); // 모바일 고객 사용자 로그인 정보 
+		
+		
+		retMap.put("res_cd","OK");
+
+		ResponseEntity<HashMap<String, Object>> entity = new ResponseEntity<>(retMap, HttpStatus.OK);
+		return entity;
+	}
+	
+	
 
 	/**
 	 * 고객 계약 목록 조회

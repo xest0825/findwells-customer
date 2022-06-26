@@ -24,6 +24,8 @@ public class User {
 	private String accnt_sts;
 	
 	private String mb_id;
+	private String simpl_pw;
+	private String login_type;
 	
 	private int enabled;
 	

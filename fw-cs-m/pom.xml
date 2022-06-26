@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>kr.co.fw</groupId>
 	<artifactId>fwcsm</artifactId>
-	<version>0.8</version>
+	<version>0.91</version>
 	<name>fwcsm</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>

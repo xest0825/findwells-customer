@@ -278,24 +278,32 @@
 	</delete>
 	
 	<select id="getUserDeviceList" parameterType="kr.co.fw.system.app.MobileAppVO" resultType="Hmap" >
-		/* user-mapper.xml getUserDeviceList */
-		SELECT SEQ 			as seq
-		     , DEVC_ID 		as devc_id
-		     , OS_NAME 		as os_name
-		     , OS_VER 		as os_ver
-		     , DEVC_NAME 	as devc_name
-		     , APP_VER 		as app_ver
-		     , DEVC_TOKEN 	as devc_token
-		     , USER_ID 		as user_id
-		     , IN_USER_ID 	as in_user_id
-		     , IN_DTM 		as in_dtm
-		  FROM TBSY_APP_CONN_LOG tb1
-	   <where>
-		   <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(user_id)'>
-		   AND tb1.USER_ID = #{user_id}
-		   </if>
-	   </where>
-	  ORDER BY IN_DTM DESC
+				/* user-mapper.xml getUserDeviceList */
+				SELECT tb1.SEQ 			as seq
+				     , tb1.DEVC_ID 		as devc_id
+				     , tb1.OS_NAME 		as os_name
+				     , tb1.OS_VER 		as os_ver
+				     , tb1.DEVC_NAME 	as devc_name
+				     , tb1.APP_VER 		as app_ver
+				     , tb1.DEVC_TOKEN 	as devc_token
+				     , tb1.USER_ID 		as user_id
+				     , tb1.IN_USER_ID 	as in_user_id
+				     , tb2.LOGIN_ID     as login_id
+				     , tb2.LOGIN_PW     as login_pw
+				     , tb2.SIMPL_PW     as simpl_pw
+				     , TO_CHAR(tb1.IN_DTM, 'YYYY-MM-DD HH24:MI:SS') in_dtm
+				  FROM TBSY_APP_CONN_LOG tb1
+	   LEFT OUTER JOIN TBCS_MOBILE_LOGIN tb2
+	   				ON tb1.USER_ID = tb2.CUST_ID
+			   <where>
+				   <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(user_id)'>
+				   AND tb1.USER_ID = #{user_id}
+				   </if>
+				   <if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(devc_id)'>
+				   AND tb1.DEVC_ID = #{devc_id}
+				   </if>
+			   </where>
+			  ORDER BY IN_DTM DESC
 	</select>
 	
 	<insert id="insertUserDevice" parameterType="kr.co.fw.system.app.MobileAppVO">
@@ -312,6 +320,7 @@
 		     , USER_ID
 		     , IN_USER_ID
 		     , IN_DTM
+		     , MEMO
 		     ) 
 		VALUES
 		     ( TBSY_APP_CONN_LOG_SEQ.NEXTVAL 
@@ -324,11 +333,12 @@
 		     , #{user_id}
 		     , #{in_user_id}
 		     , SYSDATE
+		     , #{memo}
 		     )
 	</insert>
 	
 	<update id="updateUserDevice" parameterType="kr.co.fw.system.app.MobileAppVO">
-		/* user-mapper.xml insertUserDevice */
+		/* user-mapper.xml updateUserDevice */
 		UPDATE TBSY_APP_CONN_LOG
 		   SET DEVC_ID 		= #{devc_id}
 		     , OS_NAME 		= #{os_name}
@@ -339,11 +349,12 @@
 		     , USER_ID		= #{user_id}
 		     , IN_USER_ID   = #{in_user_id}
 		     , IN_DTM       = SYSDATE
+		     , MEMO			= #{memo}
 		 WHERE SEQ = #{seq}
 	</update>
 	
 	<delete id="deleteUserDevice" parameterType="kr.co.fw.system.app.MobileAppVO">
-		/* user-mapper.xml insertUserDevice */
+		/* user-mapper.xml deleteUserDevice */
 		DELETE FROM TBSY_APP_CONN_LOG
 		 WHERE SEQ = #{seq}
 	</delete>

@@ -94,6 +94,7 @@ public class UserDAO extends BaseDAO {
 	 * 
 	 * @param User
 	 * @return int
+	 * @note login_id가 PK
 	 */
 	public int insertCustomerLoginInfo(CustomerVO paramap) {
 		return getSqlSession().insert(getUserMapper() + "insertCustomerLoginInfo", paramap);
@@ -104,6 +105,7 @@ public class UserDAO extends BaseDAO {
 	 * 
 	 * @param User
 	 * @return int
+	 * @note login_id가 PK
 	 */
 	public int updateCustomerLoginInfo(CustomerVO paramap) {
 		return getSqlSession().update(getUserMapper() + "updateCustomerLoginInfo", paramap);
@@ -114,6 +116,7 @@ public class UserDAO extends BaseDAO {
 	 * 
 	 * @param User
 	 * @return int
+	 * @note login_id가 PK
 	 */
 	public int deleteCustomerLoginInfo(CustomerVO paramap) {
 		return getSqlSession().delete(getUserMapper() + "deleteCustomerLoginInfo", paramap);
