@@ -10,6 +10,9 @@ public class MobileAppVO {
 	private String devc_token;
 	private String app_ver;
 	private String user_id;
+	private String login_id;
+	private String login_pw;
+	private String simpl_pw;
 	private String in_user_id;
 	private String in_dtm;
 	private String memo;
@@ -80,7 +83,23 @@ public class MobileAppVO {
 	public void setMemo(String memo) {
 		this.memo = memo;
 	}
-	
-	
+	public String getLogin_id() {
+		return login_id;
+	}
+	public void setLogin_id(String login_id) {
+		this.login_id = login_id;
+	}
+	public String getLogin_pw() {
+		return login_pw;
+	}
+	public void setLogin_pw(String login_pw) {
+		this.login_pw = login_pw;
+	}
+	public String getSimpl_pw() {
+		return simpl_pw;
+	}
+	public void setSimpl_pw(String simpl_pw) {
+		this.simpl_pw = simpl_pw;
+	}
 	
 }

@@ -97,6 +97,7 @@
 	    var ACCESS_TOKEN = '';
 	    var USER_ID = '';
 	    var devc_id = '';
+	    var devc = {};
 	    $(document).ready(function(){
 	    	wrap_mask(0);
 	    	
@@ -162,8 +163,7 @@
 					ACCESS_TOKEN = response.getResponseHeader('Authorization');
 					ACCESS_TOKEN = ACCESS_TOKEN.replace('Bearer', '');
 					console.log(ACCESS_TOKEN);
-					//userInfo(); //헤더의 토큰으로 uid 추출
-					userInfo();
+					userInfo(); //헤더의 토큰으로 uid 추출
 				}
 				, error : function(req, status, error){
 					console.log(req + ", "+ status + ", "  + error);
@@ -193,7 +193,7 @@
 					console.log(data.substring(data.indexOf("uid") + 4, data.indexOf("mid") - 2));   //uid 만 파싱
 					USER_ID = data.substring(data.indexOf("uid") + 4, data.indexOf("mid") - 2); //uid 만 파싱
 					console.log('/m/PM01/' + USER_ID);
-					reqSendDeviceInfo();
+					insertAppConnectionLog();
 					localStorage.setItem("JOIN_YN", "Y");
 					location.href = "/m/PM01/" + USER_ID;
 					
@@ -231,30 +231,35 @@
 						, memo : 'LOGIN'
 					};
 					
-					//$('#error_msg_device').text(JSON.stringify(data1)).show();
-					$.ajax({
-						url : "/cs/user-device",
-						type : "POST",
-						dataType : "json",
-						data : JSON.stringify(param),
-						//async : false,
-						contentType : 'application/json; charset=UTF-8',
-						headers: {
-							"Authorization": "bearer" + ACCESS_TOKEN,
-						},
-						success : function(data) {
-							console.log(data);
-						},
-						error : function(err) {
-							console.log('error');
-							//$('#error_msg_device').text(err).show();
-						}
-					});
+					devc = param;
+					
 						
 				  } // gnx_app_master.function
 			    , ""
 			    );	// gnx_app_master
 		}
+	    
+	    function insertAppConnectionLog(){
+			//$('#error_msg_device').text(JSON.stringify(data1)).show();
+			$.ajax({
+				url : "/cs/user-device",
+				type : "POST",
+				dataType : "json",
+				data : JSON.stringify(devc),
+				//async : false,
+				contentType : 'application/json; charset=UTF-8',
+				headers: {
+					"Authorization": "bearer" + ACCESS_TOKEN,
+				},
+				success : function(data) {
+					console.log(data);
+				},
+				error : function(err) {
+					console.log('error');
+					//$('#error_msg_device').text(err).show();
+				}
+			});
+	    }
 	    
 	    
 	    function closePopup(id){
