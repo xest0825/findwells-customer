@@ -39,6 +39,7 @@ public class InterceptorAdapter extends HandlerInterceptorAdapter {
 				!url.contains("/js/") &&
 				!url.contains("/css/") &&
 				!url.contains("/img/") &&
+				!url.contains("/images/") &&
 				!url.contains("favicon.ico") 
 			) {
 
