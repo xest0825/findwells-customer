@@ -158,15 +158,18 @@
     
     function field(value) {
         var input_value = $('#password');
-    	//console.log(input_value.val());
+    
     	input_value.val(input_value.val() + value);
+    	// console.log(input_value.val());
     	if (input_value.val().length < 4 ){
     		$('#error_msg').hide(); 
     	} else if (input_value.val().length == 4 ){
-    		  // location.href = '/m/PM01';
     		getLoginID(input_value.val());
     	} else {
-    		$('#error_msg').hide();
+    		console.log('length over');
+    		var str = input_value.val().substring(0,4);
+    		// console.log(str);
+    		input_value.val(str);
     	}
     }
     
@@ -193,7 +196,7 @@
     	console.log('devc_id from DEVC : ' + devc_id);
     	
     	// devc_id = 'GFbDJ46E8yKFZ0n6YOKfGyzCQzPh2UhtjUVHs2FSytI=';
-    	$('#error_msg').text(devc_id).show();
+    	// $('#error_msg').text(devc_id).show();
     	var data = { devc_id : devc_id}
 		$.ajax({
 			url : '/cs/user-device'
@@ -203,7 +206,7 @@
 			, contentType : 'application/x-www-form-urlencoded'
 			, success : function(data, status, response){
 				console.log(data);
-				$('#error_msg').text(data).show();
+				// $('#error_msg').text(data).show();
 				
 				USER_ID = data.USER_ID;
 				LOGIN_ID = data.LOGIN_ID;
@@ -323,9 +326,7 @@
 				};
 				
 				devc = param;
-				
-				$('#error_msg').text(devc_id).show();
-
+				console.log(param);				
 					
 			  } // gnx_app_master.function
 		    , ""
@@ -334,7 +335,6 @@
     
 	
     function insertAppConnectionLog(){
-		//$('#error_msg_device').text(JSON.stringify(data1)).show();
 		$.ajax({
 			url : "/cs/user-device",
 			type : "POST",
@@ -348,9 +348,9 @@
 			success : function(data) {
 				console.log(data);
 			},
-			error : function(err) {
-				console.log('error');
-				//$('#error_msg_device').text(err).show();
+			error: function (req, status, error) {
+				console.log(req + ", " + status + ", " + error);
+				
 			}
 		});
     }
