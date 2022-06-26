@@ -5,7 +5,7 @@
 
 	<head>
 	  <meta charset="utf-8" />
-	  <title>P03</title>
+	  <title>회원가입</title>
 	  <meta name="viewport"
 	    content="user-scalable=yes, initial-scale=1, width=device-width, target-densitydpi=medium-dpi" />
 	  <meta name="format-detection" content="telephone=no" />
@@ -568,8 +568,13 @@
 				if (data.res_cd == 'OK'){
 					console.log('Join Success');
 					localStorage.setItem("JOIN_YN", "Y");
-					alert('가입신청이 완료되었습니다. 승인이 완료되면 SMS를 통해 알려드리겠습니다.');
-					location.href = '/m/P00';
+					// alert('가입신청이 완료되었습니다. 승인이 완료되면 SMS를 통해 알려드리겠습니다.');
+					if (confirm("가입신청이 완료되었습니다. 승인이 완료되면 SMS를 통해 알려드리겠습니다.간편비밀번호를 등록하시겠습니까?")){
+						location.href = '/m/P04/' + data.user_id;
+					} else {
+						location.href = '/m/P00';	
+					}
+					
 				} else {
 					console.log('Join Failed');
 				}

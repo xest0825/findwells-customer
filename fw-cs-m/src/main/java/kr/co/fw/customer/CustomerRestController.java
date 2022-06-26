@@ -262,6 +262,7 @@ public class CustomerRestController extends BaseController {
 		}
 		
 		retMap.put("res_cd","OK");
+		retMap.put("user_id", cust_id);
 
 		ResponseEntity<HashMap<String, Object>> entity = new ResponseEntity<>(retMap, HttpStatus.OK);
 		return entity;
