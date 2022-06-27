@@ -38,17 +38,15 @@
       <div class="notice_view">
         <div class="tit flex_box_between">
           <div>
-            <p id="titl">2021년 5월 서울 기초교육 안내</p>
-            <p><span id="bd_nm">교육, 모임, 투어</span> ㅣ <span id="author_nm">김소연</span></p>
+            <p id="titl"></p>
+            <p><span id="bd_nm"></span> <!-- ㅣ <span id="author_nm">김소연</span> --></p>
           </div>
           <div id="in_dtm">
-            2021.09.05
+            
           </div>
         </div>
 
         <div class="content" id="cont" style="width:100%;">
-          게시판 내용
-
         </div>
 
       </div>
@@ -120,7 +118,8 @@
 				//$('#items').html(html);
 				$('#titl').html(item.titl);
 				$('#bd_nm').html(item.bd_NM);
-				$('#author_nm').html(item.author_NM);
+				//$('#author_nm').html(item.author_NM);
+				//$('#author_nm').html('FINDWELLS');
 				$('#in_dtm').html(item.in_DTM);
 				$('#cont').html(item.cont);
 				var str = $('#cont').text();
