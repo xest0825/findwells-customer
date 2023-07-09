@@ -80,6 +80,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.antMatchers("/mrpm/**").permitAll()
 				.antMatchers("**/*.go").permitAll()
 				.antMatchers("/files/**").permitAll()
+				.antMatchers("/download").permitAll()
 				.antMatchers("/system/**").hasRole("SUPER")
 				.antMatchers("/login").permitAll()
 				.antMatchers("/mobile/**").permitAll()

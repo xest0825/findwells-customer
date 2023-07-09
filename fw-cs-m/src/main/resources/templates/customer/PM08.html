@@ -83,8 +83,10 @@
         </ul>
 
         <div class="btn_wrap_left">
-          <a href="javascript:downloadFile('1')" class="b_blue"><img src="/images/btn_icon_down.png">납입인출계획</a>
-          <a href="javascript:downloadFile('2')" class="b_blue"><img src="/images/btn_icon_down.png">연금목돈예상금액</a>
+          <a href="javascript:downloadFile('1');" id="a_file_url1" class="b_blue"><img src="/images/btn_icon_down.png">납입인출계획</a>
+          <input type="hidden" id="file_url1">
+          <a href="javascript:downloadFile('2');" id="a_file_url2" class="b_blue"><img src="/images/btn_icon_down.png">연금목돈예상금액</a>
+          <input type="hidden" id="file_url2">
         </div>
 		<!-- 
         -->
@@ -123,11 +125,14 @@
 				var cust = data.result;
 
 				$('#customer_nm_nav').text(cust.CUST_NM);
-				
+                $('#file_url1').val("http://f-ims.com" + cust.FILE_URL1);
+                //$('#a_file_url1').attr('href', "http://f-ims.com" + cust.FILE_URL1).prop('download', true);
+                $('#file_url2').val("http://f-ims.com" + cust.FILE_URL2);
+                //$('#a_file_url2').attr('href',"http://f-ims.com" + cust.FILE_URL2).prop('download', true);
+
 			}
 			, error: function (req, status, error) {
-				console.log(req + ", " + status + ", " + error);	
-				
+				console.log(req + ", " + status + ", " + error);
 			}
 		});
 		
@@ -135,7 +140,10 @@
 	}
 	
 	function getContractList() {
-		var param = {cust_id: user_id, withdraw_use : 'P'};
+		var param = {
+          cust_id: user_id,
+          /* withdraw_use : 'P' */
+        };
 		
 		$.get({
 			url: '/cs/contracts'
@@ -192,7 +200,12 @@
 	
 	function downloadFile(idx) {
 		console.log('downloadFile(' + idx + ')');
-		alert('준비중입니다.')
+		// alert('준비중입니다.')
+        if (idx == 1 || idx == '1') {
+          location.href = '/files/download?file_url=' + $('#file_url1').val();
+        } else {
+          location.href = '/files/download?file_url=' + $('#file_url2').val();
+        }
 	}
 	
 	function goAssetPlanDetail(seq){

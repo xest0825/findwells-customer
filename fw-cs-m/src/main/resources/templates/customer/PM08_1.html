@@ -254,7 +254,10 @@
 	}
 	
 	function getAssetPlanList(){
-		var param = {cust_id: user_id, cont_seq : seq}
+		var param = {
+          cust_id: user_id,
+          cont_seq : seq
+        }
 		
 		$.get({
 			url: '/cs/asset-plans'
@@ -274,14 +277,15 @@
 					html += '<div class="output_table">'
 					html += '	<h2>자산 사용 계획이 없습니다.</h2>'
 			        html += '</div>'
-
-					
 				} else {
+                    html += '<div class="output_table">'
 					for (var i = 0; i < list.length; i++) {
-						html += '<div class="output_table">'
-						html += '	<h2>'
-						html += list[i].INSCO_NM + ' / ' + list[i].PROD_NM + '(' + list[i].INSPOL_NO + ')'
-				        html += '	</h2>'
+
+                      if (i == 0) {
+                        html += '	<h2>'
+                        html += list[i].INSCO_NM + ' / ' + list[i].PROD_NM + '(' + list[i].INSPOL_NO + ')'
+                        html += '	</h2>'
+                      }
 				        html += '	<table>'
 				        html += '		<colgroup>'
 				        html += '			<col width="10%;">'
@@ -310,9 +314,10 @@
 				        html += '		<span>MEMO.</span>'
 				        html += '		<span>- '+ list[i].MEMO +'</span>'
 				        html += '	</p>'
-				        html += '</div>'
+
 
 					}
+                  html += '</div>'
 					
 				}
 		          

@@ -38,16 +38,24 @@
 	
 	<select id="getCustomerUserList" parameterType="kr.co.fw.customer.CustomerVO" resultType="hmap"  >
 		/* user-mapper.xml getCustomerUserList */
-		 SELECT cust_id
-		 	  , cust_nm
-		 	  , ssn
-		 	  , cust_cell
-		 	  , mo_cd
-		 	  , approved_yn
-		 	  , data_dcd
-		      , in_emp_cd
-		      , up_emp_cd
+		 SELECT tb1.cust_id
+		 	  , tb1.cust_nm
+		 	  , tb1.ssn
+		 	  , tb1.cust_cell
+		 	  , tb1.mo_cd
+		 	  , tb1.approved_yn
+		 	  , tb1.data_dcd
+		      , tb1.in_emp_cd
+		      , tb1.up_emp_cd
+		      , tb1.file_no1
+		      , tb2.file_url AS file_url1
+		      , tb1.file_no2
+		      , tb3.file_url AS file_url2
 		   FROM tbcs_customer_mobile tb1
+		   LEFT OUTER JOIN TBSY_FILE_INFO tb2
+		     ON tb1.file_no1 = tb2.file_no
+		   LEFT OUTER JOIN TBSY_FILE_INFO tb3
+		     ON tb1.file_no2 = tb3.file_no
 		  WHERE 1 = 1
 		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_id)'>
 			AND tb1.cust_id = #{cust_id}
@@ -187,7 +195,7 @@
 		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_id)'>
 			AND tb1.login_id = #{login_id}
 		</if>
-		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(user_id)'>
+		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_id)'>
 			AND tb1.cust_id = #{cust_id}
 		</if>
 		
@@ -199,7 +207,7 @@
 		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(login_id)'>
 			AND tb1.login_id = #{login_id}
 		</if>
-		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(user_id)'>
+		<if test='@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_id)'>
 			AND tb1.cust_id = #{cust_id}
 		</if>
 	</select>

@@ -46,49 +46,51 @@
 	        <input type="hidden" id="user_id" >
 	        <button id="btn_search" class="b_search btnLayer" data-target="#search_person" style="margin-left: 10px;" onclick="openPopup('search_person')">찾기</button>
 	      </div>
+
+			<div class="input_text_wrap no_flex mt25">
+				<input type="text" id="customer_nm" class="text_box" placeholder="이름" />
+				<p id="err_msg_1" class="error_msg" style="display:none;">이름을 입력해주세요.</p>
+			</div>
+
+			<div class="input_text_wrap no_flex mt25" style="display:none">
+				<input type="hidden" id="perno1" class="text_box" style="width:48%" placeholder="주민번호앞자리" maxlength="6"/>
+				<input type="hidden" id="perno2" class="text_box" style="width:50%;float:right;letter-spacing:8px;" placeholder="주민번호뒷자리" maxlength="7"/>
+				<p id="err_msg_2"  class="error_msg" style="display:none;">주민번호를 입력해주세요.</p>
+			</div>
+
+			<div class="input_text_wrap no_flex mt25">
+				<input type="tel" id="customer_hpno" class="text_box" placeholder="휴대전화" value="" maxlength="11"/>
+				<p id="err_msg_3" class="error_msg" style="display:none;">휴대전화번호를 입력해주세요.</p>
+			</div>
+
+			<div class="input_text_wrap mt25">
+				<button id="btn_send_authno" class="b_search" style="margin-right: 10px;font-size:13px;" onclick="sendAuthNum();">
+					인증번호받기
+				</button>
+				<input type="tel" class="text_box t_c" placeholder="" id="auth_no" maxlength="6"/>
+				<span class="timer" id="sp_timer">00:00</span>
+			</div>
+
+			<div style="margin-top:10px;">
+				<p id="err_msg_4" class="error_msg" style="display:none;">인증번호가 일치하지 않습니다.</p>
+			</div>
 	      
-	      <div class="input_text_wrap no_flex mt25">
+	      <div class="input_text_wrap no_flex mt25" style="display:none;">
 	        <input type="text" id="login_id" class="text_box" placeholder="로그인 아이디" autocomplete="off"/>
 	        <p id="err_msg_id" class="error_msg" style="display:none;">로그인 아이디 입력해주세요.</p>
 	      </div>
 	      
-	      <div class="input_text_wrap no_flex mt25">
+	      <div class="input_text_wrap no_flex mt25" style="display:none;">
 	        <input type="password" id="login_pw" class="text_box" placeholder="비밀번호" autocomplete="off"/>
 	        <p id="err_msg_pw" class="error_msg" style="display:none;">비밀번호를 입력해주세요.</p>
 	      </div>
 	      
-	      <div class="input_text_wrap no_flex mt25">
+	      <div class="input_text_wrap no_flex mt25" style="display:none;">
 	        <input type="password" id="login_pw2" class="text_box" placeholder="비밀번호 확인" autocomplete="off"/>
 	        <p id="err_msg_pw2" class="error_msg" style="display:none;">비밀번호 확인을 입력해주세요.</p>
 	      </div>
 	      
-	      <div class="input_text_wrap no_flex mt25">
-	        <input type="text" id="customer_nm" class="text_box" placeholder="이름" />
-	        <p id="err_msg_1" class="error_msg" style="display:none;">이름을 입력해주세요.</p>
-	      </div>
-	      
-	      <div class="input_text_wrap no_flex mt25" style="display:inline-block">
-	        <input type="tel" id="perno1" class="text_box" style="width:48%" placeholder="주민번호앞자리" maxlength="6"/>
-	        <input type="password" id="perno2" class="text_box" style="width:50%;float:right;letter-spacing:8px;" placeholder="주민번호뒷자리" maxlength="7"/>
-	        <p id="err_msg_2"  class="error_msg" style="display:none;">주민번호를 입력해주세요.</p>
-	      </div>
-	      
-	      <div class="input_text_wrap no_flex mt25">
-	        <input type="tel" id="customer_hpno" class="text_box" placeholder="휴대전화" value="" maxlength="11"/>
-	        <p id="err_msg_3" class="error_msg" style="display:none;">휴대전화번호를 입력해주세요.</p>
-	      </div>
-	      
-	      <div class="input_text_wrap mt25">
-	        <button id="btn_send_authno" class="b_search" style="margin-right: 10px;font-size:13px;" onclick="sendAuthNum();">
-	          인증번호받기
-	        </button>
-	        <input type="tel" class="text_box t_c" placeholder="" id="auth_no" maxlength="6"/>
-	        <span class="timer" id="sp_timer">00:00</span>
-	      </div>
-	     
-	      <div>    
-	        <p id="err_msg_4" class="error_msg" style="display:none;">인증번호가 일치하지 않습니다.</p>
-	      </div>
+
 	    </section>
 	    <div class="btn_wrap">
 	      <button class="b_point" id="bt_join">가입하기</button>
@@ -144,7 +146,13 @@
 				alert('고객님의 이름을 입력하세요.');
 				return;
 			}
-			
+
+			if ($('#customer_hpno').val() == '') {
+				alert('고객님의 휴대폰번호를 입력해주세요.');
+				return;
+			}
+
+			/*
 			if (id_checked == false) {
 				alert('로그인 ID를 확인하세요.');
 				return;
@@ -179,11 +187,9 @@
 				alert('고객님의 주민번호 뒷자리 형식이 올바르지 않습니다');
 				return;
 			}
+			 */
 			
-			if ($('#customer_hpno').val() == '') {
-				alert('고객님의 휴대폰번호를 입력해주세요.');
-				return;
-			}
+
 			checkAuthNo();
 			
 		});
@@ -341,7 +347,7 @@
     function checkIdDuplicated(){
     	console.log($('#login_id').val().length);
     	$('#err_msg_id').hide();
-		if ($('#login_id').val().length > 0 && $('#login_id').val().length < 6) {
+		if ($('#login_id').val().length >= 0 && $('#login_id').val().length < 6) {
 			console.log('로그인id는 영문과 숫자 포함, 6자 이상');
 			$('#err_msg_id').text('로그인id는 영문과 숫자 포함, 6자 이상').css('color', 'red');
 			$('#err_msg_id').show();
@@ -422,37 +428,55 @@
     var msg_seq = '0';
     function sendAuthNum(){
     	console.log('sendAuthNo');
-    	clearInterval(timerId);
-		timersec = 300;
-		timermin = 0;
-		timersecond = 0;
-		timerrunning = false;
-		
-    	var param = {
-    			MB_ID : 'YNG',
-				call_to : $('#customer_hpno').val().replace(/-/ig, '').trim(),
-				receiver_nm : $('#customer_nm').val(),
-    		};
-		$.ajax({
-			url : "/sms/send-authnum-to-custoemr",
-			type : "POST",
-			dataType : "json",
-			data : JSON.stringify(param),
-			//async : false,
-			contentType : 'application/json; charset=UTF-8',
-			success : function(data) {
-				console.log(data);
-				if (data.res_cd = 'OK'){
-					msg_seq = data.msg_seq;
-					console.log(msg_seq);
+
+		if ( $('#customer_nm').val().length == 0) {
+			$('#err_msg_4').text("이름을 입력하세요.").css('color', 'red');
+			$('#err_msg_4').show();
+			$('#customer_nm').focus();
+			return;
+		} else if ($('#customer_hpno').val().length == 0) {
+			$('#err_msg_4').text("휴대전화번호를 입력하세요.").css('color', 'red');
+			$('#err_msg_4').show();
+			$('#customer_hpno').focus();
+			return;
+		} else {
+			clearInterval(timerId);
+			timersec = 300;
+			timermin = 0;
+			timersecond = 0;
+			timerrunning = false;
+
+			var param = {
+				MB_ID: 'YNG',
+				call_to: $('#customer_hpno').val().replace(/-/ig, '').trim(),
+				receiver_nm: $('#customer_nm').val().trim(),
+			};
+			$.ajax({
+				url: "/sms/send-authnum-to-custoemr",
+				type: "POST",
+				dataType: "json",
+				data: JSON.stringify(param),
+				//async : false,
+				contentType: 'application/json; charset=UTF-8',
+				success: function (data) {
+					console.log(data);
+					if (data.res_cd == 'OK') {
+						msg_seq = data.msg_seq;
+						console.log(msg_seq);
+						startTimer();
+						$('#btn_send_authno').text('다시 받기');
+						$('#err_msg_4').hide();
+					} else {
+						$('#err_msg_4').text(data.msg).css('color', 'red');
+						$('#err_msg_4').show();
+					}
+
+				},
+				error: function () {
+					console.log('error');
 				}
-				startTimer();
-				$('#btn_send_authno').text('다시 받기');
-			},
-			error : function() {
-				console.log('error');
-			}
-		});
+			});
+		}
 		
     	
     }
@@ -480,7 +504,9 @@
 					authenticated = true;
 					$('#err_msg_4').text('인증번호가 확인되었습니다.').css('color', 'green');
 					$('#err_msg_4').show();
+
 					join();
+
 				} else {
 					console.log('NOT Authenticated');
 					authenticated = false;
@@ -546,10 +572,10 @@
 		cust_cell = cust_cell.substr(0, 3) +'-' + cust_cell.substring(cust_cell.length-8, cust_cell.length-4) + '-' + cust_cell.substr(-4)
     	var param = {
     			MB_ID : 'YNG',
-				login_id : $('#login_id').val().trim(),
-				login_pw : $('#login_pw').val().trim(),
+				//login_id : $('#login_id').val().trim(),
+				//login_pw : $('#login_pw').val().trim(),
 				cust_nm : $('#customer_nm').val().trim(),
-				ssn : $('#perno1').val() + '-' + $('#perno2').val().trim(),
+				//ssn : $('#perno1').val() + '-' + $('#perno2').val().trim(),
 				cust_cell : cust_cell.trim(),
 				mo_cd : $('#user_id').val().trim(),
     		};

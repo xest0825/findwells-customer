@@ -45,8 +45,8 @@ public class UserService extends BaseService {
 	 * @param User
 	 * @return int
 	 */
-	public List<HashMap<String, Object>> getCustomerUserList(UserVO paramap) {
-		return getUserDAO().getUserList(paramap);
+	public List<HashMap<String, Object>> getCustomerUserList(CustomerVO paramap) {
+		return getUserDAO().getCustomerUserList(paramap);
 	}
 	
 	/**
@@ -102,8 +102,8 @@ public class UserService extends BaseService {
 	 * @param User
 	 * @return int
 	 */
-	public List<HashMap<String, Object>> getCustomerLoginInfoList(UserVO paramap) {
-		return getUserDAO().getUserList(paramap);
+	public List<HashMap<String, Object>> getCustomerLoginInfoList(CustomerVO paramap) {
+		return getUserDAO().getCustomerLoginInfoList(paramap);
 	}
 	
 	/**

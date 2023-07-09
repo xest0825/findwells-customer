@@ -62,13 +62,13 @@ SELECT AA.*
 	 WHERE A.MB_ID = 'YNG' ) AA
 <where>
 	<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_nm)">
-		AND AA.CUST_NM = #{cust_nm}
+		AND AA.CUST_NM = TRIM(#{cust_nm})
 	</if>
 	<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(ssn)">
 		AND AA.SSN = #{ssn}
 	</if>
 	<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_cell)">
-		AND AA.CUST_CELL = #{cust_cell}
+		AND REPLACE(AA.CUST_CELL, '-', '') = REPLACE(TRIM(#{cust_cell}), '-', '')
 	</if>
 	<if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(cust_id)">
 		AND AA.CUST_ID = #{cust_id}
@@ -720,11 +720,11 @@ SELECT COUNT(*)
 	    ON A.MB_ID = I.MB_ID
 	   AND A.SEQ = I.SEQ     
 	   <if test='@kr.co.fw.common.util.CommUtil@isEquals(withdraw_use, "W")'>
-	  LEFT OUTER JOIN TBCN_CONTRACT_WITHDRAWAL W
+	  LEFT OUTER JOIN (SELECT REF_SEQ FROM TBCN_CONTRACT_WITHDRAWAL GROUP BY REF_SEQ) W
 	    ON A.SEQ = W.REF_SEQ
 	   </if>
 	   <if test='@kr.co.fw.common.util.CommUtil@isEquals(withdraw_use, "P")'>
-	  LEFT OUTER JOIN TBCN_CONTRACT_ASSET P
+	  LEFT OUTER JOIN (SELECT REF_SEQ FROM TBCN_CONTRACT_ASSET GROUP BY REF_SEQ) P
 	    ON A.SEQ = P.REF_SEQ
 	   </if>
 	 WHERE A.MB_ID = 'YNG'
@@ -1035,7 +1035,7 @@ SELECT COUNT(*)
 			 , NVL(PIN_NO, '') 		PIN_NO 		/* VARCHAR(100)   */
 			 , NVL(LOGIN_PW, '') 	LOGIN_PW 	/* VARCHAR(100)   */
 			 , NVL(WITHDRAW_PW, '') WITHDRAW_PW /* VARCHAR(100)   */
-			 , NVL(MEMO, '') 		NOTE 		/* VARCHAR(200)   */
+			 , NVL(MEMO, '') 		MEMO 		/* VARCHAR(200)   */
 		  FROM TBCS_FIN_ACCOUNT A
 		 WHERE CUST_ID 	= #{cust_id}
 		   <if test="@kr.co.fw.common.util.CommUtil@isNotEmpty(seq)">

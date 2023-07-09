@@ -1,20 +1,25 @@
 package kr.co.fw.common.file;
 
+import java.io.File;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -25,6 +30,9 @@ import kr.co.fw.config.Constants.UPLOADS;
 import kr.co.fw.config.PropertiesVO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -52,6 +60,65 @@ public class FileController extends BaseController {
 		file = getFileService().getFileInfo(filevo);
 		ResponseEntity<HashMap<String, Object>> entity = new ResponseEntity<>(file, HttpStatus.OK);
 		return entity;
+	}
+
+	@GetMapping("/download")
+	public void filedownload(HttpServletResponse response, HttpServletRequest request) throws Exception {
+
+		URL url = null;
+		InputStream in = null;
+		OutputStream out = null;
+
+		String fileUrl = request.getParameter("file_url");
+		log.info("fileUrl : " + fileUrl);
+
+		try {
+			String[] fileUrlArr = fileUrl.split("/");
+
+			String fileName = fileUrlArr[fileUrlArr.length - 1];
+			String header = request.getHeader("User-Agent");
+
+			if (header.contains("MSIE") || header.contains("Trident")) {
+				fileName = URLEncoder.encode(fileName, "UTF-8").replaceAll("\\+", "%20");
+				response.setHeader("Content-Disposition", "attachment; filename=" + fileName + ";");
+			} else {
+				fileName = new String(fileName.getBytes("UTF-8"), "iso-8859-1");
+				response.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+			}
+
+			response.setHeader("Pragma", "no-cache;");
+			response.setContentType("application/octet-stream");
+			response.setHeader("Content-Transfer-Encoding", "binary");
+
+			out = response.getOutputStream();
+
+			String httpsResult = "";
+
+			url = new URL(fileUrl);
+			// 만약 프로토콜이 https 라면 https SSL을 무시하는 로직을 수행해주어야 한다.('https 인증서 무시' 라는 키워드로 구글에 검색하면 많이 나옵니다.)
+
+			in = url.openStream();
+
+			while (true) {
+				//파일을 읽어온다.
+				int data = in.read();
+				if (data == -1) {
+					break;
+				}
+				//파일을 쓴다.
+				out.write(data);
+			}
+
+			in.close();
+			out.close();
+
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+			response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+		} finally {
+			if (in != null) in.close();
+			if (out != null) out.close();
+		}
 	}
 
 	@SuppressWarnings("unchecked")

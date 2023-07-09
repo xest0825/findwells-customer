@@ -60,10 +60,18 @@ var gnx_app_factory = function(){
 		} catch (e) {
 			//alert('[ERROR-607]에러가 발생했습니다');
 			//wrap_mask(0);
+			console.log('error');
 			console.log(e);
 			//alert(e);
-			
 			//_call_local(fn, map);
+			let resultJSON = {
+				uuid : '',
+				deviceName  : '',
+				osVer : '',
+				osName : '',
+				deviceToken : '',
+			}
+			gnx_app_master.result(fn, resultJSON);
 		}
 		
 	}
@@ -120,6 +128,7 @@ var gnx_app_factory = function(){
 			
 			try {
 				var device = swichDevice();
+				console.log();
 				if('and' == device){
 					_call_and(fn, map);		// 안드로이드
 				}else if('ios' == device){
@@ -132,6 +141,14 @@ var gnx_app_factory = function(){
 				//alert(e);
 				//alert('[ERROR-604]에러가 발생했습니다');
 				//wrap_mask(0);
+				let resultJSON = {
+					uuid : '',
+					deviceName  : '',
+					osVer : '',
+					osName : '',
+					deviceToken : '',
+				}
+				gnx_app_master.result(fn, resultJSON);
 			}
 		}
 		// 앱 함수 결과값 실행
