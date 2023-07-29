@@ -123,15 +123,16 @@
   </div>
   <script>
   
-    var devc_id = '';
-    var ACCESS_TOKEN = '';
-    var USER_ID = '[[${user_id}]]';
-    var LOGIN_ID = '';
-    var devc = {};
+    let devc_id = '';
+    let ACCESS_TOKEN = '';
+    let USER_ID = '[[${user_id}]]';
+    let LOGIN_ID = ''; /* 로그인 아이디 */
+    let devc = {};
     //메인에 공지팝업 자동노출
     $(document).ready(function(){
     	wrap_mask(0);
-    	
+
+        // 기기정보 가져오기
     	reqSendDeviceInfo();
     	
         // 회원가입이 되면 팝업이 뜨지 않아야 한다. 
@@ -141,13 +142,14 @@
 		}
     	
     	$('#password').val('');
-    	
+
+        // 회원가입으로 이동
     	$('#bt_join').on('click', function(){
     		location.href= '/m/P02';
     	});
-    	
+    	// 비번찾기
     	$('#bt_find_pw').on('click', function(){
-    		location.href= '/m/PE01';
+    		location.href= '/m/PE01/' + USER_ID;
     	});
     	
     	$('#bt_id_pw').on('click', function(){
@@ -187,7 +189,8 @@
     	$('#password').val('');
     	$('#error_msg').hide();
     }
-    
+
+    // 로그인 ID 조회
     function getLoginID(pw){
     	
     	// TODO : 
@@ -197,10 +200,13 @@
     	
     	// devc_id = 'GFbDJ46E8yKFZ0n6YOKfGyzCQzPh2UhtjUVHs2FSytI=';
     	// $('#error_msg').text(devc_id).show();
+        if (USER_ID == undefined || USER_ID == '' || USER_ID == null) {
+            USER_ID = localStorage.getItem("user_id");
+        }
     	var data = { devc_id : devc_id, user_id : USER_ID}
 		$.ajax({
-			//url : '/cs/user-device'
-            url : '/cs/login-info'
+			//url : '/cs/user-device' /* 기가아이디로 부터 로그인 ID를 조회 */
+            url : '/cs/login-info' /*USER_ID로 부터 로그인 ID를 조회 */
 			, type : 'GET'
 			, data : data
 			, async: false
@@ -234,7 +240,8 @@
 		});
 		
     }
-    
+
+    // 로그인
     function doLogin(pw){
 		var data = {
 				username : LOGIN_ID
@@ -287,7 +294,7 @@
 				console.log('/m/PM01/' + USER_ID);
 				insertAppConnectionLog();
 				localStorage.setItem("JOIN_YN", "Y");
-                sessionStorage.setItem("user_id", USER_ID);
+                localStorage.setItem("user_id", USER_ID);
 				location.href = "/m/PM01/" + USER_ID;
 			}
 			, error: function (req, status, error) {
@@ -331,7 +338,7 @@
 		    );	// gnx_app_master
 	}
     
-	
+	// 기기 접속 이력 입력
     function insertAppConnectionLog(){
 		$.ajax({
 			url : "/cs/user-device",
@@ -352,12 +359,14 @@
 			}
 		});
     }
-	
+
+    // 간편비밀번호로 이동
 	function goSettingSimplePassword(popupId){
 		closePopup(popupId);
 		location.href = '/m/P04/' + USER_ID;
 	}
-    
+
+    // 팝업닫기
     function closePopup(id){
     	$('#' + id).hide();
     }

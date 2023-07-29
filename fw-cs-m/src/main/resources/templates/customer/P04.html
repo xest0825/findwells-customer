@@ -119,10 +119,10 @@
     		location.href= '/m/P03';
     	});
     	$('#bt_find_pw').on('click', function(){
-    		location.href= '/m/PE01';
+    		location.href= '/m/PE01/' + USER_ID;
     	});
 
-		sessionStorage.setItem("user_id", USER_ID);
+		localStorage.setItem("user_id", USER_ID);
     	
     	// 가정사항 : user_id는 반드시 있어야 한다. 
     	console.log(USER_ID);

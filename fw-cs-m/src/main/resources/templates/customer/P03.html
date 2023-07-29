@@ -525,7 +525,7 @@
     	
     }
     
- // 2차 인증팝업 타이머
+    // 2차 인증팝업 타이머
 	var timersec = 300;
 	var timermin = 0;
 	var timersecond = 0;
@@ -580,8 +580,7 @@
 				mo_cd : $('#user_id').val().trim(),
     		};
     	console.log(param)
-    	
-    	
+
 		$.ajax({
 			url : "/cs/join/join-customer",
 			type : "POST",
