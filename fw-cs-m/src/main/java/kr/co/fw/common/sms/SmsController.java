@@ -59,12 +59,12 @@ public class SmsController extends BaseController {
 				log.info("signature : " + signature);
 
 				//HashMap<String, Object> header = new HashMap<String, Object>();
-			/*
-			paramMap.put("Content-Type", "application/json");
-			paramMap.put("x-ncp-apigw-timestamp",timestamp + "");
-			paramMap.put("x-ncp-iam-access-key",  "t49MAOU3HwqZaMkkcpt7");
-			paramMap.put("x-ncp-apigw-signature-v2", signature);
-			*/
+				/*
+				paramMap.put("Content-Type", "application/json");
+				paramMap.put("x-ncp-apigw-timestamp",timestamp + "");
+				paramMap.put("x-ncp-iam-access-key",  "t49MAOU3HwqZaMkkcpt7");
+				paramMap.put("x-ncp-apigw-signature-v2", signature);
+				*/
 				String authno = CommUtil.makeRandomNumber(6, 2);
 				log.info("AuthNo : " + authno);
 
@@ -115,6 +115,7 @@ public class SmsController extends BaseController {
 				hmap.put("res_cd", "OK");
 				hmap.put("msg", "SMS 전송 완료");			
 				hmap.put("msg_seq", auth.getSeq());
+				hmap.put("user_id", custList.get(0).get("CUST_ID").toString());
 				
 			} else {
 				hmap.put("res_cd", "FAIL");

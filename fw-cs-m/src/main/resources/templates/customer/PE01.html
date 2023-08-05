@@ -71,11 +71,13 @@
 				<input type="tel" class="text_box t_c" placeholder="" id="auth_no" maxlength="6"/>
 				<span class="timer" id="sp_timer">00:00</span>
 			</div>
-	
+
+		  <!--
 	      <div class="pw_view" style="display: none;">
 	        <p>나의 비밀번호</p>
 	        <p>1234</p>
 	      </div>
+	      -->
 	    </section>
 
 	    <div class="btn_wrap">
@@ -115,10 +117,12 @@
 	let USER_ID = '[[${user_id}]]';
     $(document).ready(function(){
     	wrap_mask(0);
+
 		$('#emp_nm_hp').on('click', function(){
 			$('#search_person').show();
 		});
 
+		/*
 		$('#bt_join').on('click', function(){
 			// console.log($('#emp_nm').val());
 			if ($('#emp_nm').val() == '') {
@@ -138,6 +142,15 @@
 			checkAuthNo();
 
 		});
+		*/
+
+		$('#bt_confirm').on('click', function(){
+			// console.log($('#emp_nm').val());
+			checkAuthNo();
+
+		});
+
+
     });
 
 	function closePopup(id) {
@@ -277,6 +290,7 @@
 					console.log(data);
 					if (data.res_cd == 'OK') {
 						msg_seq = data.msg_seq;
+						USER_ID = data.user_id;
 						console.log(msg_seq);
 						startTimer();
 						$('#btn_send_authno').text('다시 받기');
@@ -292,8 +306,6 @@
 				}
 			});
 		}
-
-
 	}
 
 	function checkAuthNo(){

@@ -328,6 +328,7 @@ $(function () {
   })
 
   /* 클릭시 비밀번호 보이기 */
+  /*
   $(function () {
     $('.b_point').click(function () {
       $('.pw_view').show()
@@ -335,6 +336,7 @@ $(function () {
       // goodsBtn을 클릭하면 goodsDiv를 보여줘라
     })
   })
+   */
 })
 
 
