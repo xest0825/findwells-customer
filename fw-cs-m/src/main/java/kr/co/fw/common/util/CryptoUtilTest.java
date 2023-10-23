@@ -11,7 +11,7 @@ public class CryptoUtilTest {
 		//String enc1 = CryptoUtil.encrypt("01046933992");
 		//System.out.println(enc1);
 		//String enc2 = CryptoUtil.encrypt("0262031144");
-		String enc2 = "0nBSV9KPC5X9+LOR+jfRlQ==";
+		String enc2 = "DYGjWa9psLUJ+bLC4A2hgA==";
 		System.out.println(enc2);
 		System.out.println(CryptoUtil.decrypt(enc2));
 		// System.out.println(AESHelper.decrypt(enc2));

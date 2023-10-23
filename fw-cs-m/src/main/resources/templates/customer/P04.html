@@ -87,7 +87,7 @@
 	            <br />
 	            <input type="button" value="clear" id="clear" class="pinButton clear1" onclick="clearPassword();" style="background-color: #bbb;" />
 	            <input type="button" value="0" id="0 " class="pinButton calc" onclick="field('0');"/>
-	            <input type="button" value="clear" id="clear" class="pinButton clear" onclick="deleteOne();"/>
+	            <input type="button" value="clear" id="clear2" class="pinButton clear" onclick="deleteOne();"/>
 	        </div>
 
 	      </div>
@@ -116,7 +116,12 @@
     	$('#password').val('');
     	
     	$('#bt_join').on('click', function(){
-    		location.href= '/m/P03';
+			if ("ios" == checkMobile()) {
+				location.href= '/m/P03_1';
+			} else {
+				location.href= '/m/P03';
+			}
+
     	});
     	$('#bt_find_pw').on('click', function(){
     		location.href= '/m/PE01/' + USER_ID;
@@ -127,6 +132,20 @@
     	// 가정사항 : user_id는 반드시 있어야 한다. 
     	console.log(USER_ID);
     });
+
+	function checkMobile(){
+		var varUA = navigator.userAgent.toLowerCase(); //userAgent 값 얻기
+		if ( varUA.indexOf('android') > -1) {
+			//안드로이드
+			return "android";
+		} else if ( varUA.indexOf("iphone") > -1||varUA.indexOf("ipad") > -1||varUA.indexOf("ipod") > -1 ) {
+			//IOS
+			return "ios";
+		} else {
+			//아이폰, 안드로이드 외
+			return "other";
+		}
+	}
     
     function field(value) {
         var input_value = $('#password');

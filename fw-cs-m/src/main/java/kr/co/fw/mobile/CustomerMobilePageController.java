@@ -97,6 +97,16 @@ public class CustomerMobilePageController {
 		mav.addObject("tm", CommUtil.getCurrentDateTime());
 		return mav;
 	}
+
+	@GetMapping(value = "/m/P03_1/{user_id}")
+	public ModelAndView p03_1(HttpServletRequest req, @PathVariable("user_id") String user_id) throws Exception {
+		log.info("/m/P03_1");
+		ModelAndView mav = new ModelAndView("customer/P03_1"); // PO3_ 로 리다이렉트
+
+		mav.addObject("user_id", user_id);
+		mav.addObject("tm", CommUtil.getCurrentDateTime());
+		return mav;
+	}
 	
 	/**
 	 * @description 잠금비밀번호 입력
